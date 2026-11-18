@@ -1,0 +1,19 @@
+{
+  "service": "rivulet-local-core",
+  "host": "127.0.0.1",
+  "port": 8088,
+  "db_path": "data/core.db",
+  "log_dir": "logs",
+  "version": "0.2.0-local",
+  "features": {
+    "obs": true
+  },
+  "obs": {
+    "json_log": true,
+    "store": true,
+    "slow_ms": 1000,
+    "keep_days": 7,
+    "keep_rows": 2000,
+    "debug_endpoints": false
+  }
+}

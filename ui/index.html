@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rivulet 若</title>
+<link rel="icon" href="assets/fatfish.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="pages.css">
+</head>
+<body>
+
+<!-- ================= 梦幻背景 ================= -->
+<div class="dream" aria-hidden="true">
+  <div class="dream-sky"></div>
+  <div class="dream-cloud c1"></div>
+  <div class="dream-cloud c2"></div>
+  <div class="dream-cloud c3"></div>
+  <div class="dream-cloud c4"></div>
+  <svg class="dream-castle" viewBox="0 0 520 320" preserveAspectRatio="xMidYMax meet">
+    <g fill="currentColor">
+      <rect x="180" y="150" width="160" height="170" rx="8"/>
+      <rect x="196" y="120" width="128" height="50" rx="10"/>
+      <rect x="210" y="90" width="100" height="44" rx="10"/>
+      <rect x="238" y="56" width="44" height="44" rx="8"/>
+      <path d="M260 20l30 40h-60z"/>
+      <rect x="120" y="190" width="60" height="130" rx="8"/>
+      <rect x="132" y="160" width="36" height="40" rx="8"/>
+      <path d="M150 132l22 32h-44z"/>
+      <rect x="340" y="190" width="60" height="130" rx="8"/>
+      <rect x="352" y="160" width="36" height="40" rx="8"/>
+      <path d="M370 132l22 32h-44z"/>
+      <rect x="230" y="120" width="20" height="32" rx="10"/>
+      <rect x="290" y="120" width="20" height="32" rx="10"/>
+    </g>
+  </svg>
+  <div class="dream-glow g1"></div>
+  <div class="dream-glow g2"></div>
+  <div class="dream-petals"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+<div class="mouseGlow" id="mouseGlow" aria-hidden="true"></div>
+
+<!-- ================= 主界面 ================= -->
+
+<!-- 全局窗口控制(主界面和登录页都可用) -->
+<div class="winGlobal" id="winGlobal">
+  <button class="winbtn" id="btnWinMin" type="button" title="最小化"><svg viewBox="0 0 12 12"><path d="M2.5 6h7" stroke="currentColor" stroke-width="1.2"/></svg></button>
+  <button class="winbtn" id="btnWinMax" type="button" title="最大化 / 还原"><svg viewBox="0 0 12 12"><rect x="2.6" y="2.6" width="6.8" height="6.8" rx="1" stroke="currentColor" stroke-width="1.1" fill="none"/></svg></button>
+  <button class="winbtn close" id="btnWinClose" type="button" title="关闭"><svg viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+</div>
+
+<div class="app" id="appView" hidden>
+  <aside class="side">
+    <div class="brand">
+      <span class="brandMark"><img src="assets/whale-girl.png" alt="大肥鱼"></span>
+      <span class="brandText"><b>Rivulet</b><i>若</i></span>
+    </div>
+
+    <nav class="nav" id="nav" aria-label="主导航">
+      <a data-p="home" class="on">
+        <span class="ni"><svg viewBox="0 0 24 24" fill="none"><path d="M4 10.6 12 4l8 6.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M6.4 9.8V20h11.2V9.8" stroke="currentColor" stroke-width="1.7"/></svg></span>
+        <span class="nl">首页</span>
+      </a>
+      <a data-p="workspace">
+        <span class="ni"><svg viewBox="0 0 24 24" fill="none"><rect x="3.6" y="4.6" width="16.8" height="11.6" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8.6 20h6.8M12 16.6V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M8.2 9.2l2.5 2.3-2.5 2.3M13.2 13.8h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="nl">工作区</span>
+      </a>
+      <a data-p="qq">
+        <span class="ni"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.4c3.4 0 5.6 2.6 5.6 6.1v1.6l2.5 3.4c.5.7 0 1.5-.8 1.5h-1.9c-.4 2.4-2.5 4.4-5.4 4.4s-5-2-5.4-4.4H5c-.8 0-1.3-.8-.8-1.5l2.5-3.4V9.5c0-3.5 1.9-6.1 5.3-6.1Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="9.6" cy="9.4" r="1" fill="currentColor"/><circle cx="14.4" cy="9.4" r="1" fill="currentColor"/></svg></span>
+        <span class="nl">QQ Agent</span>
+      </a>
+      <a data-p="bili">
+        <span class="ni"><svg viewBox="0 0 24 24" fill="none"><rect x="3.4" y="6.6" width="17.2" height="12.4" rx="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M8 3.4l2.6 2.6M16 3.4l-2.6 2.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M10.2 11v3.6l3.4-1.8-3.4-1.8Z" fill="currentColor"/></svg></span>
+        <span class="nl">B站 Agent</span>
+      </a>
+      <a data-p="fish">
+        <span class="ni"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12c3.2-4.6 6.2-6.9 9-6.9s5.4 2.3 8.4 6.9c-3 4.6-5.6 6.9-8.4 6.9S6.2 16.6 3 12Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="15.6" cy="10.4" r="1.2" fill="currentColor"/></svg></span>
+        <span class="nl">鱼的小窝</span>
+      </a>
+      <a data-p="settings">
+        <span class="ni"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.7"/><path d="M19.4 13.4a7.8 7.8 0 0 0 0-2.8l2-1.6-2-3.4-2.4.9a7.6 7.6 0 0 0-2.4-1.4L14.2 2.4h-4l-.4 2.7c-.9.3-1.7.8-2.4 1.4l-2.4-.9-2 3.4 2 1.6a7.8 7.8 0 0 0 0 2.8l-2 1.6 2 3.4 2.4-.9c.7.6 1.5 1.1 2.4 1.4l.4 2.7h4l.4-2.7c.9-.3 1.7-.8 2.4-1.4l2.4.9 2-3.4-2-1.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+        <span class="nl">设置</span>
+      </a>
+    </nav>
+
+    <div class="sideFoot">
+      <div class="sideMascot" id="tankCard" data-goto="fish">
+        <img src="assets/whale-girl.png" alt="">
+      </div>
+      <div class="sideSlogan">与若共度每一天 <span>♡</span></div>
+      <div class="sideMeta"><span>v1.0.0</span><button id="btnLogout" type="button">退出登录</button></div>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <header class="topbar" id="topbar" data-tauri-drag-region>
+      <div class="topSearch" id="topSearch">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.4" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.4 4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input id="globalSearch" placeholder="搜索功能、指令或内容…" autocomplete="off" spellcheck="false">
+        <kbd>Ctrl + K</kbd>
+      </div>
+      <div class="topRight">
+        <button class="iconbtn" id="btnRefresh" type="button" title="刷新">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 11a8 8 0 1 0-2.3 5.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20 4.5V11h-6.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="iconbtn" id="btnTheme" type="button" title="切换日夜">
+          <svg class="ic-moon" viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <svg class="ic-sun" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="avaTop" id="meAva" type="button" title="换头像"></button>
+      </div>
+    </header>
+
+    <div class="view" id="view">
+      <!-- ================= 首页 ================= -->
+      <section class="page homePage" id="p-home">
+        <div class="homeCol">
+          <div class="hero">
+            <div class="heroText">
+              <div class="heroHi">你好，</div>
+              <h1 class="heroName">我是若 <i>～</i><span class="spark">✦</span></h1>
+              <p class="heroWarm">今天也要和我一起，探索更大的世界哦！<span>♡</span></p>
+              <div class="heroChips">
+                <button class="heroChip primary" data-act="chat" type="button">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4.8 5.6h14.4v9.6H12l-4.4 3.4v-3.4H4.8V5.6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.6 9.6h6.8M8.6 12.2h4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  开始对话</button>
+                <button class="heroChip" data-act="file" type="button">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4.6 6.6h5l1.8 2.2h7.4v8.8H4.6V6.6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                  文件处理</button>
+                <button class="heroChip" data-act="life" type="button">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7.4-4.4-7.4-9.2A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.4 3.2C19.4 15.6 12 20 12 20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                  生活助手</button>
+                <button class="heroChip" data-act="more" type="button">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M14.2 3.6 5.4 13.4h5l-.6 7 8.8-9.8h-5l.6-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                  更多功能</button>
+              </div>
+            </div>
+            <div class="heroArt">
+              <span class="decoFish"><svg viewBox="0 0 86 54" fill="none"><path d="M12 27c10-14 22-20 32-18 8 2 14 8 20 18-6 10-12 16-20 18-10 2-22-4-32-18Z" fill="currentColor" opacity=".16"/><path d="M6 20c4-2 7-1 10 3-3 4-6 5-10 3v-6Z" fill="currentColor" opacity=".22"/><circle cx="44" cy="24" r="3" fill="currentColor" opacity=".5"/><path d="M64 18c5-4 9-4 13 0" stroke="currentColor" stroke-width="2" opacity=".35" stroke-linecap="round"/></svg></span>
+              <span class="decoHeart"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h4v-4h3V5h4v3h3v4h4v3h-4v4h-3v3h-4v-3H7v-4H3v-3Z" fill="currentColor" opacity=".45"/></svg></span>
+              <span class="decoStar s1">✦</span><span class="decoStar s2">✦</span><span class="decoStar s3">✧</span>
+              <img class="heroGirl" src="assets/whale-girl.png" alt="若 · 大肥鱼">
+            </div>
+          </div>
+
+          <div class="entryCards">
+            <button class="entryCard c-workspace" data-p="workspace" type="button">
+              <span class="ecIcon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.4" y="4.6" width="17.2" height="11.6" rx="2.4" fill="currentColor" opacity=".14"/><path d="M8.8 20h6.4M12 16.4V20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8.4 9.4 11 12l-2.6 2.6M13.4 14.6h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <b>AI 工作区</b>
+              <span class="ecDesc">与若一起，开启<br>你的智能之旅</span>
+              <span class="ecAIArt" aria-hidden="true"><i class="ring r1"></i><i class="ring r2"></i><i class="core"></i><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i></span>
+            </button>
+            <button class="entryCard c-qq" data-p="qq" type="button">
+              <span class="ecIcon ecIconBrand"><img src="assets/brand/qq-official.png" alt="QQ"></span>
+              <b>QQ Agent</b>
+              <span class="ecDesc">连接 QQ，探索更多可能</span>
+              <img class="ecBrandImg ec-qq-img" src="assets/brand/qq-official.png" alt="QQ">
+            </button>
+            <button class="entryCard c-bili" data-p="bili" type="button">
+              <span class="ecIcon ecIconBrand"><img src="assets/brand/bilibili-icon.svg" alt="bilibili"></span>
+              <b>B站 Agent</b>
+              <span class="ecDesc">与若一起，畅游B站</span>
+              <svg class="ecBrandImg ec-bili" viewBox="0 0 24 24" aria-label="bilibili"><path fill="#FB7299" d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z"/></svg>
+            </button>
+            <button class="entryCard c-fish" data-p="fish" type="button">
+              <span class="ecIcon ecIconPixel"><img src="assets/pixel-art/house-icon.png" alt=""></span>
+              <b>鱼的小窝</b>
+              <span class="ecDesc">打造专属于你的<br>像素小家</span>
+              <img class="ecArtImg ec-house" src="assets/pixel-art/house-icon.png" alt="">
+            </button>
+          </div>
+
+          <div class="composerCard">
+            <textarea id="homeAsk" rows="1" placeholder="有什么想问的？或输入 / 试试快捷指令…" spellcheck="false"></textarea>
+            <div class="composerBar">
+              <div class="cTools">
+                <button id="cAttach" type="button" title="添加附件"><svg viewBox="0 0 24 24" fill="none"><path d="M8.4 12.6l5.6-5.6a2.6 2.6 0 0 1 3.7 3.7l-6.6 6.6a4 4 0 0 1-5.7-5.7l6.6-6.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+                <button id="cImage" type="button" title="图片"><svg viewBox="0 0 24 24" fill="none"><rect x="3.6" y="4.8" width="16.8" height="14.4" rx="2.6" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="9.6" r="1.5" fill="currentColor"/><path d="M5.2 16.2 10 12l3.2 3 2.6-2.2 3 3.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button id="cCode" type="button" title="代码"><svg viewBox="0 0 24 24" fill="none"><path d="M8.6 7.6 4.4 12l4.2 4.4M15.4 7.6 19.6 12l-4.2 4.4M13.4 5.6l-2.8 12.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button id="cWeb" type="button" title="工具与联网"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.7"/><path d="M3.8 12h16.4M12 3.8c2.6 2.6 3.9 5.3 3.9 8.2s-1.3 5.6-3.9 8.2c-2.6-2.6-3.9-5.3-3.9-8.2s1.3-5.6 3.9-8.2Z" stroke="currentColor" stroke-width="1.5"/></svg></button>
+              </div>
+              <div class="cRight">
+                <button class="modelChip" id="cModel" type="button"><span class="mcDot"></span><span id="cModelName">未启用模型</span><i>▾</i></button>
+                <button class="sendBtn" id="cSend" type="button" title="发送"><svg viewBox="0 0 24 24" fill="none"><path d="M4.6 12 20 4.8 16.4 20l-3.6-6.4L4.6 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+              </div>
+            </div>
+            <div class="homeHint" id="homeHint" hidden></div>
+          </div>
+        </div>
+
+        <aside class="homeSide">
+          <div class="sideCard modelCard">
+            <div class="scHead"><b>模型状态</b><span class="st ok"><i></i>在线</span></div>
+            <div class="modelRow">
+              <span class="modelAva"><img src="assets/fatfish.png" alt=""></span>
+              <span class="modelTxt"><b id="homeModelName">未启用模型</b><small id="homeModelDesc">在工作区启用一个模型</small></span>
+            </div>
+          </div>
+
+          <div class="sideCard runCard">
+            <div class="scHead"><b>运行状态</b></div>
+            <div class="runState" id="homeRunState"><i></i>运行正常</div>
+            <svg class="spark" id="homeSpark" viewBox="0 0 240 64" preserveAspectRatio="none"></svg>
+            <div class="runMeta"><span id="homeRunMeta">节点 0 · 命令 0</span><span id="homeRunDist">最近 7 天</span></div>
+          </div>
+
+          <div class="sideCard quickCard">
+            <div class="scHead"><b>快捷操作</b></div>
+            <button class="qrow" data-act="newchat" type="button"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4.8h14v10.4H12l-4.4 3.4v-3.4H5V4.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span>新建对话</span><kbd>Ctrl + N</kbd></button>
+            <button class="qrow" data-act="openfile" type="button"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M4.6 6.6h5l1.8 2.2h7.4v8.8H4.6V6.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span>打开文件</span><kbd>Ctrl + O</kbd></button>
+            <button class="qrow" data-act="switchmodel" type="button"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M5 8.4h12.4M5 8.4l2.6-2.6M5 8.4l2.6 2.6M19 15.6H6.6M19 15.6l-2.6-2.6M19 15.6l-2.6 2.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>切换模型</span><kbd>Ctrl + M</kbd></button>
+            <button class="qrow" data-act="logs" type="button"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6.6h14M5 12h14M5 17.4h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><span>查看日志</span><kbd>Ctrl + L</kbd></button>
+          </div>
+
+          <button class="sceneCard" id="homeScene" data-p="fish" type="button">
+            <span class="sceneBubble">欢迎回来，<br>主人～ <i>♡</i></span>
+            <span class="pixelRoom">
+              <img class="sceneArtwork" src="assets/pixel-art/cafe-at-night.png" alt="雨夜咖啡馆像素场景" draggable="false">
+              <span class="pr-girl" id="sceneAvatar" aria-hidden="true"></span>
+            </span>
+          </button>
+        </aside>
+      </section>
+
+      <!-- ================= 设置(功能中枢,保留全部次级页面入口) ================= -->
+      <section class="page" id="p-settings" hidden>
+        <div class="pagehead">
+          <div><div class="eyebrow">SETTINGS · 设置</div><h1>设置</h1></div>
+          <div class="pagehead-acts"><span class="tag" id="settingsVersion">Rivulet 若 v1.0.0</span></div>
+        </div>
+        <div class="settingsGrid">
+          <button class="setEntry" data-goto="memory"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="6.4" rx="7.4" ry="2.6" stroke="currentColor" stroke-width="1.7"/><path d="M4.6 6.4v5c0 1.4 3.3 2.6 7.4 2.6s7.4-1.2 7.4-2.6v-5" stroke="currentColor" stroke-width="1.7"/><path d="M4.6 11.4v5c0 1.4 3.3 2.6 7.4 2.6s7.4-1.2 7.4-2.6v-5" stroke="currentColor" stroke-width="1.7"/></svg></span><b>记忆树</b><small>跨模块的统一记忆库</small></button>
+          <button class="setEntry" data-goto="mood"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7.4-4.4-7.4-9.2A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.4 3.2C19.4 15.6 12 20 12 20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>心情</b><small>她此刻的情绪与精力</small></button>
+          <button class="setEntry" data-goto="persona"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.4" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>人格</b><small>她说话的样子，三处共用</small></button>
+          <button class="setEntry" data-goto="account"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M4.8 20c.8-3.6 3.7-5.6 7.2-5.6s6.4 2 7.2 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>账号</b><small>当前身份与安全</small></button>
+          <button class="setEntry" data-goto="nodes"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.6" y="4.6" width="16.8" height="11.6" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8.8 20h6.4M12 16.4V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>节点</b><small>Node Agent 设备</small></button>
+          <button class="setEntry" data-goto="cmds"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6.4h16M4 12h16M4 17.6h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>命令</b><small>最近下发的命令</small></button>
+          <button class="setEntry" data-goto="setup"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M14.2 3.6 5.4 13.4h5l-.6 7 8.8-9.8h-5l.6-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>一键部署</b><small>扫码、选模型的引导</small></button>
+        </div>
+        <p class="assetCredit">素材: 像素家具 <a href="https://opengameart.org/content/warm-eclectic-bedroom-furniture-set" target="_blank">Warm Eclectic Bedroom Set</a> by Pixelandbeans (CC BY 4.0) · QQ / Bilibili 品牌图标 via Simple Icons (CC0, 商标归各自公司) · AI 机器人 Microsoft Fluent Emoji (MIT)</p>
+        <p class="hint settingsHint">这些页面沿用同一套浅蓝紫设计语言;点开后可以用左上角的「← 设置」回来。</p>
+      </section>
+
+      <button class="backChip" id="btnBackSettings" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M14.6 5.6 8 12l6.6 6.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        设置
+      </button>
+
+      <section class="page wsPage" id="p-workspace" hidden>
+  <!-- 顶部面包屑 -->
+  <div class="wsHead">
+    <div class="wsCrumb">
+      <button type="button" class="wsCrumbHome" id="wsHomeBtn" title="首页" aria-label="首页">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="wsCrumbTile" id="wsHistoryBtn" title="会话记录">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v13a1 1 0 0 1-1.5.9L12 16l-5.5 3.4A1 1 0 0 1 5 18.5v-13Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>工作区</span>
+      </button>
+      <i class="wsCrumbSep">›</i>
+      <button type="button" class="wsCrumbCur" id="wsConvNameBtn"><b id="wsConvName">新对话</b><svg viewBox="0 0 24 24" fill="none"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <div class="wsHeadActs">
+      <span class="svcDot big" id="wsDot"></span>
+      <span class="wsSub" id="wsSub">正在读取模型…</span>
+      <span class="wsState" id="wsStateChip">待机中</span>
+      <button type="button" class="iconbtn" id="wsRefresh" title="刷新"><svg viewBox="0 0 24 24" fill="none"><path d="M20 11a8 8 0 1 0-2.3 6.3M20 5v6h-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button type="button" class="iconbtn" id="wsNewChat" title="新对话"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </div>
+  </div>
+
+  <div class="wsLayout">
+    <!-- 主对话区 -->
+    <section class="wsChat" id="wsChatBox">
+      <div class="wsChatSky" aria-hidden="true"></div>
+      <div class="wsGirlWrap" aria-hidden="true"><img class="wsGirl" src="assets/whale-girl.png" alt=""></div>
+      <div class="wsScroller" id="wsScroller">
+        <div class="wsMsgs" id="wsMsgs"></div>
+      </div>
+      <div class="wsComposerBar">
+        <div class="wsComposer" id="wsComposer">
+          <textarea id="wsInput" rows="1" placeholder="有什么想听的？或输入 / 搜索快捷键指令…" autocomplete="off"></textarea>
+          <div class="wsComposerFoot">
+            <div class="wsTools">
+              <button type="button" id="wsTAttach" title="附件"><svg viewBox="0 0 24 24" fill="none"><path d="M9 12.5 15.5 6a3.2 3.2 0 0 1 4.5 4.5l-7 7a5 5 0 0 1-7-7L13 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button type="button" id="wsTImage" title="图片"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4.5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9.5" r="1.5" fill="currentColor"/><path d="m5.5 17 4.5-4.5 3.5 3.5 2.5-2.5 2.5 2.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
+              <button type="button" id="wsTCode" title="代码"><svg viewBox="0 0 24 24" fill="none"><path d="m9 7-5 5 5 5M15 7l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button type="button" id="wsTWeb" title="联网"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.7 5.4 3.7 8.5S14.5 18.9 12 20.5C9.5 18.9 8.3 16.1 8.3 12S9.5 5.1 12 3.5Z" stroke="currentColor" stroke-width="1.5"/></svg></button>
+            </div>
+            <div class="wsComposerRight">
+              <button type="button" class="wsModelChip" id="wsModelChip"><span class="wsModelDot"></span><span id="wsChipModel">模型</span><svg viewBox="0 0 24 24" fill="none"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button type="button" class="wsSendBtn" id="wsSend" title="发送"><svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12 20 4.8 16.4 20l-3.6-6.4L4.5 12Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div class="wsComposeHint">Enter 发送 · Shift + Enter 换行 · 内容来自真实工作区接口</div>
+      </div>
+    </section>
+
+    <!-- 右侧信息栏 -->
+    <aside class="wsAside">
+      <div class="glass card wsSideCard wsModelStateCard">
+        <div class="wsCardHead"><span class="wsCardIco"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 20 7v5c0 4.6-3.2 8-8 8.5-4.8-.5-8-3.9-8-8.5V7l8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><b>模型状态</b><span class="st"><i></i>在线</span></div>
+        <div class="wsModelHero">
+          <span class="wsModelAva"><img src="assets/whale-avatar.png" alt=""></span>
+          <div class="wsModelTxt"><b id="wsModelName">—</b><small id="wsModelDesc">等待模型信息</small></div>
+          <button type="button" class="wsChevBtn" id="wsCfgToggle" title="模型设置"><svg viewBox="0 0 24 24" fill="none"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="wsCfgPanel" id="wsCfgPanel" hidden>
+          <div class="provChips" id="wsPresets">
+            <button type="button" data-p="openai">ChatGPT</button>
+            <button type="button" data-p="deepseek">DeepSeek</button>
+            <button type="button" data-p="relay">中转站</button>
+            <button type="button" data-p="ollama">本地</button>
+          </div>
+          <div class="cfgGrid wsCfg">
+            <label>服务商<select id="wsProvider"><option value="deepseek">DeepSeek</option><option value="openai">OpenAI / ChatGPT</option><option value="ollama">本地 Ollama</option><option value="custom">其它（OpenAI 兼容）</option></select></label>
+            <label>模型名<input id="wsModel" placeholder="例：deepseek-chat"></label>
+            <label>接口地址<input id="wsBase" placeholder="例：https://api.openai.com/v1"></label>
+            <label>API Key<input id="wsKey" type="password" placeholder="sk-..."></label>
+          </div>
+          <div class="wsActions"><button type="button" class="btn sm" id="wsSaveModel">保存并启用</button><button type="button" class="btn ghost sm" id="wsTestModel">测试一句</button></div>
+        </div>
+      </div>
+
+      <div class="glass card wsSideCard wsRunCard">
+        <div class="wsCardHead"><b>运行状态</b></div>
+        <div class="wsRunState" id="wsRunState"><i></i><span>读取中…</span></div>
+        <svg class="wsSpark" id="wsSpark" viewBox="0 0 234 56" preserveAspectRatio="none"><defs><linearGradient id="wsSparkGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#8E7BFF"/><stop offset="100%" stop-color="#6D8BFF"/></linearGradient><linearGradient id="wsSparkArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(109,139,255,.3)"/><stop offset="100%" stop-color="rgba(109,139,255,0)"/></linearGradient></defs><path class="area" d=""></path><polyline points=""></polyline></svg>
+        <div class="wsRunRows">
+          <div class="wsRunRow"><span><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>在线服务</span><b id="wsRunOnline">—</b></div>
+          <div class="wsRunRow"><span><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4.5" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 19h6M12 14.5V19" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>节点状态</span><b id="wsRunNodes">—</b></div>
+          <div class="wsRunRow"><span><svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="6.5" rx="7" ry="2.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6.5v5c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6v-5M5 11.5v5c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6v-5" stroke="currentColor" stroke-width="1.5"/></svg>记忆条目</span><b id="wsRunMem">—</b></div>
+        </div>
+      </div>
+
+      <div class="glass card wsSideCard wsQuickCard">
+        <div class="wsCardHead"><b>快捷操作</b></div>
+        <button type="button" class="wsQuickRow" id="wsQNew"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>新建对话<kbd>Ctrl + N</kbd></button>
+        <button type="button" class="wsQuickRow" id="wsQFile"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H10l2 2h5.5A2.5 2.5 0 0 1 20 9.5v7A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>打开文件<kbd>Ctrl + O</kbd></button>
+        <button type="button" class="wsQuickRow" id="wsQModel"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 20 7v5c0 4.6-3.2 8-8 8.5-4.8-.5-8-3.9-8-8.5V7l8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>切换模型</button>
+        <button type="button" class="wsQuickRow" id="wsQLogs"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>查看日志<kbd>Ctrl + L</kbd></button>
+      </div>
+
+      <div class="glass card wsSideCard wsTasksMini">
+        <div class="wsCardHead"><b>任务</b><span class="tag" id="wsTaskTag">—</span></div>
+        <div class="wsTasks" id="wsTasks"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 会话抽屉（复用原 #wsSide 渲染） -->
+  <div class="wsDrawer" id="wsDrawer" hidden>
+    <div class="wsDrawerHead"><b>会话记录</b><span class="tag" id="wsConvTag">—</span><button type="button" id="wsDrawerClose" title="关闭">×</button></div>
+    <div class="wsColBody" id="wsSide"></div>
+  </div>
+
+  <!-- 旧逻辑占位：保留 #wsHero/#wsFish/#wsQuick/#wsModelStatus 等 id，不可见 -->
+  <div class="wsLegacy" hidden aria-hidden="true">
+    <div id="wsHero">
+      <div class="wsHeroArt"><img src="assets/whale-girl.png" alt=""></div>
+      <div class="wsHeroCopy"><div id="wsFish"></div><h2>若 · 大肥鱼</h2><div class="wsQuick" id="wsQuick"><button type="button">帮我看看今天的任务</button><button type="button">整理一下记忆库</button><button type="button">B站这期稿子怎么写</button></div></div>
+    </div>
+    <div id="wsModelStatus"></div>
+    <div id="wsThreadWrap"><div class="wsThreadHead">对话</div></div>
+  </div>
+</section>
+
+<section class="page page-qq" id="p-qq" hidden>
+  <!-- Hero:图标 + 标题 + 状态 + 立绘 -->
+  <div class="qqHero">
+    <div class="qqHeroText">
+      <div class="qqHeroTitle">
+        <span class="qqHeroIcon"><img src="assets/brand/qq-official.png" alt="QQ"></span>
+        <h1>QQ Agent<i class="qqPulse" id="qqDot"></i></h1>
+      </div>
+      <p class="qqHeroSub">连接 QQ，探索更多可能</p>
+      <p class="qqHeroDesc"><i></i>与 QQ 深度联动，让沟通更高效，生活更便捷。</p>
+    </div>
+    <div class="qqHeroArt" aria-hidden="true"><img src="assets/whale-girl.png" alt=""></div>
+  </div>
+
+  <!-- 胶囊页签 = 真正的分页 -->
+  <div class="qqTabs" id="qqTabs">
+    <button type="button" class="on" data-pane="config"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.7"/><path d="M19.4 13.4a7.8 7.8 0 0 0 0-2.8l2-1.6-2-3.4-2.4.9a7.6 7.6 0 0 0-2.4-1.4L14.2 2.4h-4l-.4 2.7c-.9.3-1.7.8-2.4 1.4l-2.4-.9-2 3.4 2 1.6a7.8 7.8 0 0 0 0 2.8l-2 1.6 2 3.4 2.4-.9c.7.6 1.5 1.1 2.4 1.4l.4 2.7h4l.4-2.7c.9-.3 1.7-.8 2.4-1.4l2.4.9 2-3.4-2-1.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>运行配置</button>
+    <button type="button" data-pane="wl"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 20 7v5c0 4.6-3.2 8-8 8.5-4.8-.5-8-3.9-8-8.5V7l8-3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>白名单管理</button>
+    <button type="button" data-pane="chat"><svg viewBox="0 0 24 24" fill="none"><path d="M4.8 5.6h14.4v9.6H12l-4.4 3.4v-3.4H4.8V5.6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>最近对话</button>
+    <button type="button" data-pane="qz"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6l1.8 4.6 4.6 1.8-4.6 1.8L12 16.4l-1.8-4.6-4.6-1.8 4.6-1.8L12 3.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>空间对接</button>
+    <button type="button" data-pane="audit"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6.6h14M5 12h14M5 17.4h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>审计日志</button>
+  </div>
+
+  <!-- 分页容器:每页最多 3 个卡片,一屏放完 -->
+  <div class="qqPanes" id="qqPanes">
+
+    <!-- 页1 运行配置 -->
+    <div class="qqPane qqPane-2 on" data-pane="config">
+      <div class="glass card qqCard">
+        <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.7"/><path d="M19.4 13.4a7.8 7.8 0 0 0 0-2.8l2-1.6-2-3.4-2.4.9a7.6 7.6 0 0 0-2.4-1.4L14.2 2.4h-4l-.4 2.7c-.9.3-1.7.8-2.4 1.4l-2.4-.9-2 3.4 2 1.6a7.8 7.8 0 0 0 0 2.8l-2 1.6 2 3.4 2.4-.9c.7.6 1.5 1.1 2.4 1.4l.4 2.7h4l.4-2.7c.9-.3 1.7-.8 2.4-1.4l2.4.9 2-3.4-2-1.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span><b>运行配置</b>
+          <label class="svcSwitch qqHeadSwitch"><input type="checkbox" id="qqReplyOn"><span>DSH 自动回复</span></label>
+        </div>
+
+        <div class="qqRow">
+          <span class="qqLabel">运行状态</span>
+          <div class="qqVal"><i class="svcDot" id="qqRunDot"></i><b id="qqRunText">读取中…</b></div>
+          <button type="button" class="btn ghost xs" id="qqStart">启动</button>
+        </div>
+        <label class="qqRow"><span class="qqLabel">协议端地址</span><input id="cfgWs" placeholder="ws://127.0.0.1:3001"></label>
+        <label class="qqRow"><span class="qqLabel">机器人 QQ</span><input id="cfgAccount" placeholder="3877202138"></label>
+        <label class="qqRow"><span class="qqLabel">模型</span><input id="cfgModel" placeholder="deepseek-chat"></label>
+        <label class="qqRow"><span class="qqLabel">模型 Key</span><input id="cfgKey" type="password" placeholder="留空 = 不修改"></label>
+
+        <div class="qqCardActs">
+          <button type="button" class="btn ghost sm" id="qqSyncConfig">同步配置</button>
+          <button type="button" class="btn sm" id="cfgSave">保存配置</button>
+        </div>
+        <p class="qqCardNote" id="qqSub">正在读取状态…</p>
+      </div>
+
+      <div class="glass card qqCard">
+        <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><b>运行状态</b><span class="tag">实时</span></div>
+        <div id="qqStatRows"></div>
+        <div id="qqQr"></div>
+      </div>
+    </div>
+
+    <!-- 页2 白名单管理 -->
+    <div class="qqPane qqPane-2b" data-pane="wl">
+      <div class="glass card qqCard">
+        <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 20 7v5c0 4.6-3.2 8-8 8.5-4.8-.5-8-3.9-8-8.5V7l8-3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>白名单管理</b><span class="qqHeadNote">设置允许使用 QQ 机器人的账号或群聊</span>
+          <label class="svcSwitch qqHeadSwitch"><input type="checkbox" id="qqWlOn"><span>启用</span></label>
+        </div>
+
+        <div class="qqWlTabs" id="qqWlTabs">
+          <button type="button" class="on" data-wl="user">QQ 号白名单<b id="wlUserCount">0</b></button>
+          <button type="button" data-wl="group">QQ 群白名单<b id="wlGroupCount">0</b></button>
+          <span class="tag qqWlTagInline" id="qqWlTag">—</span>
+        </div>
+
+        <div class="wlAdd">
+          <select id="wlKind"><option value="user">QQ 号</option><option value="group">群号</option></select>
+          <input id="wlId" placeholder="数字 QQ 号 / 群号" autocomplete="off">
+          <input id="wlNote" placeholder="备注（可选）" autocomplete="off">
+          <button type="button" class="btn sm" id="wlAddBtn">添加</button>
+        </div>
+        <div class="wlList" id="wlList"></div>
+      </div>
+
+      <div class="glass card qqCard qqHelpCard">
+        <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 16.4v.1M12 7.6c1.6 0 2.6.9 2.6 2.1 0 1.6-2.1 1.7-2.1 3.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>功能说明</b></div>
+        <ul class="qqHelp">
+          <li>支持 QQ 私聊与群聊</li>
+          <li>支持主动消息与说说同步</li>
+          <li>支持白名单过滤与审计</li>
+          <li>只有名单里的号才会触发对话</li>
+        </ul>
+        <p class="qqCardNote" style="margin-top:12px">名单为空时,她在 QQ 里不会回复任何人。</p>
+      </div>
+    </div>
+
+    <!-- 页3 最近对话 -->
+    <div class="qqPane qqPane-1" data-pane="chat">
+      <div class="glass card qqCard qqChatCard">
+        <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M4.8 5.6h14.4v9.6H12l-4.4 3.4v-3.4H4.8V5.6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>最近对话</b><span class="tag" id="qqConvTag">—</span>
+          <button type="button" class="btn ghost xs" id="qqQReloadChat" style="margin-left:auto">刷新</button>
+        </div>
+        <div class="wsMsgs qqMsgs" id="qqConv"></div>
+        <div class="qqChatFoot">内容由 QQ 服务实时同步 · 只有白名单里的号会触发对话</div>
+      </div>
+    </div>
+
+    <!-- 页4 空间对接 -->
+    <div class="qqPane qqPane-2" data-pane="qz">
+      <div class="glass card qqCard">
+        <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6l1.8 4.6 4.6 1.8-4.6 1.8L12 16.4l-1.8-4.6-4.6-1.8 4.6-1.8L12 3.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><b>QQ 空间对接</b></div>
+        <p class="qqCardNote">同步 QQ 空间动态与说说</p>
+        <div id="qqQzBox"></div>
+      </div>
+
+      <div class="glass card qqCard">
+        <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M8.6 12.2l2.3 2.3 4.5-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>主动消息</b></div>
+        <p class="qqCardNote">她不说话时,自己找你</p>
+        <div id="qqIdleBox"></div>
+      </div>
+    </div>
+
+    <!-- 页5 审计日志 -->
+    <div class="qqPane qqPane-1" data-pane="audit">
+      <div class="glass card qqCard">
+        <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6.6h14M5 12h14M5 17.4h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>审计日志</b><span class="qqHeadNote">网关放行 / 拦截记录</span><span class="tag" id="qqAuditTag">—</span>
+          <button type="button" class="btn ghost xs" id="qqQAudit" style="margin-left:auto">刷新</button>
+        </div>
+        <div class="auditList" id="qqAudit"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="p-bili" hidden>
+        <div class="qqHero">
+          <div class="qqHeroText">
+            <div class="qqHeroTitle">
+              <span class="qqHeroIcon"><svg viewBox="0 0 24 24" aria-label="bilibili"><path fill="#FB7299" d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z"/></svg></span>
+              <h1>B站 Agent<i class="qqPulse" id="biliDot"></i></h1>
+            </div>
+            <p class="qqHeroSub" id="biliSub">正在读状态…</p>
+            <p class="qqHeroDesc"><i></i>投稿、看稿、回评论 —— 一个页面全搞定</p>
+            <div class="qqHeroActs">
+              <span class="tag" id="biliName">B 站机器人</span>
+              <button type="button" class="btn ghost sm" id="biliReload">刷新</button>
+            </div>
+          </div>
+          <div class="qqHeroArt"><div class="qqFishSlot" id="biliFish"></div></div>
+        </div>
+
+        <div class="qqTabs" id="biliTabs">
+          <button type="button" class="on" data-pane="pub"><svg viewBox="0 0 24 24" fill="none"><path d="M12 14.8V5.4m0 0L8.6 8.8M12 5.4l3.4 3.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 14.8v2.6a1.6 1.6 0 0 0 1.6 1.6h9.8a1.6 1.6 0 0 0 1.6-1.6v-2.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>投稿</button>
+          <button type="button" data-pane="vids"><svg viewBox="0 0 24 24" fill="none"><rect x="3.4" y="6.6" width="17.2" height="12.4" rx="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M10.2 11v3.6l3.4-1.8-3.4-1.8Z" fill="currentColor"/></svg>我的稿件</button>
+          <button type="button" data-pane="cmts"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6.6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 3.2v-3.2H6a2 2 0 0 1-2-2v-8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>评论区</button>
+          <button type="button" data-pane="acc"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.4" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>账号</button>
+          <button type="button" data-pane="daily"><svg viewBox="0 0 24 24" fill="none"><path d="M4.6 7.4h11.2v9.2H4.6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m18.6 10 2.8-1.8v7.6L18.6 14" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 11.4h4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>刷推荐</button>
+        </div>
+
+        <div class="qqPanes" id="biliPanes">
+          <!-- 投稿 -->
+          <div class="qqPane qqPane-2b on" data-pane="pub">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 14.8V5.4m0 0L8.6 8.8M12 5.4l3.4 3.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 14.8v2.6a1.6 1.6 0 0 0 1.6 1.6h9.8a1.6 1.6 0 0 0 1.6-1.6v-2.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>投稿</b><span class="qqHeadNote">先传文件，再提交</span></div>
+              <div class="pubForm">
+                <div class="pubRow">
+                  <button type="button" class="btn ghost sm" id="pubVideo">选视频…</button>
+                  <span class="pubFile" id="pubFile">还没选视频</span>
+                </div>
+                <div class="pubRow">
+                  <button type="button" class="btn ghost sm" id="pubCover">选封面…</button>
+                  <span class="pubFile" id="pubCoverTxt">不设封面（用视频首帧）</span>
+                  <img class="pubCoverImg" id="pubCoverImg" alt="" hidden>
+                </div>
+                <input id="pubTitle" placeholder="标题" autocomplete="off">
+                <textarea id="pubDesc" placeholder="简介" rows="3"></textarea>
+                <div class="pubRow">
+                  <input id="pubTag" placeholder="标签，逗号分隔" autocomplete="off">
+                  <select id="pubTid" title="分区"></select>
+                </div>
+                <div class="pubRow">
+                  <label class="svcSwitch"><input type="checkbox" id="pubSelf"><span>仅自己可见</span></label>
+                  <span class="pubTip" id="pubTip">投稿走原版两步：先传文件，再提交；「只上传」不占投稿位。</span>
+                </div>
+                <div class="svcActs">
+                  <button type="button" class="btn ghost sm" id="pubDry">只上传</button>
+                  <button type="button" class="btn sm" id="pubGo">上传并发布</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><b>上传进度</b></div>
+              <div class="pubBar"><i id="pubBar"></i></div>
+              <pre class="pubLog" id="pubLog"></pre>
+            </div>
+          </div>
+
+          <!-- 我的稿件 -->
+          <div class="qqPane qqPane-1" data-pane="vids">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><rect x="3.4" y="6.6" width="17.2" height="12.4" rx="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M10.2 11v3.6l3.4-1.8-3.4-1.8Z" fill="currentColor"/></svg></span><b>我的稿件</b><span class="qqHeadNote">点一条可以改标题 / 简介</span><span class="tag" id="biliVidTag">—</span></div>
+              <div class="biliVids" id="biliVids"></div>
+            </div>
+          </div>
+
+          <!-- 评论区 -->
+          <div class="qqPane qqPane-1" data-pane="cmts">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6.6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 3.2v-3.2H6a2 2 0 0 1-2-2v-8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>评论区</b><span class="qqHeadNote">最新的几条</span><span class="tag" id="biliCmtTag">—</span></div>
+              <div class="biliCmts" id="biliCmts"></div>
+              <div class="qqSend">
+                <input id="biliReply" placeholder="回一条评论…" autocomplete="off">
+                <button type="button" class="btn sm" id="biliReplyBtn">回复</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 刷推荐 -->
+          <div class="qqPane qqPane-1" data-pane="daily">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="m12 4.6 1.9 4.8 4.8 1.9-4.8 1.9L12 18l-1.9-4.8-4.8-1.9 4.8-1.9L12 4.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><b>刷推荐</b><span class="qqHeadNote">自动刷首页推荐，顺手点赞 / 评论</span></div>
+              <div id="biliDaily" class="biliDailyBox"></div>
+            </div>
+          </div>
+
+          <!-- 账号 -->
+          <div class="qqPane qqPane-2b" data-pane="acc">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.4" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>账号状态</b><img class="biliFace" id="biliFace" alt=""></div>
+              <div id="biliStats"></div>
+            </div>
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 16.4v.1M12 7.6c1.6 0 2.6.9 2.6 2.1 0 1.6-2.1 1.7-2.1 3.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>说明</b></div>
+              <ul class="qqHelp">
+                <li>投稿走原版两步：先传文件，再提交</li>
+                <li>「只上传」不占投稿位</li>
+                <li>评论区回复会以账号身份发出</li>
+                <li>登录态过期时用「刷新」重新读一次</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+<section class="page page-fish" id="p-fish" hidden>
+        <div class="pgHero fishHero">
+          <span class="pgHeroIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 12c2.6-3.6 5.4-5.4 8.5-5.4 2.4 0 4.6 1 6.4 2.9l2.1-1.9v9l-2.1-1.9c-1.8 1.9-4 2.9-6.4 2.9-3.1 0-5.9-1.8-8.5-5.6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="9" cy="11" r="1" fill="currentColor"/></svg></span>
+          <div class="pgHeroTxt">
+            <h1>鱼的小窝</h1>
+            <p>她的小家 · 田地 · 工坊 —— 慢慢攒出来的生活</p>
+          </div>
+          <div class="fishStatus fishStatusInline">
+            <div class="fsAva"><canvas id="fishAva" width="120" height="120"></canvas><span class="fishIpBadge" id="fishIpBadge"></span></div>
+            <div class="fsMain">
+              <div class="fsKicker">此刻的她</div>
+              <div class="fsNow" id="fishNow">读取中…</div>
+              <div class="fsBars" id="fishBars"></div>
+            </div>
+            <div class="fsCoin"><b id="fishCoins">0</b><span>金币</span></div>
+          </div>
+          <div class="pgHeroActs">
+            <span class="conn-chip"><i class="dot ok"></i><span id="fishMem">记忆 —</span></span>
+            <span class="muted" id="fishBusy"></span>
+          </div>
+        </div>
+
+        <div class="fishTabs qqTabs" id="fishTabs">
+          <button type="button" data-fish-view="house" class="on">小家</button>
+          <button type="button" data-fish-view="farm">田地</button>
+          <button type="button" data-fish-view="workshop">工坊</button>
+          <button type="button" data-fish-view="hire">雇佣</button>
+          <button type="button" data-fish-view="ledger">账本</button>
+          <button type="button" data-fish-view="diary">日记</button>
+        </div>
+
+        <div class="fishBody">
+          <div class="glass card fishMain">
+            <div class="fishMainHead">
+              <h2 id="fishMainTitle">两层小楼</h2>
+              <span class="fishChip" id="fishChipWhere">她在家</span>
+              <span class="fishChip" id="fishChipCount">0 件家具</span>
+            </div>
+            <div class="fishStage" id="fishStage">
+              <canvas id="fishCanvas" width="860" height="760"></canvas>
+              <div id="fishPop" class="fishPop glass" hidden></div>
+              <div id="fishToast" class="fishToast" hidden></div>
+            </div>
+          </div>
+          <div class="fishSideCol" id="fishSide"></div>
+        </div>
+
+        <div class="fishSide" id="fishHirePage" hidden><p class="biliEmpty">读取雇佣信息…</p></div>
+        <div class="fishSide" id="fishWorkshopPage" hidden><p class="biliEmpty">读取工坊配方…</p></div>
+        <div class="fishSide" id="fishLedgerPage" hidden><p class="biliEmpty">读取账本…</p></div>
+        <div class="fishSide" id="fishDiaryPage" hidden><p class="biliEmpty">读取日记…</p></div>
+      </section>
+
+<section class="page page-memory" id="p-memory" hidden>
+        <div class="pgHero">
+          <span class="pgHeroIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20.5V9M12 9 6.5 5.5M12 9l5.5-3.5M12 14.5 7.5 18M12 14.5 16.5 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="8.4" r="1.8" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <div class="pgHeroTxt">
+            <h1>记忆树</h1>
+            <p>统一记忆库 —— 她记得的事都长在这棵树上</p>
+          </div>
+          <div class="pgHeroActs">
+            <div class="memFind">
+              <input id="memQ" placeholder="在这棵树里找一条记忆…" autocomplete="off" spellcheck="false">
+              <button type="button" class="btn ghost sm" id="memQBtn">找</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="qqPanes">
+          <div class="qqPane qqPane-2b on">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20.5V9M12 9 6.5 5.5M12 9l5.5-3.5M12 14.5 7.5 18M12 14.5 16.5 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>这棵树</b><span class="tag" id="memSum">读取中…</span></div>
+              <div class="memChips" id="memChips">
+                <button type="button" data-f="all" class="on">全部<b id="cAll">0</b></button>
+                <button type="button" data-f="clear">清晰<b id="cClear">0</b></button>
+                <button type="button" data-f="normal">正常<b id="cNormal">0</b></button>
+                <button type="button" data-f="fuzzy">模糊<b id="cFuzzy">0</b></button>
+                <button type="button" data-f="pinned">置顶<b id="cPinned">0</b></button>
+              </div>
+              <div class="memStage" id="memStage">
+                <svg id="memTree" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid meet" aria-label="记忆树"></svg>
+                <div class="memTip" id="memTip" hidden></div>
+                <div class="memLegend" id="memLegend"></div>
+              </div>
+            </div>
+            <aside class="glass card qqCard" id="memCard"><p class="biliEmpty">点树上的一个节点，这里显示它的内容、来源和可信度。</p></aside>
+          </div>
+        </div>
+      </section>
+
+<section class="page" id="p-mood" hidden>
+        <div class="pgHero">
+          <span class="pgHeroIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7.4-4.4-7.4-9.2A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.4 3.2C19.4 15.6 12 20 12 20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+          <div class="pgHeroTxt">
+            <h1>心情<i class="pgDot" id="moodDot"></i></h1>
+            <p id="moodSub">全局一份 —— QQ / B站 / 工作区共用同一份心情</p>
+          </div>
+          <div class="pgHeroActs">
+            <button type="button" class="btn ghost sm" id="moodRefresh">刷新</button>
+          </div>
+        </div>
+
+        <div class="qqTabs" id="moodTabs">
+          <button type="button" class="on" data-pane="now"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7.4-4.4-7.4-9.2A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.4 3.2C19.4 15.6 12 20 12 20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>此刻</button>
+          <button type="button" data-pane="log"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>变化与记录</button>
+        </div>
+
+        <div class="qqPanes" id="moodPanes">
+          <div class="qqPane qqPane-2b on" data-pane="now">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7.4-4.4-7.4-9.2A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.4 3.2C19.4 15.6 12 20 12 20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>此刻的她</b><span class="tag">实时</span></div>
+              <div id="moodBars" class="moodBars"></div>
+            </div>
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.6"/><path d="M3.8 12h16.4M12 3.8c2.6 2.6 3.9 5.3 3.9 8.2s-1.3 5.6-3.9 8.2c-2.6-2.6-3.9-5.3-3.9-8.2s1.3-5.6 3.9-8.2Z" stroke="currentColor" stroke-width="1.5"/></svg></span><b>影响范围</b></div>
+              <p class="qqCardNote">三处共用这份心情</p>
+              <div id="moodScope"></div>
+            </div>
+          </div>
+
+          <div class="qqPane qqPane-2" data-pane="log">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><b>自动变化</b></div>
+              <p class="moodBrief" id="moodBrief">—</p>
+              <p class="qqCardNote">夸她 → 心情涨；骂她、催她 → 委屈涨；说累 → 精力掉；一直不理她 → 黏人自己往上飘。只有黏人度允许手动调。</p>
+              <div class="qqCardActs" id="moodAdjust">
+                <button type="button" class="btn ghost sm" data-adj="cling:+0.15">黏人 +</button>
+                <button type="button" class="btn ghost sm" data-adj="cling:-0.15">黏人 −</button>
+              </div>
+            </div>
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4.6h10v15l-5-3.6-5 3.6v-15Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>她记着的</b><span class="tag" id="moodNoteTag">—</span></div>
+              <p class="qqCardNote">影响过心情的事</p>
+              <div id="moodNotes" class="moodNotes"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+<section class="page" id="p-persona" hidden>
+        <div class="pgHero">
+          <span class="pgHeroIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6l1.8 4.6 4.6 1.8-4.6 1.8L12 16.4l-1.8-4.6-4.6-1.8 4.6-1.8L12 3.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+          <div class="pgHeroTxt">
+            <h1>人格<i class="pgDot" id="personaDot"></i></h1>
+            <p>三处共用一个「她」：QQ 机器人 · B站 · 工作区，不会各说各的</p>
+          </div>
+          <div class="pgHeroActs">
+            <button type="button" class="btn ghost sm" id="personaUndo">撤回上次保存</button>
+            <button type="button" class="btn ghost sm" id="personaReset">恢复默认</button>
+            <button type="button" class="btn sm" id="personaSave">保存</button>
+          </div>
+        </div>
+
+        <div class="qqTabs" id="personaTabs">
+          <button type="button" class="on" data-pane="edit"><svg viewBox="0 0 24 24" fill="none"><path d="M6.5 3.5h7L18 8v12.5H6.5V3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13.5 3.5V8H18M9 12h6M9 15.5h4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>正文</button>
+          <button type="button" data-pane="quick"><svg viewBox="0 0 24 24" fill="none"><path d="M14.2 3.6 5.4 13.4h5l-.6 7 8.8-9.8h-5l.6-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>快速调</button>
+          <button type="button" data-pane="scope"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6 4 8l8 4.4L20 8l-8-4.4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4 13.2 8 4.4 8-4.4" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>分场景</button>
+        </div>
+
+        <div class="qqPanes" id="personaPanes">
+          <!-- 正文 -->
+          <div class="qqPane qqPane-1 on" data-pane="edit">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M6.5 3.5h7L18 8v12.5H6.5V3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13.5 3.5V8H18M9 12h6M9 15.5h4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><b>人格正文</b><span class="tag" id="personaCountTag">所有地方共用</span></div>
+              <textarea id="personaText" class="pText" spellcheck="false" placeholder="在这里写她是什么样的人、怎么说话…"></textarea>
+              <div class="pFoot">
+                <span id="personaCount">0 字</span>
+                <span id="personaState"></span>
+                <span class="pFootHint">改的是上面这一整段，不是某一条消息。</span>
+              </div>
+            </div>
+
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6a2.5 2.5 0 0 1 2.5-2.5H19v15H7.5A2.5 2.5 0 0 0 5 21V6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.5 8h6.5M8.5 11.2h6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><b>怎么写</b></div>
+              <p class="qqCardNote">6 个例子，一条一行</p>
+              <details class="pGuide">
+                <summary>点开看写法</summary>
+                <p class="pGuideLead">像跟人交代一样，<b>一条一行</b>，越靠前越管用。改完点右上角「保存」，下一句话就生效；改坏了点「撤回上次保存」。</p>
+                <table class="pEx">
+                  <tr><th>你想让她…</th><th>就在正文里加这一句</th></tr>
+                  <tr><td>说话短一点</td><td>回复不超过两句，别分段，别总结。</td></tr>
+                  <tr><td>更黏人</td><td>每句话末尾加「宝宝」；他久不说话就问一句在干嘛。</td></tr>
+                  <tr><td>别像客服</td><td>别说「收到」「好的」「有什么可以帮你」这类话。</td></tr>
+                  <tr><td>换个名字 / 称呼</td><td>你叫若；对方叫泥泥，你叫他泥泥，熟了可以叫宝宝。</td></tr>
+                  <tr><td>更正经</td><td>别用网络梗，别开玩笑，先给结论再给原因。</td></tr>
+                  <tr><td>少点浮夸</td><td>不用感叹号，不堆颜文字，不重复他刚说过的话。</td></tr>
+                </table>
+                <p class="pGuideLead">写错了不要紧：「撤回上次保存」回到上一版，「恢复默认」回到出厂那份。</p>
+              </details>
+            </div>
+          </div>
+
+          <!-- 快速调 -->
+          <div class="qqPane qqPane-2" data-pane="quick">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M14.2 3.6 5.4 13.4h5l-.6 7 8.8-9.8h-5l.6-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>快速改一句</b></div>
+              <p class="qqCardNote">不用懂结构，直接说</p>
+              <div class="pQuick">
+                <input id="personaQuick" placeholder="例：说话短一点，句末带个宝宝 / 别说「收到」这种客服话">
+                <button type="button" class="btn ghost sm" id="personaQuickAdd">加到正文末尾</button>
+              </div>
+            </div>
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4.5" width="7" height="7" rx="1.8" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="4.5" width="7" height="7" rx="1.8" stroke="currentColor" stroke-width="1.7"/><rect x="4" y="13.5" width="7" height="7" rx="1.8" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="13.5" width="7" height="7" rx="1.8" stroke="currentColor" stroke-width="1.7"/></svg></span><b>现成模板</b></div>
+              <p class="qqCardNote">点一下填进正文</p>
+              <div class="pPresets" id="personaPresets"></div>
+            </div>
+          </div>
+
+          <!-- 分场景 -->
+          <div class="qqPane qqPane-2b" data-pane="scope">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6 4 8l8 4.4L20 8l-8-4.4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4 13.2 8 4.4 8-4.4" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg></span><b>某个地方单独加几句</b><span class="tag">可选</span></div>
+              <p class="qqCardNote">留空就跟着正文</p>
+              <div class="pTabs" id="personaChTabs">
+                <button type="button" data-ch="qq" class="on">QQ</button>
+                <button type="button" data-ch="bili">B站</button>
+                <button type="button" data-ch="workspace">工作区</button>
+              </div>
+              <textarea id="personaChText" class="pText small" spellcheck="false" placeholder="例：QQ 里回复更短，多叫「宝宝」;"></textarea>
+              <p class="hint" id="personaChHint">这一栏只影响 QQ，不影响另外两处。</p>
+            </div>
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.6l1.8 4.6 4.6 1.8-4.6 1.8L12 16.4l-1.8-4.6-4.6-1.8 4.6-1.8L12 3.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18.4 15.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8.8-1.9Z" fill="currentColor" opacity=".6"/></svg></span><b>让工作区帮你写</b></div>
+              <p class="qqCardNote">大白话描述，她替你写</p>
+              <div class="pAi">
+                <textarea id="personaAsk" class="pText small" spellcheck="false" placeholder="例：每次说话分好几条短句发，别一大段；叫我宝宝；语气温柔点；不要客套话"></textarea>
+                <div class="pAiActs">
+                  <button type="button" class="btn sm" id="personaAskGo">让工作区写</button>
+                  <span id="personaAskState">写完会填进正文，你看一眼再保存</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+<section class="page" id="p-setup" hidden>
+        <div class="pgHero">
+          <span class="pgHeroIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M14.2 3.6 5.4 13.4h5l-.6 7 8.8-9.8h-5l.6-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+          <div class="pgHeroTxt">
+            <h1>一键部署<i class="pgDot" id="setupDot"></i></h1>
+            <p id="setupSub">第一次用？QQ 扫码 → B站扫码 → 选个模型</p>
+          </div>
+          <div class="pgHeroActs">
+            <button type="button" class="btn ghost sm" id="setupRefresh">刷新</button>
+          </div>
+        </div>
+
+        <div class="glass card qqCard">
+          <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6.6h14M5 12h14M5 17.4h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>部署进度</b><span class="tag" id="setupProgTxt">0 / 3</span></div>
+          <div class="setupProg"><i id="setupProgBar"></i></div>
+          <div class="setupSteps" id="setupSteps"></div>
+        </div>
+      </section>
+
+<section class="page" id="p-nodes" hidden>
+        <div class="pgHero">
+          <span class="pgHeroIcon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.6" y="4.6" width="16.8" height="11.6" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8.8 20h6.4M12 16.4V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+          <div class="pgHeroTxt">
+            <h1>节点</h1>
+            <p>登记到 Core 的设备 · 在线与否按最后心跳判断（90 秒窗口）</p>
+          </div>
+          <div class="pgHeroActs"><span class="tag" id="nodeCount">—</span></div>
+        </div>
+        <div class="glass card qqCard">
+          <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><rect x="3.6" y="4.6" width="16.8" height="11.6" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8.8 20h6.4M12 16.4V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>节点列表</b></div>
+          <div id="nodeBody" class="muted">读取中…</div>
+        </div>
+      </section>
+
+<section class="page" id="p-cmds" hidden>
+        <div class="pgHero">
+          <span class="pgHeroIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M8.6 7.6 4.4 12l4.2 4.4M15.4 7.6 19.6 12l-4.2 4.4M13.4 5.6l-2.8 12.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div class="pgHeroTxt">
+            <h1>命令</h1>
+            <p>最近下发的指令 · 这里只读不写，下发入口还在做</p>
+          </div>
+          <div class="pgHeroActs"><span class="tag">最近 50 条</span></div>
+        </div>
+        <div class="glass card qqCard">
+          <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M8.6 7.6 4.4 12l4.2 4.4M15.4 7.6 19.6 12l-4.2 4.4M13.4 5.6l-2.8 12.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>最近命令</b></div>
+          <div id="cmdBody" class="muted">读取中…</div>
+        </div>
+      </section>
+
+<section class="page" id="p-account" hidden>
+        <div class="pgHero">
+          <span class="pgHeroIcon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.4" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+          <div class="pgHeroTxt">
+            <h1>账号</h1>
+            <p>这台电脑上的登录身份与凭证安全</p>
+          </div>
+          <div class="pgHeroActs"><button class="btn ghost sm" id="btnLogout2" type="button">退出登录</button></div>
+        </div>
+        <div class="qqPanes">
+          <div class="qqPane qqPane-2e on">
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.4" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>当前账号</b></div>
+              <p class="qqCardNote">这台电脑上的身份</p>
+              <div id="accountBody" class="muted">读取中…</div>
+            </div>
+            <div class="glass card qqCard">
+              <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><rect x="5.5" y="10.5" width="13" height="9" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>安全</b></div>
+              <p class="qqCardNote">凭证怎么存</p>
+              <p class="hint">登录凭证用 Windows DPAPI 加密后存在本程序目录的 <code>data/session.bin</code>，换 Windows 账号就解不开。</p>
+              <p class="hint">密码不会明文落盘；Token 过期会自动回到登录页。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- 搜索面板 -->
+<div class="palette" id="palette" hidden>
+  <div class="paletteBox">
+    <div class="paletteTop">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.4" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.4 4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <input id="paletteInput" placeholder="搜索功能、指令或记忆…" autocomplete="off" spellcheck="false">
+      <kbd>Esc</kbd>
+    </div>
+    <div class="paletteList" id="paletteList"></div>
+    <div class="paletteFoot">↑↓ 选择 · Enter 打开 · Esc 关闭</div>
+  </div>
+</div>
+
+<!-- ================= 登录 ================= -->
+<section class="auth" id="loginView">
+  <div class="auth-panel">
+    <div class="brandmark lg">
+      <span class="bm-mark"><img src="assets/fatfish.png" alt=""></span>
+      <span class="wm"><b>Rivulet</b><i>若</i></span>
+    </div>
+    <p class="tagline">与若共度的每一天，都从一条河开始。</p>
+    <form class="auth-form" id="loginForm" autocomplete="on">
+      <label class="field"><span>用户名</span>
+        <input id="lgUser" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="你的账号"></label>
+      <label class="field"><span>密码</span>
+        <input id="lgPass" type="password" autocomplete="current-password" placeholder="••••••••"></label>
+      <button id="lgBtn" type="button" class="btn primary lg">进入温室</button>
+      <p class="err" id="lgErr"></p>
+    </form>
+    <div class="auth-foot">
+      <span>还没有账号?<a id="toRegister">注册一个</a></span>
+      <span class="apiLine" id="apiLine">—</span>
+    </div>
+  </div>
+  <div class="auth-art" aria-hidden="true">
+    <div class="auth-glow"></div>
+    <img class="auth-girl" src="assets/whale-girl.png" alt="">
+  </div>
+</section>
+
+<section class="auth" id="registerView" hidden>
+  <div class="auth-panel">
+    <div class="brandmark lg">
+      <span class="bm-mark"><img src="assets/fatfish.png" alt=""></span>
+      <span class="wm"><b>Rivulet</b><i>若</i></span>
+    </div>
+    <p class="tagline">开一个只属于你的角落。</p>
+    <form class="auth-form" id="registerForm">
+      <label class="field"><span>用户名</span>
+        <input id="rgUser" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="想叫什么"></label>
+      <label class="field"><span>密码</span>
+        <input id="rgPass" type="password" autocomplete="new-password" placeholder="至少 6 位"></label>
+      <label class="field"><span>再输一次</span>
+        <input id="rgPass2" type="password" autocomplete="new-password" placeholder="再输一遍"></label>
+      <button id="rgBtn" type="button" class="btn primary lg">创建账号</button>
+      <p class="err" id="rgErr"></p>
+    </form>
+    <div class="auth-foot">
+      <span>已经有账号了?<a id="toLogin">回去登录</a></span>
+      <span class="apiLine">账号建在 <span id="regApiLine">—</span></span>
+    </div>
+  </div>
+  <div class="auth-art" aria-hidden="true">
+    <div class="auth-glow"></div>
+    <img class="auth-girl" src="assets/whale-girl.png" alt="">
+  </div>
+</section>
+
+<!-- ================= 全局小挂件 ================= -->
+<div class="bgmDock" id="bgmCard">
+  <button class="bgmPlay" id="bgmPlay" type="button" title="播放 / 暂停">
+    <svg class="ic-play" viewBox="0 0 24 24"><path d="M8 5.4 18.6 12 8 18.6V5.4Z" fill="currentColor"/></svg>
+    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="7" y="5.4" width="3.4" height="13.2" rx="1" fill="currentColor"/><rect x="13.6" y="5.4" width="3.4" height="13.2" rx="1" fill="currentColor"/></svg>
+  </button>
+  <div class="bgmInfo"><b id="bgmName">夜色温室</b><span id="bgmState">已关闭</span></div>
+  <div class="bgmDots" id="bgmDots"><i class="on"></i><i></i><i></i></div>
+  <div class="bgmMiniRow">
+    <button class="bgmMini" id="bgmPrev" type="button" title="上一首">‹</button>
+    <button class="bgmMini" id="bgmNext" type="button" title="下一首">›</button>
+  </div>
+  <input class="bgmVol" id="bgmVol" type="range" min="0" max="100" value="45" title="音量">
+</div>
+
+<!-- 隐藏的传统首页容器:保留旧渲染链,不再显示 -->
+<div class="legacy-sink" hidden>
+  <div id="hDate"></div><div id="greet"></div><div id="whoName"></div><div id="whoRole"></div>
+  <div id="homeMood"></div><div id="homePersona"></div><div id="homeSetup"></div><div id="hpConn"></div>
+  <div id="tHeadline"></div><div id="tDesc"></div><div id="tCore"></div><div id="tTask"></div>
+  <div id="tNodes"></div><div id="tRun"></div><div id="homeStats"></div>
+  <div id="quickCount"></div><div id="quickGrid"></div><div id="cmdsCard"></div>
+  <div id="cmdCount"></div><div id="homeCmds"></div><div id="detailCard"></div><div id="detailBody"></div>
+  <div id="searchOut"></div><input id="q"><button id="btnSearch" type="button"></button>
+  <span id="wxIcon"></span><span id="wxKind"></span><span id="wxTemp"></span>
+  <span id="clockBig"></span><span id="clockSec"></span><span id="clockDate"></span>
+  <span id="connChip"></span><span id="meName"></span><span id="meRole"></span><button id="btnNick" type="button"></button>
+  <span id="ver"></span><span id="loginClock"></span>
+</div>
+
+<script src="fish.js"></script>
+<script src="fish_workshop.js"></script>
+<script src="music.js"></script>
+<script src="characters.js"></script>
+<script src="CharacterAvatar.js"></script>
+<script src="app.js"></script>
+<script src="home.js"></script>
+<script src="boot.js"></script>
+</body>
+</html>

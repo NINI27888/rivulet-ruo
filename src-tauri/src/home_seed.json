@@ -1,0 +1,871 @@
+{
+ "ver": 2,
+ "coins": 120,
+ "characters": [
+  {
+   "id": "jingyu",
+   "name": "鲸鱼娘",
+   "energy": 100,
+   "task": "睡觉"
+  },
+  {
+   "id": "kanhai",
+   "name": "看海",
+   "energy": 70,
+   "task": "空闲"
+  }
+ ],
+ "plots": [
+  {
+   "id": "p1_2_2",
+   "floor": 1,
+   "x": 2,
+   "y": 2,
+   "crop": "tomato",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "番茄"
+  },
+  {
+   "id": "p1_3_2",
+   "floor": 1,
+   "x": 3,
+   "y": 2,
+   "crop": "tomato",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "番茄"
+  },
+  {
+   "id": "p1_5_2",
+   "floor": 1,
+   "x": 5,
+   "y": 2,
+   "crop": "bokchoy",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "小白菜"
+  },
+  {
+   "id": "p1_6_2",
+   "floor": 1,
+   "x": 6,
+   "y": 2,
+   "crop": "bokchoy",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "小白菜"
+  },
+  {
+   "id": "p1_2_5",
+   "floor": 1,
+   "x": 2,
+   "y": 5,
+   "crop": "carrot",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "胡萝卜"
+  },
+  {
+   "id": "p1_3_5",
+   "floor": 1,
+   "x": 3,
+   "y": 5,
+   "crop": "carrot",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "胡萝卜"
+  },
+  {
+   "id": "p1_6_5",
+   "floor": 1,
+   "x": 6,
+   "y": 5,
+   "crop": "pumpkin",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "南瓜"
+  },
+  {
+   "id": "p1_5_5",
+   "floor": 1,
+   "x": 5,
+   "y": 5,
+   "crop": "potato",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "土豆"
+  },
+  {
+   "id": "p1_4_5",
+   "floor": 1,
+   "x": 4,
+   "y": 5,
+   "crop": "potato",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "土豆"
+  },
+  {
+   "id": "p2_2_2",
+   "floor": 2,
+   "x": 2,
+   "y": 2,
+   "crop": "sunflower",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "向日葵"
+  },
+  {
+   "id": "p2_4_3",
+   "floor": 2,
+   "x": 4,
+   "y": 3,
+   "crop": "sunflower",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "向日葵"
+  },
+  {
+   "id": "p2_3_5",
+   "floor": 2,
+   "x": 3,
+   "y": 5,
+   "crop": "daisy",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "小雏菊"
+  },
+  {
+   "id": "p2_6_2",
+   "floor": 2,
+   "x": 6,
+   "y": 2,
+   "crop": "daisy",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "小雏菊"
+  },
+  {
+   "id": "p2_5_5",
+   "floor": 2,
+   "x": 5,
+   "y": 5,
+   "crop": "tomato",
+   "planted_at": "2026-11-01 08:28:00",
+   "watered_at": "2026-11-01 08:28:00",
+   "harvests": 0,
+   "crop_name": "番茄"
+  }
+ ],
+ "warehouse": {},
+ "events": [],
+ "last_tick": "2026-11-06 01:39:41",
+ "furniture": [
+  {
+   "id": "tv1",
+   "kind": "tv",
+   "floor": 1,
+   "x": 1,
+   "y": 0,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "sofa2",
+   "kind": "sofa",
+   "floor": 1,
+   "x": 1,
+   "y": 2,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "coffee3",
+   "kind": "coffee",
+   "floor": 1,
+   "x": 1,
+   "y": 3,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "rug4",
+   "kind": "rug",
+   "floor": 1,
+   "x": 5,
+   "y": 3,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "plant5",
+   "kind": "plant",
+   "floor": 1,
+   "x": 0,
+   "y": 1,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "lamp6",
+   "kind": "lamp",
+   "floor": 1,
+   "x": 7,
+   "y": 0,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "catbed7",
+   "kind": "catbed",
+   "floor": 1,
+   "x": 6,
+   "y": 6,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "fridge8",
+   "kind": "fridge",
+   "floor": 1,
+   "x": 8,
+   "y": 0,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "stove9",
+   "kind": "stove",
+   "floor": 1,
+   "x": 9,
+   "y": 0,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "sink10",
+   "kind": "sink",
+   "floor": 1,
+   "x": 11,
+   "y": 0,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "dtable11",
+   "kind": "dtable",
+   "floor": 1,
+   "x": 9,
+   "y": 2,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "chair12",
+   "kind": "chair",
+   "floor": 1,
+   "x": 9,
+   "y": 3,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "shoe13",
+   "kind": "shoe",
+   "floor": 1,
+   "x": 8,
+   "y": 7,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "bed14",
+   "kind": "bed",
+   "floor": 2,
+   "x": 1,
+   "y": 1,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "nstand15",
+   "kind": "nstand",
+   "floor": 2,
+   "x": 3,
+   "y": 1,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "rug16",
+   "kind": "rug",
+   "floor": 2,
+   "x": 1,
+   "y": 5,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "closet17",
+   "kind": "closet",
+   "floor": 2,
+   "x": 4,
+   "y": 7,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "lamp18",
+   "kind": "lamp",
+   "floor": 2,
+   "x": 0,
+   "y": 0,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "desk19",
+   "kind": "desk",
+   "floor": 2,
+   "x": 8,
+   "y": 1,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "chair20",
+   "kind": "chair",
+   "floor": 2,
+   "x": 8,
+   "y": 2,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "shelf21",
+   "kind": "shelf",
+   "floor": 2,
+   "x": 10,
+   "y": 0,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "dlamp22",
+   "kind": "dlamp",
+   "floor": 2,
+   "x": 10,
+   "y": 1,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  },
+  {
+   "id": "plant23",
+   "kind": "plant",
+   "floor": 2,
+   "x": 7,
+   "y": 7,
+   "added_at": "2026-11-01 08:28:00",
+   "facing": "south",
+   "locked": false,
+   "moved_at": "2026-11-01 08:28:00",
+   "used_count": 0,
+   "last_used_at": ""
+  }
+ ],
+ "character_pos": {
+  "floor": 1,
+  "x": 2.5,
+  "y": 1.5,
+  "doing": "stare",
+  "t": "11-01 08:28"
+ },
+ "farmer_pos": {
+  "floor": 1,
+  "x": 5.5,
+  "y": 3.5,
+  "doing": "water",
+  "t": "11-01 08:28"
+ },
+ "imported_at": "",
+ "staff": [],
+ "ledger": [],
+ "tasks": [],
+ "last_settle": "2026-11-06",
+ "phase": "睡觉",
+ "layout": {
+  "grid": {
+   "w": 12,
+   "h": 8,
+   "floors": 2,
+   "cell_w": 56,
+   "cell_h": 34
+  },
+  "rooms": [
+   {
+    "floor": 1,
+    "key": "living",
+    "name": "客厅",
+    "x0": 0,
+    "y0": 0,
+    "x1": 7,
+    "y1": 7
+   },
+   {
+    "floor": 1,
+    "key": "kitchen",
+    "name": "厨房",
+    "x0": 8,
+    "y0": 0,
+    "x1": 11,
+    "y1": 3
+   },
+   {
+    "floor": 1,
+    "key": "hall",
+    "name": "玄关",
+    "x0": 8,
+    "y0": 4,
+    "x1": 11,
+    "y1": 7
+   },
+   {
+    "floor": 2,
+    "key": "bedroom",
+    "name": "卧室",
+    "x0": 0,
+    "y0": 0,
+    "x1": 6,
+    "y1": 7
+   },
+   {
+    "floor": 2,
+    "key": "study",
+    "name": "书房",
+    "x0": 7,
+    "y0": 0,
+    "x1": 11,
+    "y1": 7
+   }
+  ],
+  "stair": {
+   "x0": 11,
+   "y0": 4,
+   "x1": 11,
+   "y1": 6
+  },
+  "door": {
+   "floor": 1,
+   "x": 9,
+   "y": 7
+  },
+  "windows": [
+   {
+    "floor": 1,
+    "x0": 2,
+    "x1": 4,
+    "side": "top"
+   },
+   {
+    "floor": 1,
+    "x0": 9,
+    "x1": 10,
+    "side": "top"
+   },
+   {
+    "floor": 2,
+    "x0": 2,
+    "x1": 4,
+    "side": "top"
+   },
+   {
+    "floor": 2,
+    "x0": 0,
+    "x1": 1,
+    "side": "left"
+   }
+  ],
+  "catalog": {
+   "sofa": {
+    "name": "沙发",
+    "w": 3,
+    "h": 1,
+    "color": "#4A5A78",
+    "rooms": [
+     "living"
+    ],
+    "price": 22,
+    "type": "客厅家具",
+    "desc": "软软的布艺沙发,靠背有一点塌。",
+    "usage": "坐着休息、看电视"
+   },
+   "coffee": {
+    "name": "茶几",
+    "w": 2,
+    "h": 1,
+    "color": "#6B5A44",
+    "rooms": [
+     "living"
+    ],
+    "price": 12,
+    "type": "客厅家具",
+    "desc": "低矮的茶几,上面常放着茶杯。",
+    "usage": "放茶点"
+   },
+   "tv": {
+    "name": "电视",
+    "w": 3,
+    "h": 1,
+    "color": "#2E3238",
+    "rooms": [
+     "living"
+    ],
+    "price": 25,
+    "type": "家用电器",
+    "desc": "一台老式电视,屏幕白天也亮着。",
+    "usage": "看电视"
+   },
+   "rug": {
+    "name": "地毯",
+    "w": 3,
+    "h": 2,
+    "color": "#5C4657",
+    "rooms": [
+     "living",
+     "bedroom"
+    ],
+    "price": 12,
+    "type": "装饰",
+    "desc": "手织地毯,踩上去暖乎乎的。",
+    "usage": "踩踏、布置房间"
+   },
+   "dtable": {
+    "name": "餐桌",
+    "w": 2,
+    "h": 1,
+    "color": "#6B5A44",
+    "rooms": [
+     "kitchen",
+     "living"
+    ],
+    "price": 18,
+    "type": "餐厅家具",
+    "desc": "木质餐桌,配四把椅子。",
+    "usage": "吃饭、聊天"
+   },
+   "chair": {
+    "name": "椅子",
+    "w": 1,
+    "h": 1,
+    "color": "#7A6448",
+    "rooms": [
+     "kitchen",
+     "living",
+     "study",
+     "bedroom"
+    ],
+    "price": 8,
+    "type": "坐具",
+    "desc": "一把结实的木椅,坐上去正好够到桌子。",
+    "usage": "坐下休息、工作"
+   },
+   "fridge": {
+    "name": "冰箱",
+    "w": 1,
+    "h": 1,
+    "color": "#9AA3AD",
+    "rooms": [
+     "kitchen"
+    ],
+    "price": 24,
+    "type": "厨房家电",
+    "desc": "塞得满满的冰箱,门上贴着便签。",
+    "usage": "储存食物"
+   },
+   "stove": {
+    "name": "灶台",
+    "w": 2,
+    "h": 1,
+    "color": "#3A3F46",
+    "rooms": [
+     "kitchen"
+    ],
+    "price": 20,
+    "type": "厨房家电",
+    "desc": "双灶台,锅具挂在一旁。",
+    "usage": "做饭"
+   },
+   "sink": {
+    "name": "水槽",
+    "w": 1,
+    "h": 1,
+    "color": "#8A949E",
+    "rooms": [
+     "kitchen"
+    ],
+    "price": 14,
+    "type": "厨房家电",
+    "desc": "带水槽的操作台,水龙头擦得发亮。",
+    "usage": "洗菜、洗碗"
+   },
+   "shoe": {
+    "name": "鞋柜",
+    "w": 1,
+    "h": 1,
+    "color": "#4E4436",
+    "rooms": [
+     "hall"
+    ],
+    "price": 10,
+    "type": "玄关家具",
+    "desc": "门口鞋柜,鞋子摆得整整齐齐。",
+    "usage": "收纳鞋子"
+   },
+   "plant": {
+    "name": "绿植",
+    "w": 1,
+    "h": 1,
+    "color": "#3F6B47",
+    "rooms": [
+     "living",
+     "kitchen",
+     "study",
+     "bedroom",
+     "hall"
+    ],
+    "price": 8,
+    "type": "装饰",
+    "desc": "一盆绿植,叶子被擦得很干净。",
+    "usage": "浇水、观赏"
+   },
+   "lamp": {
+    "name": "落地灯",
+    "w": 1,
+    "h": 1,
+    "color": "#C8A24A",
+    "rooms": [
+     "living",
+     "bedroom",
+     "study",
+     "hall"
+    ],
+    "price": 10,
+    "type": "照明",
+    "desc": "落地灯,暖黄色的光。",
+    "usage": "照明"
+   },
+   "bed": {
+    "name": "床",
+    "w": 2,
+    "h": 3,
+    "color": "#586A8C",
+    "rooms": [
+     "bedroom"
+    ],
+    "price": 30,
+    "type": "卧室家具",
+    "desc": "铺着鼠尾草绿被子的双人床,床头靠着墙。",
+    "usage": "睡觉、恢复体力"
+   },
+   "nstand": {
+    "name": "床头柜",
+    "w": 1,
+    "h": 1,
+    "color": "#5B4B3A",
+    "rooms": [
+     "bedroom"
+    ],
+    "price": 10,
+    "type": "卧室家具",
+    "desc": "床头小柜,抽屉里放着书本和水杯。",
+    "usage": "随手放东西"
+   },
+   "closet": {
+    "name": "衣柜",
+    "w": 2,
+    "h": 1,
+    "color": "#4C4038",
+    "rooms": [
+     "bedroom"
+    ],
+    "price": 18,
+    "type": "卧室家具",
+    "desc": "两开门的木衣柜,衣服按颜色挂好。",
+    "usage": "收纳衣物"
+   },
+   "desk": {
+    "name": "书桌",
+    "w": 2,
+    "h": 1,
+    "color": "#6B5A44",
+    "rooms": [
+     "study"
+    ],
+    "price": 20,
+    "type": "书房家具",
+    "desc": "靠窗的木书桌,桌上有台灯和一摞书。",
+    "usage": "看书、写字"
+   },
+   "shelf": {
+    "name": "书架",
+    "w": 2,
+    "h": 1,
+    "color": "#4A3E34",
+    "rooms": [
+     "study",
+     "living",
+     "bedroom"
+    ],
+    "price": 16,
+    "type": "书房家具",
+    "desc": "三层木质书架,书和杂物分门别类。",
+    "usage": "取书、收纳"
+   },
+   "dlamp": {
+    "name": "台灯",
+    "w": 1,
+    "h": 1,
+    "color": "#C8A24A",
+    "rooms": [
+     "study",
+     "bedroom"
+    ],
+    "price": 10,
+    "type": "照明",
+    "desc": "书桌台灯,灯罩有点旧了。",
+    "usage": "照明、看书"
+   },
+   "bean": {
+    "name": "懒人沙发",
+    "w": 1,
+    "h": 1,
+    "color": "#6A4E6E",
+    "rooms": [
+     "bedroom",
+     "study",
+     "living"
+    ],
+    "price": 12,
+    "type": "坐具",
+    "desc": "懒人沙发,陷进去就不想起来。",
+    "usage": "坐着发呆、休息"
+   },
+   "catbed": {
+    "name": "猫窝",
+    "w": 1,
+    "h": 1,
+    "color": "#7A5548",
+    "rooms": [
+     "living",
+     "bedroom"
+    ],
+    "price": 8,
+    "type": "宠物用品",
+    "desc": "猫窝,垫子中央被猫睡出一个窝。",
+    "usage": "猫休息"
+   }
+  }
+ }
+}

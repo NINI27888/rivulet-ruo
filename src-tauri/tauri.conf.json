@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Rivulet若",
+  "mainBinaryName": "RivuletRuo",
+  "version": "0.1.0",
+  "identifier": "com.rivulet.ruo",
+  "build": {
+    "frontendDist": "../ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Rivulet 若",
+        "width": 1360,
+        "height": 860,
+        "minWidth": 1360,
+        "minHeight": 860,
+        "center": true,
+        "resizable": true,
+        "decorations": false,
+        "transparent": false,
+        "theme": "Dark",
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; media-src 'self' data:; connect-src 'self' http://127.0.0.1:8088 http://localhost:8088"
+    }
+  },
+  "bundle": {
+    "active": false,
+    "targets": ["nsis"],
+    "icon": ["icons/icon.ico"]
+  }
+}

@@ -1,0 +1,2917 @@
+/* ==========================================================================
+   Rivulet 若 · 页面层 v4
+   依赖 style.css 的 tokens。覆盖:小窝 / 记忆树 / 心情 / 人格 / 工作区 /
+   QQ / B站 / 一键部署 / 节点 / 命令 / 账号,以及 JS 运行时生成的列表组件。
+   ========================================================================== */
+
+/* ================================================================ 页面通用 */
+.svcBody{display:grid; grid-template-columns:280px minmax(0,1fr); gap:14px; align-items:start}
+.svcBody .svcMain{grid-column:2}
+.svcSide{padding:14px}
+.svcMain{padding:20px}
+.svcMain > .card-h:first-child,.svcMain > h2:first-child{margin-top:0}
+.svcMain h2:not(.sub-h):not(.card-h h2){
+  font-size:13px; font-weight:650; color:var(--ink-2); margin:18px 0 10px;
+  display:flex; align-items:center; gap:8px;
+}
+.svcMain h2:first-child{margin-top:0}
+.svcSide h2{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:16px 0 8px; font-weight:600}
+.svcSide h2:first-child{margin-top:0}
+.svcActs{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:12px 0 4px}
+.svcActs .btn{flex:none}
+.svcKv{display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid var(--line); font-size:12px}
+.svcKv:last-child{border-bottom:0}
+.svcKv .k{color:var(--muted); flex:none}
+.svcKv .v{color:var(--ink-2); text-align:right; overflow:hidden; text-overflow:ellipsis; font-family:var(--mono); font-size:11.5px}
+.svcId{display:flex; align-items:center; gap:10px; min-width:0}
+.svcIdTxt{display:flex; flex-direction:column; line-height:1.25; min-width:0}
+.svcIdTxt b{font-size:13px; font-weight:650; white-space:nowrap}
+.svcIdTxt small{font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:320px}
+.svcRole{width:34px; height:34px; flex:none; border-radius:10px; display:grid; place-items:center; background:var(--chip); border:1px solid var(--line); overflow:hidden}
+.svcRole .rvAva,.svcRole canvas{width:30px; height:30px}
+.biliFace{width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--edge); background:var(--chip)}
+.wsCount{font-size:10.5px; color:var(--muted); font-family:var(--mono)}
+.biliEmpty{font-size:12px; color:var(--muted); padding:16px 2px; line-height:1.7}
+.biliEmpty a{color:var(--accent)}
+.qgrid .stat{background:none}
+
+/* 通用小列表 */
+.rowline{display:flex; align-items:center; gap:10px; padding:9px 10px; border-bottom:1px solid var(--line); font-size:12px}
+.rowline:last-child{border-bottom:0}
+.rowline:hover{background:var(--chip)}
+.kv{display:flex; gap:10px; align-items:baseline; font-size:12px; padding:6px 0}
+.kv .k{color:var(--muted); flex:none}
+
+/* 头像组件(CharacterAvatar.js) */
+.rvAva{display:inline-grid; place-items:center; flex:none; border-radius:12px; overflow:hidden; background:var(--chip); border:1px solid var(--line)}
+.rvAva canvas,.rvAva svg,.rvAva img{width:100%; height:100%; object-fit:cover}
+
+/* ================================================================ 鱼的小窝 */
+.page-fish .pagehead-acts{gap:14px}
+.fishStatus{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:18px; align-items:center; padding:16px 20px; margin-bottom:14px}
+.fsAva{position:relative; width:76px; height:76px; border-radius:20px; background:radial-gradient(circle at 34% 26%,var(--accent-soft),transparent 70%),var(--chip); border:1px solid var(--edge); display:grid; place-items:center; overflow:hidden}
+.fsAva canvas{width:72px; height:72px; image-rendering:auto}
+.fishIpBadge{position:absolute; right:6px; bottom:6px; font-size:8px; font-family:var(--mono); color:var(--accent); background:color-mix(in srgb,var(--bg0) 70%,transparent); border:1px solid var(--edge); border-radius:99px; padding:1px 5px}
+.fsMain{min-width:0}
+.fsKicker{font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; font-family:var(--mono)}
+.fsNow{font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--ink); margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.fsBars{display:flex; gap:14px; flex-wrap:wrap}
+.fsBar{display:inline-flex; align-items:center; gap:7px; font-size:10.5px; color:var(--muted); font-family:var(--mono)}
+.fsBar i{position:relative; width:64px; height:4px; border-radius:99px; background:var(--line-strong); overflow:hidden; display:inline-block}
+.fsBar i::after{content:""; position:absolute; inset:0; border-radius:inherit; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transform-origin:left}
+.fsBar .fsPhase{color:var(--ink-2)}
+.fsCoin{text-align:right; padding-left:16px; border-left:1px solid var(--line)}
+.fsCoin b{display:block; font-family:var(--mono); font-size:26px; font-weight:650; line-height:1.1; color:var(--warm)}
+.fsCoin span{font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+
+.fishTabs{display:flex; align-items:center; gap:4px; padding:5px; margin-bottom:14px; border-radius:14px; background:var(--glass-low); border:1px solid var(--line); width:fit-content; max-width:100%; overflow-x:auto; scrollbar-width:none; backdrop-filter:blur(16px)}
+.fishTabs::-webkit-scrollbar{display:none}
+.fishTabs button{
+  height:30px; padding:0 14px; border-radius:10px; font-size:12px; color:var(--muted); white-space:nowrap;
+  transition:all var(--t) var(--ease);
+}
+.fishTabs button:hover{color:var(--ink-2); background:var(--chip)}
+.fishTabs button.on{color:var(--ink); background:var(--chip-hover); font-weight:500}
+.fishTabsGap{display:none}
+.fishMem{font-size:11px; color:var(--muted); margin-left:10px; font-family:var(--mono)}
+.fishBody{display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:14px; align-items:start}
+.fishMain{padding:14px; overflow:hidden}
+.fishMainHead{display:flex; align-items:center; gap:8px; padding:2px 4px 10px; flex-wrap:wrap}
+.fishMainHead h2{font-size:14px; font-weight:650; margin:0}
+.fishChip{font-size:10px; padding:3px 9px; border-radius:99px; background:var(--chip); border:1px solid var(--line); color:var(--muted); font-family:var(--mono)}
+.fishStage{position:relative; border-radius:var(--r-sm); overflow:hidden; background:var(--bg-2); border:1px solid var(--line)}
+#fishCanvas{display:block; width:100%; height:auto; image-rendering:auto; touch-action:none}
+.fishPop{position:absolute; z-index:20; width:230px; padding:14px; border-radius:14px; font-size:12px}
+.fishToast{position:absolute; left:50%; bottom:14px; transform:translateX(-50%); z-index:21; padding:8px 16px; border-radius:99px; font-size:11.5px; background:var(--glass-solid); border:1px solid var(--edge-strong); box-shadow:var(--shadow); animation:toastIn .25s var(--ease-out)}
+.fishSideCol{display:flex; flex-direction:column; gap:12px; min-width:0}
+.fishSide{display:flex; flex-direction:column; gap:12px}
+.fishSide .card,.fishSideCol .card{padding:14px}
+.fishSide h2,.fishSideCol h2{font-size:12.5px; margin:0 0 8px}
+.fishSide h3,.fishSideCol h3{font-size:11px; color:var(--muted); margin:12px 0 6px; letter-spacing:.1em; text-transform:uppercase}
+
+/* 小窝里 JS 生成的小件 */
+.fishShop{margin-top:10px; display:flex; flex-direction:column; gap:6px}
+.fishShopItem{display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px; background:var(--chip); border:1px solid var(--line); font-size:11.5px}
+.fishShopItem b{font-weight:600}
+.fishShopItem span{margin-left:auto; color:var(--warm); font-family:var(--mono); font-size:11px}
+.fishBulk{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:10px}
+.fishBulkBtn{height:28px; padding:0 11px; border-radius:8px; font-size:11px; background:var(--chip); border:1px solid var(--line-strong); color:var(--ink-2)}
+.fishBulkBtn:hover{background:var(--chip-hover); color:var(--ink)}
+.fishLog{margin-top:10px; display:flex; flex-direction:column; gap:4px; max-height:210px; overflow:auto}
+.fishLogRow{display:flex; gap:8px; font-size:11px; color:var(--muted); padding:4px 2px; border-bottom:1px dashed var(--line)}
+.fishLogRow time{font-family:var(--mono); font-size:10px; color:var(--faint); flex:none}
+.hireGrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px}
+.hireCard{position:relative; padding:12px; border-radius:14px; background:var(--chip); border:1px solid var(--line)}
+.hireCard .hireAva{width:56px; height:56px; border-radius:14px; margin:0 auto 8px; display:grid; place-items:center; background:var(--accent-soft); border:1px solid var(--edge); overflow:hidden}
+.hireCard .hireAva canvas{width:54px; height:54px}
+.hireCard .hireInfo{text-align:center; font-size:11.5px; color:var(--ink-2); margin-bottom:8px}
+.hireCard .hireBar{height:4px; border-radius:99px; background:var(--line-strong); overflow:hidden; margin-bottom:8px}
+.hireCard .hireBar i{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.hireCard .hireBtn{width:100%; height:28px; border-radius:8px; font-size:11px; background:var(--chip-hover); border:1px solid var(--line-strong); color:var(--ink-2)}
+.hireCard .hireBtn:hover{color:var(--ink); border-color:var(--accent)}
+.hireStats{display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap}
+.hireStat{font-size:11px; color:var(--muted); font-family:var(--mono)}
+.hireStat b{color:var(--ink); font-weight:600}
+
+/* 工坊 */
+#fishWorkshopPage{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+.wsCardHead{display:flex; align-items:center; gap:8px; margin-bottom:10px}
+.wsChip{font-size:10px; padding:2px 8px; border-radius:99px; background:var(--chip); border:1px solid var(--line); color:var(--muted); font-family:var(--mono)}
+.wsChip.lack{color:var(--bad); border-color:color-mix(in srgb,var(--bad) 30%,transparent); background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.wsChip.own{color:var(--ok); border-color:color-mix(in srgb,var(--ok) 30%,transparent)}
+.wsCol{display:flex; flex-direction:column; gap:8px}
+.wsItems{display:flex; flex-direction:column; gap:6px; max-height:300px; overflow:auto}
+.wsItem{display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px; background:var(--chip); border:1px solid var(--line); font-size:11.5px}
+.wsItem span{margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--muted)}
+.wsGather{display:flex; margin-top:10px}
+.wsDrops{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
+.wsDrop{font-size:10px; padding:2px 7px; border-radius:6px; background:var(--chip); border:1px solid var(--line); color:var(--muted)}
+.wsRecipes{display:flex; flex-direction:column; gap:8px}
+.wsRecipe{border-radius:12px; border:1px solid var(--line); background:var(--chip); padding:10px}
+.wsRecipeMain{display:flex; align-items:center; gap:8px}
+.wsRecipeName{font-size:12px; font-weight:600}
+.wsMats{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
+.wsMat{font-size:10px; padding:2px 7px; border-radius:6px; background:var(--chip-hover); border:1px solid var(--line); color:var(--muted); font-family:var(--mono)}
+.wsGo{height:26px; padding:0 10px; border-radius:7px; font-size:11px; background:var(--accent-soft); border:1px solid color-mix(in srgb,var(--accent) 28%,transparent); color:var(--accent); margin-left:auto}
+.wsGo:hover{background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.wsGo:disabled{opacity:.45}
+.wsStats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.wsStat{padding:10px; border-radius:10px; background:var(--chip); border:1px solid var(--line); text-align:center}
+.wsStat b{display:block; font-family:var(--mono); font-size:15px; color:var(--ink)}
+.wsStat span{font-size:9.5px; color:var(--muted); letter-spacing:.08em}
+.wsBtnRow{display:flex; gap:6px; flex-wrap:wrap}
+.wsBtn{height:28px; padding:0 11px; border-radius:8px; font-size:11px; background:var(--chip); border:1px solid var(--line-strong); color:var(--ink-2)}
+.wsBtn:hover{background:var(--chip-hover); color:var(--ink)}
+.wsWarn{font-size:10.5px; color:var(--warn); margin-top:8px}
+.wsEmpty{font-size:11.5px; color:var(--muted); padding:12px 0}
+.wsSw{display:flex; align-items:center; gap:8px; font-size:11.5px}
+.wsDots{display:flex; gap:5px}
+.wsDots i{width:5px; height:5px; border-radius:50%; background:var(--line-strong)}
+.wsDots i.on{background:var(--accent)}
+.wsPlace{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+.wsPlaceTop{display:flex; align-items:center; gap:8px; margin-bottom:6px}
+.wsHint{font-size:10.5px; color:var(--muted)}
+.wsLog{max-height:180px; overflow:auto; display:flex; flex-direction:column; gap:4px}
+.wsLogRow{font-size:10.5px; color:var(--muted); padding:3px 0; border-bottom:1px dashed var(--line); font-family:var(--mono)}
+
+/* 账本 / 日记 */
+.ledgerCard{padding:14px}
+.ledgerSum{display:flex; align-items:baseline; gap:10px; margin-bottom:10px}
+.ledgerBal{font-family:var(--mono); font-size:24px; font-weight:650; color:var(--warm)}
+.ledgerList{max-height:320px; overflow:auto; display:flex; flex-direction:column}
+.ledgerRow{display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid var(--line); font-size:11.5px}
+.ledgerAt{font-family:var(--mono); font-size:10px; color:var(--faint); flex:none}
+.ledgerNote{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink-2)}
+.ledgerDelta{font-family:var(--mono); font-size:11px}
+.ledgerDelta.in{color:var(--ok)} .ledgerDelta.out{color:var(--bad)}
+.diaryWrap{display:flex; flex-direction:column; gap:14px}
+.diaryGroup{display:flex; flex-direction:column; gap:8px}
+.diaryDay{font-size:11px; letter-spacing:.12em; color:var(--muted); font-family:var(--mono)}
+.diaryRow{display:flex; gap:10px; padding:10px 12px; border-radius:12px; background:var(--chip); border:1px solid var(--line)}
+.diaryAt{font-family:var(--mono); font-size:10px; color:var(--faint); flex:none; padding-top:2px}
+.diaryText{font-size:12px; color:var(--ink-2); line-height:1.7; user-select:text}
+
+/* ================================================================ 记忆树 */
+.memWrap{display:flex; flex-direction:column; gap:12px; min-height:0}
+.memHead{display:flex; align-items:center; gap:18px; padding:10px 16px; flex-wrap:wrap}
+.memTitle{display:flex; flex-direction:column; gap:2px; min-width:0}
+.memTitle h2{font-size:14px; font-weight:650}
+.memSum{font-size:11px; color:var(--muted); font-family:var(--mono)}
+.memSum b{color:var(--ink-2)}
+.memChips{display:flex; gap:5px; margin-left:auto; flex-wrap:wrap}
+.memChips button{
+  height:26px; padding:0 11px; border-radius:99px; font-size:11px; color:var(--muted);
+  background:var(--chip); border:1px solid var(--line); display:inline-flex; align-items:center; gap:5px;
+  transition:all var(--t-fast);
+}
+.memChips button b{font-family:var(--mono); font-size:10px; color:var(--faint); font-weight:500}
+.memChips button:hover{color:var(--ink-2); background:var(--chip-hover)}
+.memChips button.on{color:var(--ink); border-color:var(--muted); font-weight:500}
+.memChips button.on b{color:var(--muted)}
+.memFind{display:flex; align-items:center; gap:6px; min-width:240px; flex:1; max-width:360px}
+.memFind input{height:30px; font-size:12px}
+.memBody{display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:12px; align-items:stretch}
+.memStage{position:relative; overflow:hidden; min-height:520px; border-radius:var(--r); background:var(--panel)}
+#memTree{display:block; width:100%; height:100%; min-height:520px}
+.memLegend{position:absolute; left:16px; bottom:14px; display:flex; gap:12px; flex-wrap:wrap; font-size:10px; color:var(--muted); font-family:var(--mono)}
+.memLegend i{width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:5px; vertical-align:middle}
+.memTip{position:absolute; z-index:30; pointer-events:none; padding:10px 12px; border-radius:12px; font-size:11.5px; min-width:150px;
+  background:var(--glass-solid); border:1px solid var(--edge-strong); box-shadow:var(--shadow); backdrop-filter:blur(18px)}
+.memTip .tt{display:flex; flex-direction:column; gap:2px}
+.memTip .tt b{font-size:11.5px}
+.memTip .tt span{font-size:10px; color:var(--muted); font-family:var(--mono)}
+.memCard{padding:18px; overflow:auto; max-height:calc(var(--vhpx, 100vh) - 260px)}
+.mcEmpty{display:flex; flex-direction:column; align-items:center; gap:10px; padding:40px 10px; color:var(--muted); font-size:12px; text-align:center}
+.mcEmpty .big{font-size:30px; opacity:.7}
+.memCard h3{font-size:13px; margin:0 0 8px; color:var(--ink)}
+.mcTop{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px}
+.mcPill{font-size:10px; padding:2px 8px; border-radius:99px; background:var(--chip); border:1px solid var(--line); color:var(--muted); font-family:var(--mono)}
+.mcScore{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-left:auto}
+.mcScore b{font-size:13px; color:var(--ink)}
+.mcBar{height:4px; border-radius:99px; background:var(--line-strong); overflow:hidden; margin-bottom:12px}
+.mcBar i{display:block; height:100%; background:linear-gradient(90deg,var(--mem-fuzzy),var(--mem-normal),var(--mem-clear))}
+.mcTxt{font-size:12.5px; line-height:1.85; color:var(--ink-2); user-select:text; white-space:pre-wrap}
+.mcMeta{display:flex; flex-direction:column; gap:4px; margin-top:14px; font-size:10.5px; color:var(--muted); font-family:var(--mono)}
+.mcActs{display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; padding-top:12px; border-top:1px solid var(--line)}
+.mcActs .btn{height:28px; font-size:11px}
+.mcNote{font-size:10.5px; color:var(--muted); margin-top:8px; line-height:1.6}
+.mcCopy,.mcPin,.mcRecall{font-size:11px !important}
+
+/* 记忆树 SVG */
+#memTree text{fill:var(--ink-2); font-family:var(--sans); font-size:11px}
+#memTree .memLabel{fill:var(--ink-2); font-size:11px; pointer-events:none}
+#memTree .memLabelN{fill:var(--faint); font-size:9px; font-family:var(--mono); pointer-events:none}
+#memTree .memDot{fill:var(--accent); opacity:.85}
+#memTree .memHeart{stroke:var(--mem-fuzzy); fill:color-mix(in srgb,var(--mem-fuzzy) 22%,transparent); stroke-width:1.4}
+#memTree .memHit{fill:transparent; cursor:pointer}
+#memTree .memHit:hover + .memDot{opacity:1}
+#memTree .memTrunk{stroke:var(--mem-normal); stroke-width:10; fill:none; stroke-linecap:round}
+#memTree .memTrunkHi{stroke:color-mix(in srgb,var(--mem-normal) 45%,transparent); stroke-width:3; fill:none}
+#memTree .memBranch{stroke:var(--mem-normal); stroke-width:4; fill:none; stroke-linecap:round; opacity:.75}
+#memTree .memTwig{stroke:var(--mem-normal); stroke-width:1.6; fill:none; opacity:.55}
+#memTree .memRoots{stroke:color-mix(in srgb,var(--mem-normal) 25%,transparent); stroke-width:1.5; fill:none}
+#memTree .memGround{fill:color-mix(in srgb,var(--accent) 8%,transparent)}
+#memTree .memGlow{fill:color-mix(in srgb,var(--accent) 14%,transparent); filter:blur(12px)}
+#memTree .memPin{fill:var(--warm)}
+#memTree .memDust{fill:color-mix(in srgb,var(--accent) 30%,transparent)}
+#memTree .memCore{fill:var(--warm); opacity:.9}
+#memTree .memBroken{stroke:var(--mem-broken,#ff6b5f); fill:none}
+
+/* ================================================================ 心情 */
+.moodBody{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)}
+.moodBars{display:flex; flex-direction:column; gap:14px; margin:6px 0 16px}
+.moodBig{padding:2px 0}
+.moodBig .mh{display:flex; align-items:baseline; gap:8px; margin-bottom:7px}
+.moodBig .mk{font-size:12px; color:var(--ink-2)}
+.moodBig .mw{font-size:10.5px; color:var(--muted); font-family:var(--mono)}
+.moodBig .mv{font-family:var(--mono); font-size:14px; font-weight:600; margin-left:auto}
+.moodBig .mb{height:6px; border-radius:99px; background:var(--line-strong); overflow:hidden; position:relative}
+.moodBig .mb i{display:block; height:100%; border-radius:99px; transition:width .7s var(--ease-out)}
+.moodBig .mb i.warm{background:var(--muted)}
+.moodBig .mb i.cool{background:var(--accent)}
+.moodBig .mb i.pink{background:var(--ink-2)}
+.moodBig .mb i.bad{background:var(--bad)}
+.moodBrief{font-size:12.5px; line-height:1.85; color:var(--ink-2); padding:14px; border-radius:12px; background:var(--chip); border:1px solid var(--line); user-select:text}
+.moodNotes{display:flex; flex-direction:column; gap:6px; max-height:320px; overflow:auto}
+.moodNoteRow{font-size:11.5px; color:var(--ink-2); padding:8px 10px; border-radius:9px; background:var(--chip); border:1px solid var(--line); line-height:1.6}
+
+/* ================================================================ 人格 */
+.pScope{display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 14px; margin-bottom:14px; border-radius:12px; background:var(--glass-low); border:1px solid var(--line)}
+.pScopeLabel{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-family:var(--mono)}
+.pScopeChip{font-size:10.5px; padding:3px 9px; border-radius:99px; background:var(--chip); border:1px solid var(--line); color:var(--ink-2)}
+.pScopeHint{font-size:10.5px; color:var(--faint); margin-left:auto}
+.personaBody{grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr)}
+.pQuick{display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px; border-radius:12px; background:var(--chip); border:1px solid var(--line); margin-bottom:14px}
+.pQuickLabel{font-size:10.5px; color:var(--muted); letter-spacing:.06em; flex:none}
+.pQuick input{flex:1; min-width:200px; height:32px; font-size:12px}
+.pGuide{border-radius:12px; border:1px solid var(--line); background:var(--glass-low); padding:12px 14px; margin-bottom:14px}
+.pGuide summary{cursor:pointer; font-size:12px; color:var(--ink-2); font-weight:600}
+.pGuideLead{font-size:11.5px; color:var(--muted); line-height:1.75; margin:8px 0}
+.pEx{width:100%; border-collapse:collapse; font-size:11.5px; margin:8px 0}
+.pEx th{text-align:left; color:var(--muted); font-weight:600; font-size:10px; letter-spacing:.08em; padding:6px 8px; border-bottom:1px solid var(--line-strong)}
+.pEx td{padding:7px 8px; border-bottom:1px solid var(--line); color:var(--ink-2); vertical-align:top}
+.pEx tr:last-child td{border-bottom:0}
+.pAi{border-radius:12px; background:var(--chip); border:1px solid var(--line); padding:12px; margin-bottom:14px}
+.pAiHead{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px}
+.pAiHead b{font-size:12px}
+.pAiHead span{font-size:10.5px; color:var(--muted)}
+.pAiActs{display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap}
+.pAiActs span{font-size:10.5px; color:var(--faint)}
+.pText{width:100%; min-height:220px; font-size:13px; line-height:1.85; padding:14px; border-radius:12px; user-select:text}
+.pText.small{min-height:90px; font-size:12px; padding:11px 13px}
+.pFoot{display:flex; align-items:center; gap:14px; margin-top:8px; font-size:10.5px; color:var(--faint); flex-wrap:wrap}
+.pFootHint{margin-left:auto}
+.pTabs{display:flex; gap:4px; padding:4px; border-radius:10px; background:var(--chip); border:1px solid var(--line); width:fit-content; margin-bottom:10px}
+.pTabs button{height:26px; padding:0 12px; border-radius:7px; font-size:11px; color:var(--muted)}
+.pTabs button.on{color:var(--accent-ink); background:linear-gradient(160deg,var(--accent-2),var(--accent)); font-weight:600}
+.pPresets{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px}
+.pPresets button{text-align:left; padding:10px; border-radius:10px; background:var(--chip); border:1px solid var(--line); font-size:11.5px; color:var(--ink-2); line-height:1.5}
+.pPresets button:hover{border-color:var(--accent); color:var(--ink)}
+.pPresets button b{display:block; font-size:12px; margin-bottom:3px}
+.pPresets button span{font-size:10px; color:var(--muted)}
+
+/* ================================================================ QQ / B站 */
+.qqBody,.biliBody{grid-template-columns:280px minmax(0,1fr)}
+.qqBody .svcMain,.biliBody .svcMain{grid-column:2}
+.convList{display:flex; flex-direction:column; gap:8px; max-height:420px; overflow:auto; margin-bottom:6px}
+.convMsg{display:flex; gap:10px; padding:10px 12px; border-radius:12px; background:var(--chip); border:1px solid var(--line)}
+.convMsg.out{background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 18%,transparent)}
+.convAva{width:28px; height:28px; flex:none; border-radius:9px; display:grid; place-items:center; overflow:hidden; background:var(--chip-hover); border:1px solid var(--line); font-size:11px; color:var(--muted)}
+.convAva canvas,.convAva svg{width:100%; height:100%}
+.convAvaUser{background:linear-gradient(160deg,var(--chip-hover),var(--chip)); color:var(--ink-2)}
+.convBody{min-width:0; flex:1}
+.convBody .ch{display:flex; align-items:baseline; gap:8px; margin-bottom:4px}
+.convBody .ch b{font-size:11px; color:var(--ink-2)}
+.convBody .ch span{font-size:9.5px; color:var(--faint); font-family:var(--mono); margin-left:auto}
+.convBody .cb{font-size:12px; line-height:1.7; color:var(--ink-2); user-select:text; word-break:break-word; white-space:pre-wrap}
+.wlAdd{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0}
+.wlAdd select{width:92px; flex:none}
+.wlAdd input{flex:1; min-width:110px}
+.wlList{display:flex; flex-direction:column; gap:6px; max-height:260px; overflow:auto}
+.wlRow{display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:9px; background:var(--chip); border:1px solid var(--line); font-size:11.5px}
+.wlRow .wlKind{font-size:9.5px; color:var(--muted); font-family:var(--mono); padding:1px 6px; border-radius:5px; background:var(--chip-hover)}
+.wlRow b{font-family:var(--mono); font-size:11.5px}
+.wlRow .wlNote{color:var(--muted); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wlRow button{margin-left:auto; font-size:10.5px; color:var(--bad); padding:2px 6px; border-radius:5px}
+.wlRow button:hover{background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.auditList{display:flex; flex-direction:column; gap:4px; max-height:260px; overflow:auto}
+.auditRow{display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:7px; font-size:11px; color:var(--ink-2)}
+.auditRow:hover{background:var(--chip)}
+.auditRow .mono{font-size:10px; color:var(--faint); flex:none}
+.auditRow .txt{color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.auditRow .ok,.auditRow .bad,.auditRow .warn{font-size:10px; flex:none}
+.qqSend{display:flex; gap:8px; margin-top:10px}
+.qqSend input{flex:1}
+.qrBox{margin-top:10px; display:flex; flex-direction:column; align-items:center; gap:8px}
+.qrBox img{width:140px; height:140px; border-radius:10px; background:#fff; padding:6px}
+.qrHint{font-size:10.5px; color:var(--muted)}
+.qrT{font-size:10.5px; color:var(--muted); font-family:var(--mono)}
+
+.pubForm{display:flex; flex-direction:column; gap:10px}
+.pubRow{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.pubRow input{flex:1; min-width:120px}
+.pubRow select{width:190px; flex:none}
+.pubFile{font-size:11px; color:var(--muted); max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.pubCoverImg{width:56px; height:36px; border-radius:6px; object-fit:cover; border:1px solid var(--line)}
+.pubTip{font-size:10.5px; color:var(--faint); line-height:1.55}
+.pubBar{height:4px; border-radius:99px; background:var(--line-strong); overflow:hidden; margin-top:4px}
+.pubBar i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .3s var(--ease-out)}
+.pubLog{max-height:170px; overflow:auto; font-family:var(--mono); font-size:10.5px; color:var(--muted); background:color-mix(in srgb,var(--bg0) 30%,transparent); border-radius:10px; border:1px solid var(--line); padding:10px; margin:0; white-space:pre-wrap; user-select:text}
+.biliVids{display:flex; flex-direction:column; gap:6px; max-height:300px; overflow:auto}
+.biliVid{display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; background:var(--chip); border:1px solid var(--line); font-size:11.5px}
+.biliVid .bv{font-family:var(--mono); font-size:10.5px; color:var(--accent)}
+.biliVid .ttl{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink-2)}
+.biliVid .stt{font-size:9.5px; color:var(--muted); padding:1px 7px; border-radius:99px; background:var(--chip-hover)}
+.biliVid .editBtn{font-size:10.5px; color:var(--accent); padding:2px 7px; border-radius:6px; border:1px solid color-mix(in srgb,var(--accent) 24%,transparent)}
+.biliVid .editBtn:hover{background:var(--accent-soft)}
+.biliCmts{display:flex; flex-direction:column; gap:6px; max-height:340px; overflow:auto}
+.biliCmt{display:flex; gap:10px; padding:9px 10px; border-radius:10px; background:var(--chip); border:1px solid var(--line); font-size:11.5px}
+.biliCmt .who{font-size:10.5px; color:var(--muted); flex:none}
+.biliCmt .tx{color:var(--ink-2); line-height:1.6; user-select:text}
+.biliCmt .lg-c{font-size:9px; color:var(--faint); font-family:var(--mono)}
+.editBox{margin-top:10px; display:flex; flex-direction:column; gap:8px; padding:12px; border-radius:10px; background:var(--chip); border:1px solid var(--line)}
+.editRow{display:flex; gap:8px; align-items:center}
+.editBox .editSave{height:28px; font-size:11px}
+.editMsg{font-size:10.5px; color:var(--muted)}
+
+/* ================================================================ 工作区 */
+.wsPage .pagehead-acts .wsState{font-size:10.5px; padding:3px 9px; border-radius:99px; background:var(--accent-soft); border:1px solid color-mix(in srgb,var(--accent) 22%,transparent); color:var(--accent); font-family:var(--mono)}
+.wsGrid{display:grid; grid-template-columns:250px minmax(0,1fr) 300px; gap:14px; align-items:start}
+.wsLeft{padding:14px 12px; position:sticky; top:0}
+.wsColHead{display:flex; align-items:center; gap:8px; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-family:var(--mono); margin-bottom:10px}
+.wsColBody{display:flex; flex-direction:column; gap:6px}
+.wsLeft .wsColBody h2{font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:12px 0 6px}
+.wsLeft .wsColBody h2:first-child{margin-top:0}
+.wsConvs{display:flex; flex-direction:column; gap:5px; max-height:40vh; overflow:auto}
+.wsConv{padding:8px 10px; border-radius:9px; background:transparent; border:1px solid transparent; cursor:pointer; display:flex; flex-direction:column; gap:2px}
+.wsConv:hover{background:var(--chip)}
+.wsConv.on{background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 20%,transparent)}
+.wsConv b{font-size:11.5px; font-weight:600; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wsConv small{font-size:9px; color:var(--faint); font-family:var(--mono)}
+.wsCenter{display:flex; flex-direction:column; gap:12px; min-width:0}
+.wsHero{position:relative; display:grid; grid-template-columns:110px minmax(0,1fr); gap:18px; align-items:center; padding:18px 20px; border-radius:var(--r); overflow:hidden; background:var(--panel); border:1px solid var(--line)}
+.wsHeroArt{position:relative; width:110px; height:110px; display:grid; place-items:end center; overflow:hidden}
+.wsHeroArt::before{display:none}
+.wsHeroArt img{position:relative; height:118px; width:auto; object-fit:contain; margin-bottom:-16px; filter:drop-shadow(0 12px 20px rgba(0,0,0,.4)); animation:girlFloat 9s ease-in-out infinite}
+.wsHeroCopy{min-width:0}
+.wsHeroRole{margin-bottom:8px}
+.wsHeroCopy h2{font-size:19px; font-weight:700; letter-spacing:-.01em}
+.wsHeroCopy p{font-size:12px; color:var(--muted); margin-top:5px; line-height:1.7; max-width:560px}
+.wsQuick{display:flex; gap:6px; flex-wrap:wrap; margin-top:12px}
+.wsQuick button{height:27px; padding:0 11px; border-radius:99px; font-size:11px; color:var(--ink-2); background:var(--chip); border:1px solid var(--line); transition:all var(--t-fast)}
+.wsQuick button:hover{color:var(--accent); border-color:color-mix(in srgb,var(--accent) 30%,transparent); background:var(--accent-soft)}
+.wsThreadWrap{display:flex; flex-direction:column; min-height:0; padding:14px}
+.wsThreadHead{display:flex; align-items:center; gap:8px; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-family:var(--mono); margin-bottom:10px}
+.wsMsgs{display:flex; flex-direction:column; gap:10px; min-height:260px; max-height:44vh; overflow:auto; padding:2px 2px 8px}
+.wsComposer{display:flex; gap:8px; margin-top:10px; padding-top:12px; border-top:1px solid var(--line)}
+.wsComposer input{flex:1; height:40px; border-radius:12px}
+.wsComposer .btn{height:40px; padding:0 20px; border-radius:12px}
+.wsRight{display:flex; flex-direction:column; gap:12px}
+.wsModel{padding:16px}
+.wsTasksCard{padding:16px}
+.wsCfg{grid-template-columns:1fr; gap:10px; margin-top:10px}
+.wsActions{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
+.wsHelp{margin-top:12px; border-radius:10px; border:1px solid var(--line); background:var(--chip); padding:10px 12px}
+.wsHelp summary{cursor:pointer; font-size:11px; color:var(--ink-2); font-weight:600}
+.wsHelp ol{margin:8px 0 8px 18px; padding:0; font-size:11px; color:var(--muted); line-height:1.8}
+.wsTbl{width:100%; border-collapse:collapse; font-size:10.5px; margin-top:6px}
+.wsTbl th{text-align:left; color:var(--muted); font-weight:600; padding:4px 6px; border-bottom:1px solid var(--line-strong)}
+.wsTbl td{padding:4px 6px; border-bottom:1px solid var(--line); color:var(--ink-2); font-family:var(--mono); font-size:10px}
+.wsTasks{display:flex; flex-direction:column; gap:4px; max-height:300px; overflow:auto}
+.provChips{display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:10px}
+.provChips button{height:26px; border-radius:7px; font-size:10.5px; color:var(--muted); background:var(--chip); border:1px solid var(--line)}
+.provChips button:hover{color:var(--ink-2); background:var(--chip-hover)}
+.provChips button.on{color:var(--accent); border-color:color-mix(in srgb,var(--accent) 30%,transparent); background:var(--accent-soft)}
+
+/* ================================================================ 一键部署 */
+.setupProgWrap{display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:12px 16px; border-radius:12px; background:var(--glass-low); border:1px solid var(--line)}
+.setupProg{flex:1; height:6px; border-radius:99px; background:var(--line-strong); overflow:hidden}
+.setupProg i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:99px; transition:width .6s var(--ease-out)}
+.setupProgTxt{font-family:var(--mono); font-size:12px; color:var(--ink-2); flex:none}
+.setupSteps{display:flex; flex-direction:column; gap:10px}
+.setupCard{display:grid; grid-template-columns:44px minmax(0,1fr) auto; gap:16px; align-items:start; padding:18px 18px; border-radius:var(--r); background:var(--panel); border:1px solid var(--line)}
+.scHead{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.scBadge{width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-family:var(--mono); font-size:13px; font-weight:600; background:var(--chip); border:1px solid var(--line-strong); color:var(--ink-2)}
+.scBadge.done{background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 30%,transparent); color:var(--accent)}
+.scHead b{font-size:14px; font-weight:650}
+.scHead span{font-size:11px; color:var(--muted)}
+.scDetail{font-size:11.5px; color:var(--muted); line-height:1.7; margin-top:6px}
+.scHint{font-size:10.5px; color:var(--faint); line-height:1.6; margin-top:6px}
+.scActs{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+.scForm{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px}
+.scForm label{display:flex; flex-direction:column; gap:6px; font-size:10.5px}
+.scRow{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.scQr{display:flex; flex-direction:column; align-items:center; gap:6px; margin-top:10px}
+.scQr img{width:150px; height:150px; border-radius:10px; background:#fff; padding:6px}
+.scNo{font-size:10.5px; color:var(--muted)}
+.scForm.hidden{display:none !important}
+
+/* ================================================================ 节点 / 命令 / 账号 */
+#p-nodes .card,#p-cmds .card{padding:20px}
+#p-nodes .tbl td:first-child b{font-weight:600}
+.acctGrid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start}
+
+/* ================================================================ 响应式 */
+/* v11 整体等比缩放:宽度断点会把双栏重排成单栏(破坏 1:1 比例),已移除。
+   窗口尺寸一律由 boot.js 的 zoom 等比缩放处理。 */
+
+
+/* ================================================================ v5 极简:运行时生成组件 + 布局修正 */
+/* 大肥鱼立绘(fish.js 注入):按尺寸收住,不再撑破布局 */
+.rvFish{position:relative; display:inline-flex; align-items:flex-end; justify-content:center; --rvh:96px}
+.rvFish .rvFishBody{display:flex; align-items:flex-end; justify-content:center}
+.rvFish .rvFishBody img{height:var(--rvh); width:auto; object-fit:contain; user-select:none}
+.rvFish .rvFishGlow,.rvFish .rvFishBubble{display:none}
+.rvFish[data-size="sm"]{--rvh:40px}
+.rvFish[data-size="md"]{--rvh:64px}
+.rvFish[data-size="lg"]{--rvh:128px}
+.rvFish[data-size="xl"]{--rvh:176px}
+.svcRole .rvFish{--rvh:30px}
+.svcRole .rvFish .rvFishBody img{height:30px}
+
+/* 工作区:去掉重复的大图,只留一张小立绘 */
+.wsHeroArt{display:none !important}
+.wsHero{grid-template-columns:minmax(0,1fr)}
+#wsFish{display:flex; align-items:center; margin-bottom:12px}
+#wsFish .rvFish{--rvh:120px}
+.wsHeroCopy h2{font-size:17px}
+.wsHeroCopy p{font-size:11.5px; max-width:640px}
+
+/* 小窝:让像素房间有足够高度 */
+.fishBody{grid-template-columns:minmax(0,560px) minmax(0,1fr)}
+.fishStage{min-height:600px; display:flex; align-items:center; justify-content:center; padding:10px}
+.fishSideCol{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-content:start}
+.fishSideCol .card{padding:16px}
+.fishSideCol h2{font-size:12px}
+.fishShopItem i{color:var(--muted); font-size:10px; font-style:normal; margin-left:6px}
+.fishShopItem span{margin-left:auto}
+.fishShopItem[data-buy]{cursor:pointer}
+.fishShopItem[data-buy]:hover{border-color:var(--line-2); background:var(--chip-hover)}
+.fishStatus{grid-template-columns:auto minmax(0,1fr) auto; padding:16px 18px}
+.fsCoin b{font-size:22px; color:var(--ink)}
+.fishTabs{background:transparent; border-color:var(--line); padding:0; gap:2px; border-radius:0; border-width:0 0 1px 0; width:100%; max-width:none; border-radius:0}
+.fishTabs button{border-radius:6px 6px 0 0; height:34px; padding:0 14px}
+.fishTabs button.on{background:transparent; color:var(--ink); box-shadow:inset 0 -1.5px 0 var(--accent)}
+
+/* 侧栏里 app.js 生成的设置块 */
+.extBox{margin-top:18px; padding-top:14px; border-top:1px solid var(--line)}
+.extBox h3{font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); margin:0 0 8px; font-weight:500}
+.extBox .svcKv{padding:6px 0}
+.cfgRow{display:flex; flex-wrap:wrap; gap:8px 14px; margin:8px 0}
+.cfgRow label{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; color:var(--muted); flex:none}
+.cfgRow input{width:52px; height:24px; padding:2px 6px; font-size:11px; text-align:center; border-radius:5px}
+.cfgRow .svcSwitch{font-size:10.5px}
+.ghost.mini,.ghost{color:var(--ink-2); background:transparent; border:1px solid var(--line); border-radius:6px}
+.ghost.mini{height:24px; padding:0 9px; font-size:10.5px}
+.ghost:hover{color:var(--ink); border-color:var(--line-2)}
+.ghost.dangerBtn,.dangerBtn{color:var(--bad)}
+.qrBox img{width:132px; height:132px; border-radius:8px; background:#fff; padding:6px}
+.qrHint,.qrT{font-size:10.5px; color:var(--muted)}
+.wlRow{padding:7px 2px; border-bottom:1px solid var(--line); border-radius:0; background:none; display:flex; align-items:center; gap:10px; font-size:11.5px}
+.wlRow:hover{background:var(--chip)}
+.wlRow .wlNote{flex:1; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wlRow button{color:var(--bad)}
+.auditRow{padding:6px 2px; border-bottom:1px solid var(--line); border-radius:0}
+.convList{gap:0}
+.convMsg{border:0; border-bottom:1px solid var(--line); border-radius:0; background:none; padding:12px 2px}
+.convMsg.out{background:none}
+.convMsg:hover{background:var(--chip)}
+.convAva{border-radius:6px}
+.convBody .cb{font-size:12px}
+.biliVid,.biliCmt,.moodNoteRow{border-radius:6px; background:none; border:1px solid var(--line); padding:10px 12px}
+.biliVids,.biliCmts,.moodNotes{gap:6px}
+.moodBrief{border-radius:6px; background:none; border:1px solid var(--line); padding:14px}
+.pAi,.pQuick,.pGuide,.pTabs{border-radius:6px; background:none; border:1px solid var(--line)}
+.pText{border-radius:6px}
+.pScope{background:none; border:1px solid var(--line); border-radius:6px}
+.pScopeChip,.skill{background:none}
+.setupCard{border-radius:6px}
+.setupProgWrap{border-radius:6px; background:none; border:1px solid var(--line)}
+.memHead,.memCard{border-radius:var(--r)}
+.memStage{min-height:540px}
+.memChips button{border-radius:6px}
+.memChips button.on{background:var(--chip-hover); color:var(--ink)}
+#memTree text{font-size:11px}
+.memLegend{opacity:.8}
+.wsLeft,.wsThreadWrap,.wsModel,.wsTasksCard{border-radius:var(--r)}
+.wsLeft{background:var(--panel)}
+.wsMsgs .convMsg{border-bottom:1px solid var(--line)}
+.wsComposer{border-top:1px solid var(--line)}
+.wsComposer input{border-radius:8px}
+.wsQuick button{border-radius:6px; background:none; border:1px solid var(--line)}
+.wsQuick button:hover{border-color:var(--line-2); color:var(--ink); background:var(--chip)}
+.provChips button{border-radius:5px; background:none}
+.provChips button.on{background:var(--chip-hover); border-color:var(--line-2); color:var(--ink)}
+.wsHelp{background:none; border-radius:6px}
+.wsTbl td,.wsTbl th{font-size:10px}
+.svcMain h2:not(.sub-h):not(.card-h h2){letter-spacing:.02em; font-size:12px}
+.svcSide h2{font-size:10px}
+.svcBody{grid-template-columns:260px minmax(0,1fr)}
+.qqBody,.biliBody{grid-template-columns:260px minmax(0,1fr)}
+.svcMain{padding:20px}
+.svcSide{padding:16px}
+.svcSide.sticky{position:sticky; top:0}
+.stat-grid .stat{border-radius:0}
+.skill{display:none}
+
+/* 底部音乐条:移到右下,别压内容 */
+.bgmDock{left:auto; right:20px; bottom:18px}
+
+@media (max-width:1180px){
+  .fishBody{grid-template-columns:minmax(0,1fr)}
+  .fishSideCol{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #fishWorkshopPage{grid-template-columns:minmax(0,1fr)}
+  .wsGrid{grid-template-columns:minmax(0,1fr)}
+  .wsRight{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:1320px){
+  .wsGrid{grid-template-columns:minmax(0,1fr)}
+  .wsRight{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+}
+
+
+/* ================================================================ v5 修正 2 */
+/* 人格 / 心情:两张卡并排,别都掉到第二列 */
+.personaBody .svcMain,.moodBody .svcMain{grid-column:auto !important}
+.personaBody,.moodBody{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr)}
+
+/* 一键部署:app.js 生成的卡片结构 */
+.setupSteps{gap:10px}
+.setupCard{display:block; padding:18px 20px; background:var(--panel); border:1px solid var(--line); border-radius:var(--r)}
+.setupCard.done{}
+.setupCard .scHead{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.scNo{width:18px; flex:none; font-family:var(--mono); font-size:11px; color:var(--faint)}
+.setupCard .scHead b{font-size:14px; font-weight:600}
+.scBadge{font-size:10px; padding:2px 8px; border:1px solid var(--line); border-radius:99px; color:var(--muted); font-family:var(--mono)}
+.scBadge.ok{color:var(--ok); border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.scDetail{font-size:11.5px; color:var(--muted); margin-top:7px; padding-left:28px; line-height:1.6}
+.scHint{font-size:10.5px; color:var(--faint); margin-top:6px; padding-left:28px}
+.scActs{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; padding-left:28px}
+.scActs button{height:28px; padding:0 11px; border:1px solid var(--line-2); border-radius:6px; font-size:11.5px; color:var(--ink-2); background:none}
+.scActs button:hover{color:var(--ink); border-color:var(--muted)}
+.scActs button.ghost{border-color:var(--line)}
+.scForm{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:14px 0 4px 28px; padding:14px; border:1px solid var(--line); border-radius:var(--r-sm)}
+.scForm.hidden{display:none !important}
+.pField{display:flex; flex-direction:column; gap:6px; font-size:10.5px; color:var(--muted)}
+.pField input,.pField select{height:32px}
+.scRow{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.scQr img{width:132px; background:#fff; padding:6px; border-radius:8px}
+.scNo,.qrT{font-size:10px}
+.setupProgWrap{background:none; border:1px solid var(--line); border-radius:6px; padding:12px 16px}
+.setupProg{height:3px; background:var(--line)}
+.setupProg i{background:var(--accent)}
+
+/* 传输/生成组件的小修 */
+.biliVids .biliVid .editBtn{border-radius:4px}
+.wsTasks .auditRow{border-bottom:1px solid var(--line)}
+.auditRow .warn,.auditRow .bad,.auditRow .ok{font-family:var(--mono)}
+.moodBig .mb{height:3px; background:var(--line)}
+.moodBig .mv{font-size:13px}
+.pAiActs .btn,.pQuick .btn{flex:none}
+.pText{background:transparent}
+
+
+/* ================================================================ v5 修正 3:生成列表结构 */
+/* 一键部署徽标 */
+.scBadge{width:auto; height:auto; border-radius:99px; display:inline-flex; align-items:center; padding:2px 8px; font-size:10px; color:var(--muted); border:1px solid var(--line); font-family:var(--mono); background:none}
+.scBadge.ok{color:var(--ok); border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+
+/* B站稿件列表 */
+.biliVids{display:flex; flex-direction:column; gap:0; max-height:340px; overflow:auto}
+.biliVid{display:block; padding:13px 2px; border-bottom:1px solid var(--line); cursor:pointer; border-radius:0; background:none; border-left:0; border-right:0; border-top:0}
+.biliVid:hover{background:var(--chip)}
+.biliVid .t{font-size:12.5px; color:var(--ink); font-weight:500; line-height:1.55}
+.biliVid .m{display:flex; gap:14px; flex-wrap:wrap; margin-top:6px; font-family:var(--mono); font-size:10px; color:var(--faint)}
+.biliVid.on{background:none}
+.biliVid .editBox{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; padding:12px; border:1px solid var(--line); border-radius:var(--r-sm)}
+.editBox .editTitle,.editBox .editDesc{height:32px; font-size:12px}
+.editBox .svcActs{grid-column:1/-1; display:flex; align-items:center; gap:10px; margin:0}
+.editBox .editMsg{font-size:10.5px; color:var(--muted)}
+
+/* B站评论 */
+.biliCmts{display:flex; flex-direction:column; gap:8px; max-height:320px; overflow:auto}
+.biliCmt{display:block; padding:10px 12px; border:1px solid var(--line); border-radius:var(--r-sm); background:none}
+.biliCmt .u{display:flex; align-items:baseline; gap:10px; margin-bottom:5px}
+.biliCmt .u b{font-size:11px; color:var(--ink-2); font-weight:500}
+.biliCmt .u span{font-size:9.5px; color:var(--faint); font-family:var(--mono)}
+.biliCmt .c{font-size:12px; color:var(--ink-2); line-height:1.7}
+
+/* QQ 对话(扁平结构) */
+#qqConv .convMsg{display:block; padding:12px 2px; border-bottom:1px solid var(--line); background:none; border-radius:0; gap:0}
+#qqConv .convMsg:hover{background:var(--chip)}
+#qqConv .convMsg .ch{display:flex; align-items:baseline; gap:8px; margin-bottom:4px}
+#qqConv .convMsg .ch b{font-size:11px; color:var(--ink-2); font-weight:500}
+#qqConv .convMsg .ch span{font-size:9.5px; color:var(--faint); font-family:var(--mono); margin-left:auto}
+#qqConv .convMsg .cb{font-size:12px; color:var(--ink-2); line-height:1.75; white-space:pre-wrap; word-break:break-word}
+#qqConv .convMsg.out .ch b{color:var(--accent)}
+#qqConv{max-height:420px}
+
+/* 工作区消息(结构化:convBody/ch/cb)统一 */
+.convMsg .ch b{font-weight:500}
+.convMsg .ch span{font-family:var(--mono)}
+
+/* 账号 / 节点 / 命令 */
+.acctGrid .card{padding:20px}
+#accountBody .tbl td:first-child{width:120px}
+
+/* 心情数值排版 */
+.moodBig .mv{font-weight:500}
+
+/* 旅行/小窝的 extBox 按钮 */
+.extBox .svcActs{margin-top:10px}
+
+
+/* ================================================================ v5 收尾 */
+.pubLog:empty{display:none}
+.pubBar:empty{display:none}
+.biliVid .editBox .editSave{height:28px}
+#biliCmts .biliCmt:last-child{border-bottom:1px solid var(--line)}
+.moodBars .moodBig:last-child{padding-bottom:2px}
+.setupCard .scActs button{border-color:var(--line-2)}
+.setupCard .scActs button:hover{background:var(--chip)}
+.setupSteps{max-width:860px}
+#p-setup .pagehead-acts .muted{font-size:11px}
+
+
+/* ================================================================ v6 小矩形布局 */
+/* 通用:两列小卡网格 */
+.twoCol{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-items:start}
+.span2{grid-column:span 2}
+.page{max-width:1240px}
+
+/* ---- 心情:4 张小卡 ---- */
+.moodBody{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-items:start}
+.moodBody > .glass.card{padding:20px}
+.moodBody .moodBars{gap:12px; margin:4px 0 0}
+.moodBody .hint{margin-bottom:0}
+.moodBody .sub-h{margin:16px 0 8px}
+
+/* ---- 人格:6 张小卡 ---- */
+.personaBody{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-items:start}
+.personaBody > .glass.card{padding:20px}
+.personaBody > .glass.card.span2{grid-column:span 2}
+.personaBody .pQuick.pQuick{margin-bottom:0}
+.personaBody .pAi{margin-bottom:0}
+.personaBody .pGuide{margin-bottom:0}
+.personaBody .pText{min-height:200px}
+
+/* ---- 工作区:左侧拆成两张小卡 ---- */
+.wsGrid{display:grid; grid-template-columns:252px minmax(0,1fr) 300px; gap:12px; align-items:start}
+.wsLeftCol{display:flex; flex-direction:column; gap:12px; min-width:0; position:sticky; top:0}
+.wsLeftCol .card{padding:16px}
+.wsLeftCol .wsColHead{margin-bottom:8px}
+.wsConvsCard .wsColBody{max-height:46vh; overflow:auto}
+.wsModelCard .wsColBody{gap:0; display:flex; flex-direction:column}
+.wsHero{display:grid; grid-template-columns:minmax(0,1fr); gap:10px; padding:18px 20px}
+.wsHeroArt{display:none}
+.wsHeroArt img{height:96px; margin-bottom:0}
+.wsHeroCopy h2{font-size:16px}
+.wsHeroCopy p{font-size:11.5px; max-width:620px; line-height:1.75}
+.wsThreadWrap{padding:16px 18px}
+.wsMsgs{max-height:42vh; min-height:220px}
+.wsModel,.wsTasksCard{padding:18px}
+
+/* ---- QQ:对话 / 白名单 / 配置 / 审计 四张小卡 ---- */
+.qqBody{display:grid; grid-template-columns:260px minmax(0,1fr); gap:12px; align-items:start}
+.qqBody > .svcMain{grid-column:2; padding:18px 20px}
+.qqBody > .svcMain:nth-child(2){grid-column:2}
+.qqBody > .svcSide{grid-row:span 4; position:sticky; top:0}
+
+/* ---- B站:投稿 / 稿件 / 评论 三张小卡 ---- */
+.biliBody{display:grid; grid-template-columns:260px minmax(0,1fr); gap:12px; align-items:start}
+.biliBody > .svcMain{grid-column:2; padding:18px 20px}
+.biliBody > .svcSide{grid-row:span 3; position:sticky; top:0}
+.biliVids{max-height:300px}
+.biliCmts{max-height:280px}
+
+/* ---- 小窝:状态拆成 3 个小矩形 + 指标小方块 ---- */
+.fishStatus{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:12px; background:none; border:0; box-shadow:none; padding:0; backdrop-filter:none}
+.fishStatus .fsAva{width:104px; height:104px; background:var(--panel); border:1px solid var(--line); border-radius:var(--r); backdrop-filter:blur(16px) saturate(120%)}
+.fishStatus .fsMain{background:var(--panel); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; backdrop-filter:blur(16px) saturate(120%)}
+.fishStatus .fsCoin{background:var(--panel); border:1px solid var(--line); border-radius:var(--r); padding:14px 18px; border-left:1px solid var(--line); backdrop-filter:blur(16px) saturate(120%)}
+.fsBars{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px}
+.fsBar{display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--chip); font-family:var(--mono); font-size:10px; color:var(--muted)}
+.fsBar i{flex:1; height:3px; min-width:40px; background:var(--line-2); border-radius:99px; overflow:hidden; position:relative; display:block}
+.fsBar i b{display:block; height:100%; float:left; width:10%; background:var(--line-2)}
+.fsBar i b.mid{background:var(--warn)}
+.fsBar i b.on{background:var(--accent)}
+.fsBar i b.on{background:var(--accent)}
+
+/* ---- 记忆 / 账号 / 设置:保持内容,优化留白 ---- */
+.memBody{gap:12px}
+.acctGrid{gap:12px}
+
+
+/* ==========================================================================
+   v8 Apple HIG 皮肤 · 页面层(布局不动,只换材质与控件语言)
+   ========================================================================== */
+
+/* ---- iOS 列表:分隔线 + 悬停高亮 ---- */
+.biliVids,.convList,.wlList,.auditList,.moodNotes,.wsTasks,.wsConvs{
+  border-radius:14px; overflow:hidden; background:transparent;
+}
+.biliVid,.convMsg,.wlRow,.auditRow,.ledgerRow,.moodNoteRow,.moodBig,.auditRow{
+  border:0; border-bottom:1px solid var(--line); border-radius:0; background:transparent;
+}
+.biliVid:last-child,.convMsg:last-child,.wlRow:last-child,.auditRow:last-child,.ledgerRow:last-child,.moodNoteRow:last-child{border-bottom:0}
+.biliVid:hover,.convMsg:hover,.wlRow:hover,.auditRow:hover,.ledgerRow:hover,.moodNoteRow:hover,.wsConv:hover{
+  background:var(--chip-hover);
+}
+.wlRow{border-radius:0}
+.wlRow button:hover{background:transparent; color:var(--bad); text-decoration:underline}
+.biliVid .editBox{border:0; background:var(--chip); border-radius:14px}
+.biliVid .t{font-weight:500}
+.biliVid .m{font-family:var(--sans); letter-spacing:0; font-size:10.5px; color:var(--muted)}
+
+/* ---- 对话气泡:iMessage 式圆角 ---- */
+.convMsg{border-radius:0; padding:12px 6px}
+#qqConv .convMsg{border-radius:0; padding:12px 6px}
+#qqConv .convMsg .cb{font-size:12.5px; line-height:1.65}
+.wsMsgs .convMsg{border-radius:14px; border:0; background:var(--chip); margin-bottom:2px}
+.wsMsgs .convMsg.out{background:var(--accent-soft)}
+.wsMsgs .convMsg:hover{background:var(--chip-hover)}
+.wsMsgs .convMsg.out:hover{background:color-mix(in srgb,var(--accent) 20%,transparent)}
+
+/* ---- 输入区 / 文本域 ---- */
+.pText,.personaAsk{background:var(--chip)}
+.pAi,.pQuick,.pGuide,.pScope,.setupProgWrap{
+  border:0; background:var(--chip); border-radius:14px;
+}
+.pQuick{padding:12px}
+.pEx th{border-bottom:1px solid var(--line-2)}
+.pEx td{border-bottom:1px solid var(--line)}
+.moodBrief{border:0; background:var(--chip); border-radius:14px; padding:14px 16px}
+.moodBig .mb{background:var(--chip-hover); border-radius:99px; height:5px}
+.moodBig .mb i{border-radius:99px}
+.moodBig .mv{font-family:var(--sans); font-weight:600; font-size:13px}
+.moodNoteRow{background:transparent; border:0; border-bottom:1px solid var(--line); border-radius:0; padding:10px 4px}
+
+/* ---- 设置/部署卡 ---- */
+.setupCard{border-radius:16px; border:1px solid var(--line); background:var(--panel); backdrop-filter:blur(28px) saturate(170%)}
+.setupCard:hover{box-shadow:0 12px 28px -24px rgba(0,0,0,.4)}
+.scBadge{background:var(--chip); border:0; border-radius:7px; font-family:var(--sans); font-weight:500; letter-spacing:0}
+.scBadge.ok{background:color-mix(in srgb,var(--ok) 14%,transparent); color:var(--ok)}
+.scNo{font-family:var(--sans); font-weight:600; color:var(--muted)}
+.setupProgWrap{background:var(--chip); border:0; border-radius:12px; padding:12px 16px}
+.setupProg{background:var(--chip-hover); border-radius:99px}
+.setupProg i{background:var(--accent); border-radius:99px; transition:width 420ms var(--ease-out)}
+.scActs button{border:0; background:var(--chip); border-radius:9px; color:var(--ink); font-weight:500}
+.scActs button:hover{background:var(--chip-hover); border:0}
+.scForm{border:0; background:var(--chip); border-radius:14px; margin-left:28px}
+.pField input,.pField select{background:var(--panel-2)}
+.scQr img{border-radius:12px; box-shadow:0 8px 24px -14px rgba(0,0,0,.4)}
+
+/* ---- 记忆树 ---- */
+.memStage{border-radius:18px; border-color:var(--line)}
+#memTree text{fill:var(--ink-2)}
+.memChips{background:var(--chip); border:0; border-radius:10px; padding:2px}
+.memChips button{height:24px; padding:0 10px; border-radius:8px}
+.memCard{border-radius:18px}
+.mcPill{border:0; background:var(--chip); border-radius:6px; font-family:var(--sans); letter-spacing:0}
+.mcBar i{background:var(--accent)}
+.memTitle h2{font-weight:600; letter-spacing:-.01em}
+.memSum{font-family:var(--sans); letter-spacing:0; font-size:11.5px}
+.memLegend{font-family:var(--sans); letter-spacing:0; font-size:10.5px}
+.memTip{border-radius:12px; background:var(--panel-2); border-color:var(--line)}
+
+/* ---- 小窝 ---- */
+.fishStatus .fsAva,.fishStatus .fsMain,.fishStatus .fsCoin{border:0; background:var(--panel); border-radius:18px; box-shadow:none}
+.fishStatus .fsCoin{border-left:0}
+.fishTabs{border-radius:11px; padding:2px; background:var(--chip); border:0; width:fit-content}
+.fishTabs button{border-radius:9px; height:32px; padding:0 14px}
+.fishTabs button.on{box-shadow:0 1px 3px rgba(0,0,0,.16)}
+.fishShopItem{border:0; background:var(--chip); border-radius:10px}
+.fishShopItem:hover{background:var(--chip-hover); transform:none}
+.fishShopItem i{font-family:var(--sans)}
+.fishChip{border:0; background:var(--chip); border-radius:7px; font-family:var(--sans); letter-spacing:0}
+.fishStage{border-radius:16px; border:1px solid var(--line); background:var(--panel-2)}
+.fishBody .card,.fishSideCol .card{border-radius:18px}
+.fishMain{padding:14px}
+.fsBar{border:0; background:var(--chip); border-radius:10px; font-family:var(--sans); font-size:11px}
+.fsBar i{height:4px; background:var(--chip-hover)}
+.fsBar i b{border-radius:2px}
+.fsCoin b{font-family:var(--sans); font-weight:600; color:var(--ink)}
+.fishLogRow,.wsLogRow{font-family:var(--sans); letter-spacing:0}
+
+/* ---- 工作区 ---- */
+.wsHero{border-radius:18px; background:var(--panel); border-color:var(--line)}
+.wsConv{border-radius:10px; padding:9px 10px}
+.wsConv.on{background:var(--accent-soft); border-color:transparent}
+.wsConv b{font-weight:500}
+.wsHeroCopy h2{font-weight:700; letter-spacing:-.01em}
+.wsQuick button,.provChips button{border-radius:99px}
+.wsLeftCol .card,.wsThreadWrap,.wsModel,.wsTasksCard{border-radius:18px}
+.wsComposer input{border-radius:12px}
+.wsComposer .btn{border-radius:12px}
+.wsHelp{border:0; background:var(--chip); border-radius:12px}
+.wsTbl th,.wsTbl td{border-color:var(--line)}
+
+/* ---- 账号 / 节点 / 命令 ---- */
+#p-nodes .card,#p-cmds .card,.acctGrid .card{border-radius:18px}
+.tbl th{font-size:10.5px; letter-spacing:.04em; text-transform:none; font-weight:600}
+.tbl td{padding:12px 10px}
+
+/* ---- 弹层 ---- */
+.fishPop,.memCard,.detail-card{border-radius:18px}
+
+
+/* ---- Apple 皮肤收尾 · 页面 ---- */
+.fsBar i{background:transparent}
+.fsBar i b{background:transparent!important}
+.fsBar i b.mid{background:var(--warn)!important}
+.fsBar i b.on{background:var(--accent)!important}
+.fsBar{background:var(--chip); border:0}
+.fsBar span{font-family:var(--sans); font-weight:500}
+.fishTabs button{color:var(--muted)}
+.fishTabs button.on{color:#fff}
+html[data-theme="light"] .fishTabs button.on{color:var(--ink)}
+
+
+/* 能量条:去掉旧伪元素整条渐变,只留分段 */
+.fsBar i::after{display:none !important}
+.fsBar i{background:rgba(120,120,128,.22) !important; border-radius:99px}
+html[data-theme="light"] .fsBar i{background:rgba(120,120,128,.18) !important}
+.fsBar i b{height:100%; float:left}
+
+
+/* ==========================================================================
+   v10 concept skin · legacy pages  ★ 最后一段,专门用来赢 cascade
+   --------------------------------------------------------------------------
+   目标:让 p-workspace / p-qq / p-bili / p-fish / p-memory / p-mood /
+        p-persona / p-setup / p-nodes / p-cmds / p-account 与新的首页/设置页
+        是同一套语言(梦幻浅蓝紫 / 清透白卡 / 胶囊按钮 / 柔和蓝紫阴影)。
+   做法:
+     · 底座(卡片 / 按钮 / 输入 / 开关 / 状态点 / 表格 / 页头)直接用 style.css
+       的 v10 组件,这里不再重复定义,只修旧 pages.css 留下的、会盖掉它的残渣;
+     · 只给「旧页面独有的组件」和 JS 生成的 markup 上新皮肤;
+     · 不改 DOM、不改 id、不改 JS 依赖的类名。
+   颜色一律走 style.css 的 token:--panel / --panel-2 / --line / --line-2 /
+   --ink / --ink-2 / --muted / --faint / --accent / --accent-2 / --accent-3 /
+   --accent-4 / --ok / --bad / --warn / --shadow / --shadow-sm
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- 0. 局部 token */
+:root{
+  --sk-r: var(--r-lg, 20px);          /* 卡片圆角,跟 style.css 一致 */
+  --sk-r-sm: var(--r-sm, 12px);
+  --sk-panel: var(--panel, rgba(255,255,255,.74));
+  --sk-panel-2: var(--panel-2, rgba(255,255,255,.92));
+  --sk-line: var(--line, rgba(122,124,180,.14));
+  --sk-line-2: var(--line-2, rgba(122,124,180,.26));
+  --sk-ink: var(--ink, #2A2442);
+  --sk-ink-2: var(--ink-2, #575174);
+  --sk-muted: var(--muted, #8C87A8);
+  --sk-faint: var(--faint, #B9B6D0);
+  --sk-accent: var(--accent, #6D8BFF);
+  --sk-accent-2: var(--accent-2, #8E7BFF);
+  --sk-accent-3: var(--accent-3, #FF9EC4);
+  --sk-accent-4: var(--accent-4, #5DD6C6);
+  --sk-ok: var(--ok, #35BF8C);
+  --sk-bad: var(--bad, #FF7089);
+  --sk-warn: var(--warn, #FFB454);
+  --sk-shadow: var(--shadow, 0 18px 40px -26px rgba(96,86,170,.42));
+  --sk-shadow-sm: var(--shadow-sm, 0 10px 26px -22px rgba(96,86,170,.4));
+  --sk-grad: linear-gradient(135deg, var(--sk-accent), var(--sk-accent-2));
+  --sk-grad-soft: linear-gradient(135deg, rgba(109,139,255,.14), rgba(142,123,255,.12));
+  --sk-chip-wash: rgba(255,255,255,.5);
+  --sk-ring: 0 0 0 4px rgba(109,139,255,.12);
+  /* 小窝:暖奶油 + 薄荷的房间底色,外面仍是蓝紫世界 */
+  --sk-cream: linear-gradient(160deg, #FFF8EC 0%, #F3FBF4 56%, #F3F4FF 100%);
+  --sk-warm-1: #FFF6E8;
+  --sk-warm-2: #EFFAF3;
+  --sk-illust-hi: inset 0 1px 0 rgba(255,255,255,.75);
+}
+html[data-theme="dark"]{
+  --sk-grad-soft: linear-gradient(135deg, rgba(143,168,255,.2), rgba(169,150,255,.16));
+  --sk-chip-wash: rgba(255,255,255,.05);
+  --sk-ring: 0 0 0 4px rgba(143,168,255,.16);
+  --sk-cream: linear-gradient(160deg, #2C2439 0%, #232C34 56%, #251F3D 100%);
+  --sk-warm-1: #33283C;
+  --sk-warm-2: #232F31;
+  --sk-illust-hi: inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+/* ---------------------------------------------------------------- 1. 旧皮肤的残渣修正 */
+/* 分段控件:旧 pages.css 把它改成了全宽 tab 条,这里恢复成风格一致的胶囊组 */
+.fishTabs, .pTabs, .memChips, .provChips{
+  display: flex; align-items: center; gap: 3px;
+  padding: 3px; border-radius: var(--r-sm, 12px);
+  background:var(--wash); border: 1px solid var(--sk-line);
+  box-shadow: none;
+}
+html[data-theme="dark"] .fishTabs,
+html[data-theme="dark"] .pTabs,
+html[data-theme="dark"] .memChips,
+html[data-theme="dark"] .provChips{background:var(--wash)}
+.fishTabs{width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; margin-bottom: 14px}
+.memChips{margin-left: auto; flex-wrap: wrap; width: auto}
+.pTabs{width: fit-content; margin-bottom: 12px}
+.fishTabs::-webkit-scrollbar, .pTabs::-webkit-scrollbar, .memChips::-webkit-scrollbar{display: none}
+.fishTabs button, .pTabs button, .memChips button, .provChips button{
+  height: 30px; padding: 0 13px; border: 0; border-radius: 9px;
+  background: transparent; color: var(--sk-ink-2);
+  font-size: 11.5px; font-weight: 500; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background-color 180ms, color 160ms, box-shadow 180ms;
+}
+.fishTabs button:hover, .pTabs button:hover,
+.memChips button:hover, .provChips button:hover{background:var(--wash); color: var(--sk-ink)}
+html[data-theme="dark"] .fishTabs button:hover,
+html[data-theme="dark"] .pTabs button:hover,
+html[data-theme="dark"] .memChips button:hover,
+html[data-theme="dark"] .provChips button:hover{background:var(--wash)}
+.fishTabs button.on, .pTabs button.on, .memChips button.on, .provChips button.on{
+  background: #fff; color: var(--sk-accent);
+  box-shadow: 0 2px 6px rgba(96,110,220,.16);
+}
+html[data-theme="dark"] .fishTabs button.on,
+html[data-theme="dark"] .pTabs button.on,
+html[data-theme="dark"] .memChips button.on,
+html[data-theme="dark"] .provChips button.on{background: #3C3568; color: #DCE4FF}
+.memChips button b{font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--sk-faint)}
+.memChips button.on b{color: var(--sk-accent)}
+
+/* 服务商预设:窄栏里 2×2,而不是挤成一行被裁掉 */
+.provChips{
+  display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px;
+  padding: 0; background: none; border: 0;
+}
+html[data-theme="dark"] .provChips{background: none; border: 0}
+.provChips button{
+  height: 30px; justify-content: center; border-radius: 10px;
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .provChips button{background:var(--wash)}
+.provChips button:hover{background: #fff; border-color: var(--sk-line-2)}
+html[data-theme="dark"] .provChips button:hover{background:var(--wash)}
+.provChips button.on{
+  background: var(--sk-grad-soft); border-color: rgba(109,139,255,.36);
+  color: var(--sk-accent); box-shadow: none;
+}
+
+/* .mini 的 ghost / danger 变体(旧 pages.css 给它们套了 6px 方角) */
+.mini.ghost{background: transparent; border-color: var(--sk-line); color: var(--sk-ink-2)}
+.mini.ghost:hover{background:var(--wash-2); color: var(--sk-ink)}
+.mini.dangerBtn, .mini.ghost.dangerBtn{color: var(--sk-bad); border-color: rgba(255,112,137,.34)}
+.mini.dangerBtn:hover{background: rgba(255,112,137,.1); color: var(--sk-bad)}
+
+/* 页头里的动作按钮:胶囊(正文里的按钮仍是 style.css 的圆角矩形) */
+.pagehead-acts .btn{border-radius: 999px; padding: 0 16px}
+.pagehead-acts .btn.sm{padding: 0 13px}
+.pagehead-acts .btn.ghost{background:var(--wash-2)}
+html[data-theme="dark"] .pagehead-acts .btn.ghost{background:var(--wash)}
+
+/* ---------------------------------------------------------------- 2. 页头 + 助手身份块(QQ / B站) */
+#view .pagehead{margin: 2px 0 20px}
+.svcId{
+  display: flex; align-items: center; gap: 12px; min-width: 0;
+  padding: 6px 18px 6px 8px; border-radius: 999px;
+  background: var(--sk-panel-2); border: 1px solid var(--sk-line);
+  box-shadow: var(--sk-shadow-sm), var(--sk-illust-hi);
+}
+.svcId .svcRole{
+  order: 1; width: 46px; height: 46px; flex: none; padding: 2.5px;
+  border-radius: 50%; border: 0; overflow: visible; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--sk-accent-3), var(--sk-accent-2) 46%, var(--sk-accent-4));
+  box-shadow: 0 10px 20px -12px rgba(109,139,255,.75);
+}
+html[data-theme="dark"] .svcId .svcRole{box-shadow: 0 10px 22px -12px rgba(0,0,0,.8)}
+.svcId .svcRole .rvAva{
+  width: 41px; height: 41px; border-radius: 50%;
+  border: 2px solid var(--panel-2, #fff); background: var(--sk-panel-2);
+}
+.svcId .svcRole .rvAva img{border-radius: 50%}
+.svcId .svcRole canvas{width: 41px; height: 41px; border-radius: 50%}
+.svcId .svcIdTxt{order: 2; display: flex; flex-direction: column; line-height: 1.3; min-width: 0}
+.svcId .svcIdTxt b{font-size: 13.5px; font-weight: 650; color: var(--sk-ink); letter-spacing: -.01em; white-space: nowrap}
+.svcId .svcIdTxt small{
+  font-size: 10.5px; color: var(--sk-muted); margin-top: 1px;
+  max-width: 360px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.svcId .svcDot{order: 3; width: 8px; height: 8px; margin-left: 2px}
+/* B站头像:外链被 CSP 拦了会变破图标,所以只显示 data: 头像 */
+.biliFace{
+  order: 1; width: 44px; height: 44px; flex: none; border-radius: 50%; object-fit: cover;
+  border: 2px solid var(--panel-2, #fff);
+  background: linear-gradient(135deg, rgba(255,158,196,.35), rgba(142,123,255,.28));
+  box-shadow: 0 10px 20px -14px rgba(109,139,255,.65);
+  color: transparent; font-size: 0;
+}
+.biliFace[src^="http"]{display: none}
+.biliFace:not([src]){display: none}
+
+/* ---------------------------------------------------------------- 3. 头像组件(JS 注入) */
+.rvAva{
+  width: var(--ava, 44px); height: var(--ava, 44px);
+  display: inline-grid; place-items: center; flex: none;
+  border-radius: 50%; overflow: hidden;
+  background: rgba(109,139,255,.14); border: 0;
+}
+.rvAva canvas, .rvAva svg, .rvAva img{width: 100%; height: 100%; object-fit: cover}
+.rvAva.rvAvaFail::after{content: "鱼"; font-size: 11px; color: var(--sk-muted)}
+.rvFish .rvFishGlow, .rvFish .rvFishBubble{display: none}
+.rvFish .rvFishBody img{user-select: none}
+
+.card-h .tag{margin-left: auto}
+
+/* ---------------------------------------------------------------- 4. QQ / B站 页体 */
+.svcBody{display: grid; grid-template-columns: 272px minmax(0,1fr); gap: 14px; align-items: start}
+.qqBody, .biliBody{grid-template-columns: 272px minmax(0,1fr)}
+.qqBody > .svcSide, .biliBody > .svcSide{grid-column: 1; grid-row: span 6; position: sticky; top: 0}
+.qqBody > .svcMain, .biliBody > .svcMain{grid-column: 2}
+.svcSide h2{
+  font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600; color: var(--sk-muted); margin: 0 0 10px;
+}
+.svcSide h2 + .svcKv{padding-top: 0}
+.svcMain h2:not(.sub-h):not(.card-h h2){
+  font-size: 13px; font-weight: 650; color: var(--sk-ink); letter-spacing: -.01em;
+  margin: 20px 0 10px; display: flex; align-items: center; gap: 8px;
+}
+.svcMain h2:first-child{margin-top: 0}
+/* 「白名单」这种卡头当第一行用时,不要自带分割线 */
+.svcMain .card-h-split{margin-top: 0; padding-top: 0; border-top: 0; flex-wrap: wrap; row-gap: 10px}
+
+.svcKv{
+  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+  padding: 8px 2px; border-bottom: 1px solid var(--sk-line); font-size: 11.5px;
+}
+.svcKv:last-child{border-bottom: 0}
+.svcKv .k{color: var(--sk-muted); flex: none}
+.svcKv .v{
+  color: var(--sk-ink-2); text-align: right; font-family: var(--mono); font-size: 11.5px;
+  overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.svcKv .v.ok{color: var(--sk-ok)}
+.svcKv .v.bad{color: var(--sk-bad)}
+.svcKv .v.warn{color: var(--sk-warn)}
+
+.extBox{
+  margin-top: 16px; padding: 14px; border-radius: var(--sk-r-sm);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .extBox{background:var(--wash)}
+.extBox h3{
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600; color: var(--sk-faint); margin: 0 0 8px;
+}
+.extBox .svcKv{padding: 6px 0}
+.extBox .svcActs{margin: 10px 0 2px}
+.cfgRow{display: flex; flex-wrap: wrap; gap: 12px 16px; margin: 10px 0}
+.cfgRow label{display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--sk-muted); flex: none}
+.cfgRow input{width: 58px; height: 30px; padding: 2px 8px; font-size: 11px; text-align: center; border-radius: 9px}
+.svcActs{display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0 2px}
+
+.qrBox{
+  margin-top: 12px; padding: 14px; border-radius: var(--sk-r-sm);
+  background: var(--sk-panel-2); border: 1px solid var(--sk-line);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.qrBox img{width: 148px; height: 148px; border-radius: 12px; background: #fff; padding: 8px}
+.qrT{font-size: 11px; font-weight: 600; color: var(--sk-ink-2)}
+.qrT.bad{color: var(--sk-bad)}
+.qrHint{font-size: 10.5px; color: var(--sk-muted); text-align: center; line-height: 1.65}
+.qqSend{display: flex; gap: 8px; margin-top: 12px}
+.qqSend input{flex: 1}
+
+/* QQ 对话:用户=淡蓝紫气泡,DSH 回复=白卡 */
+#qqConv{
+  max-height: 440px; overflow: auto;
+  display: flex; flex-direction: column; gap: 14px; padding: 2px 2px 8px;
+}
+#qqConv .convMsg{display: flex; flex-direction: column; padding: 0; border: 0; background: none; border-radius: 0}
+#qqConv .convMsg .ch{display: flex; align-items: baseline; gap: 8px; margin: 0 0 5px; padding-left: 2px}
+#qqConv .convMsg .ch b{font-size: 11px; font-weight: 600; color: var(--sk-ink-2)}
+#qqConv .convMsg .ch span{font-size: 9.5px; color: var(--sk-faint); font-family: var(--mono); margin-left: auto}
+#qqConv .convMsg .cb{
+  align-self: flex-start; max-width: 88%;
+  padding: 10px 14px; border-radius: 6px 16px 16px 16px;
+  background: var(--sk-panel-2); border: 1px solid var(--sk-line);
+  font-size: 12.5px; line-height: 1.75; color: var(--sk-ink-2);
+  box-shadow: var(--sk-shadow-sm);
+}
+#qqConv .convMsg.in .cb{
+  background: var(--sk-grad-soft); border-color: rgba(109,139,255,.2); color: var(--sk-ink);
+}
+#qqConv .convMsg.out .ch b{color: var(--sk-accent)}
+#qqConv .convMsg.err .cb{
+  background: rgba(255,112,137,.1); border-color: rgba(255,112,137,.3); color: var(--sk-bad);
+}
+html[data-theme="dark"] #qqConv .convMsg .cb{background:var(--wash)}
+
+/* 白名单 */
+.wlAdd{
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px; margin: 12px 0 14px; border-radius: var(--sk-r-sm);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .wlAdd{background:var(--wash)}
+.wlAdd select{width: 98px; flex: none}
+.wlAdd input{flex: 1; min-width: 120px}
+.wlList{display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow: auto}
+.wlRow{
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  border-radius: var(--r-sm, 12px); font-size: 12px;
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .wlRow{background:var(--wash)}
+.wlRow:hover{border-color: var(--sk-line-2)}
+.wlRow .wlKind{
+  font-size: 9.5px; padding: 2px 8px; border-radius: 7px;
+  background: var(--sk-grad-soft); color: var(--sk-accent); font-family: var(--mono);
+}
+.wlRow b{font-family: var(--mono); font-size: 12px; color: var(--sk-ink); font-weight: 600}
+.wlRow .wlNote{flex: 1; min-width: 0; color: var(--sk-muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap}
+.wlRow button{margin-left: auto; flex: none}
+.wlRow button:hover{color: var(--sk-bad); text-decoration: none}
+
+/* 审计 / 任务 */
+.auditList{display: flex; flex-direction: column; gap: 0; max-height: 280px; overflow: auto}
+.auditRow{
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 6px; border: 0; border-radius: 0;
+  border-bottom: 1px solid var(--sk-line);
+  font-size: 11.5px; color: var(--sk-ink-2);
+}
+.auditRow:last-child{border-bottom: 0}
+.auditRow:hover{background:var(--wash); border-radius: 9px}
+html[data-theme="dark"] .auditRow:hover{background:var(--wash)}
+.auditRow .mono{font-size: 10px; color: var(--sk-faint); flex: none; font-family: var(--mono)}
+.auditRow .who{font-size: 10.5px; color: var(--sk-muted); flex: none}
+.auditRow .txt{color: var(--sk-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0}
+.auditRow .ok{color: var(--sk-ok); flex: none}
+.auditRow .bad{color: var(--sk-bad); flex: none}
+.auditRow .warn{color: var(--sk-warn); flex: none}
+.wsTasks{display: flex; flex-direction: column; max-height: 300px; overflow: auto}
+
+/* B站投稿 */
+.pubForm{display: flex; flex-direction: column; gap: 12px}
+.pubRow{display: flex; align-items: center; gap: 10px; flex-wrap: wrap}
+.pubRow input{flex: 1; min-width: 130px}
+.pubRow select{width: 190px; flex: none}
+.pubFile{font-size: 11px; color: var(--sk-muted); max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap}
+.pubCoverImg{width: 64px; height: 40px; border-radius: 10px; object-fit: cover; border: 1px solid var(--sk-line-2)}
+.pubTip{font-size: 10.5px; color: var(--sk-faint); line-height: 1.65; flex: 1; min-width: 220px}
+.pubBar{height: 6px; border-radius: 99px; background: var(--sk-line-2); overflow: hidden; margin-top: 2px}
+.pubBar i{display: block; height: 100%; width: 0; border-radius: 99px; background: var(--sk-grad); transition: width .3s}
+.pubBar:not(:has(i[style*="width"])){display: none}
+.pubLog{
+  max-height: 180px; overflow: auto; margin: 0; padding: 12px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--sk-muted);
+  background:var(--wash); border: 1px solid var(--sk-line);
+  border-radius: var(--sk-r-sm); white-space: pre-wrap; user-select: text;
+}
+html[data-theme="dark"] .pubLog{background:var(--wash)}
+.pubLog:empty{display: none}
+
+/* B站稿件 / 评论 */
+.biliVids{display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow: auto}
+.biliVid{
+  display: block; padding: 12px 14px; border-radius: var(--r-sm, 12px); cursor: pointer;
+  background:var(--wash); border: 1px solid var(--sk-line);
+  transition: border-color 160ms, background-color 160ms, box-shadow 180ms;
+}
+html[data-theme="dark"] .biliVid{background:var(--wash)}
+.biliVid:hover{border-color: var(--sk-line-2); box-shadow: var(--sk-shadow-sm)}
+.biliVid.on{border-color: rgba(109,139,255,.34); background: var(--sk-grad-soft)}
+.biliVid .t{font-size: 12.5px; font-weight: 600; color: var(--sk-ink); line-height: 1.55}
+.biliVid .m{display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--sk-faint)}
+.biliVid .editBox{
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-top: 10px; padding: 12px; border-radius: 10px;
+  background: var(--sk-panel-2); border: 1px solid var(--sk-line);
+}
+.editBox .editTitle, .editBox .editDesc{height: 32px; font-size: 12px}
+.editBox .svcActs{grid-column: 1 / -1; margin: 0; display: flex; align-items: center; gap: 10px}
+.editBox .editMsg{font-size: 10.5px; color: var(--sk-muted)}
+
+.biliCmts{display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow: auto}
+.biliCmt{
+  padding: 11px 14px; border-radius: var(--r-sm, 12px); font-size: 11.5px;
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .biliCmt{background:var(--wash)}
+.biliCmt .u{display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px}
+.biliCmt .u b{font-size: 11px; font-weight: 600; color: var(--sk-ink-2)}
+.biliCmt .u span{font-size: 9.5px; color: var(--sk-faint); font-family: var(--mono)}
+.biliCmt .c{font-size: 12px; color: var(--sk-ink-2); line-height: 1.7}
+
+/* 空态 */
+.biliEmpty{
+  font-size: 12px; color: var(--sk-muted); line-height: 1.7; text-align: center;
+  padding: 20px 16px; margin: 0; border-radius: var(--r-sm, 12px);
+  background:var(--wash); border: 1px dashed var(--sk-line-2);
+}
+html[data-theme="dark"] .biliEmpty{background:var(--wash)}
+.biliEmpty a{color: var(--sk-accent)}
+
+/* ---------------------------------------------------------------- 5. 工作区 */
+.wsPage .pagehead-acts .wsState{
+  font-size: 10.5px; padding: 4px 11px; border-radius: 999px;
+  background: var(--sk-grad-soft); color: var(--sk-accent);
+  border: 1px solid rgba(109,139,255,.22); font-family: var(--mono);
+}
+.wsGrid{display: grid; grid-template-columns: 250px minmax(0,1fr) 296px; gap: 14px; align-items: start}
+.wsLeftCol{display: flex; flex-direction: column; gap: 14px; min-width: 0; position: sticky; top: 0}
+.wsLeftCol .card{padding: 16px}
+.wsColHead{
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--sk-muted);
+}
+.wsCount{margin-left: auto; font-size: 10px; color: var(--sk-faint); font-family: var(--mono)}
+.wsConvs{display: flex; flex-direction: column; gap: 3px; max-height: 44vh; overflow: auto}
+.wsConv{
+  display: flex; flex-direction: column; gap: 2px; padding: 9px 11px;
+  border-radius: 10px; border: 1px solid transparent; background: transparent; cursor: pointer;
+  transition: background-color 160ms, border-color 160ms;
+}
+.wsConv:hover{background:var(--wash); border-color: transparent}
+html[data-theme="dark"] .wsConv:hover{background:var(--wash)}
+.wsConv.on{
+  background: linear-gradient(90deg, rgba(214,226,255,.9), rgba(236,228,255,.85));
+  border-color: rgba(109,139,255,.2);
+}
+html[data-theme="dark"] .wsConv.on{background: rgba(143,168,255,.16); border-color: rgba(143,168,255,.26)}
+.wsConv b{font-size: 11.5px; font-weight: 600; color: var(--sk-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap}
+.wsConv.on b{color: var(--sk-ink)}
+.wsConv small{font-size: 9px; color: var(--sk-faint); font-family: var(--mono)}
+
+/* 中央:她 + 对话 */
+.wsHero{
+  display: grid; grid-template-columns: auto minmax(0,1fr); gap: 20px; align-items: center; padding: 20px 24px;
+  border-radius: var(--sk-r);
+  background:
+    radial-gradient(120% 100% at 92% -12%, rgba(255,158,196,.16), transparent 62%),
+    radial-gradient(90% 80% at -6% 112%, rgba(93,214,198,.14), transparent 66%),
+    var(--sk-panel);
+  border: 1px solid var(--wash-line);
+}
+html[data-theme="dark"] .wsHero{border-color: var(--sk-line); background:
+  radial-gradient(120% 100% at 92% -12%, rgba(255,168,204,.10), transparent 62%),
+  radial-gradient(90% 80% at -6% 112%, rgba(111,227,210,.08), transparent 66%),
+  var(--sk-panel)}
+#wsFish{display: flex; align-items: flex-end; justify-content: center; align-self: stretch}
+#wsFish .rvFish{--rvh: 132px}
+.wsHeroCopy h2{font-size: 18px; font-weight: 700; letter-spacing: -.02em; color: var(--sk-ink)}
+.wsHeroCopy p{font-size: 12px; color: var(--sk-muted); line-height: 1.75; margin-top: 6px; max-width: 620px}
+.wsQuick{display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px}
+.wsQuick button{
+  height: 30px; padding: 0 13px; border-radius: 999px; font-size: 11px; color: var(--sk-ink-2);
+  background:var(--wash-2); border: 1px solid var(--sk-line);
+  transition: color 160ms, border-color 160ms, background-color 160ms;
+}
+html[data-theme="dark"] .wsQuick button{background:var(--wash)}
+.wsQuick button:hover{color: var(--sk-accent); border-color: rgba(109,139,255,.4); background: var(--sk-grad-soft)}
+
+.wsThreadWrap{
+  display: flex; flex-direction: column; padding: 18px 20px;
+  border-radius: var(--sk-r); background: var(--sk-panel);
+  border: 1px solid var(--wash-line); box-shadow: var(--sk-shadow-sm);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+html[data-theme="dark"] .wsThreadWrap{border-color: var(--sk-line)}
+.wsThreadHead{font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--sk-muted); margin-bottom: 12px}
+.wsMsgs{
+  display: flex; flex-direction: column; gap: 14px;
+  min-height: 240px; max-height: 46vh; overflow: auto; padding: 4px 2px 10px;
+}
+.wsMsgs .convMsg{
+  display: flex; align-items: flex-start; gap: 10px; max-width: 88%;
+  padding: 0; border: 0; border-radius: 0;
+}
+.wsMsgs .convMsg.in,
+.wsMsgs .convMsg.out{background: none; border: 0}
+.wsMsgs .convMsg.in{flex-direction: row-reverse; align-self: flex-end}
+.wsMsgs .convMsg:hover, .wsMsgs .convMsg.in:hover, .wsMsgs .convMsg.out:hover{background: none}
+.wsMsgs .convMsg .convAva{
+  width: 34px; height: 34px; flex: none; padding: 2px; border-radius: 50%;
+  display: grid; place-items: center; overflow: hidden; border: 0;
+  background: linear-gradient(135deg, rgba(93,214,198,.6), rgba(109,139,255,.45));
+  box-shadow: 0 8px 18px -14px rgba(93,214,198,.95);
+}
+.wsMsgs .convMsg .convAva .rvAva{width: 100%; height: 100%; border-radius: 50%; background: transparent}
+.wsMsgs .convMsg.in .convAva{background: var(--sk-grad); color: #fff; font-size: 11px; font-weight: 600}
+.wsMsgs .convMsg .convBody{
+  min-width: 0; padding: 10px 14px;
+  border-radius: 6px 16px 16px 16px;
+  background: var(--sk-panel-2); border: 1px solid var(--sk-line);
+  box-shadow: var(--sk-shadow-sm);
+}
+html[data-theme="dark"] .wsMsgs .convMsg .convBody{background:var(--wash)}
+.wsMsgs .convMsg.in .convBody{
+  border-radius: 16px 6px 16px 16px; border-color: transparent;
+  background: var(--sk-grad); color: #fff;
+  box-shadow: 0 14px 28px -22px rgba(109,139,255,.95);
+}
+html[data-theme="dark"] .wsMsgs .convMsg.in .convBody{
+  background: linear-gradient(135deg, #5C74D8, #7A64D4);
+  box-shadow: 0 14px 28px -22px rgba(0,0,0,.9);
+}
+.wsMsgs .convMsg .ch{display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px}
+.wsMsgs .convMsg .ch b{font-size: 10.5px; font-weight: 600; color: var(--sk-ink-2)}
+.wsMsgs .convMsg .ch span{font-size: 9px; color: var(--sk-faint); font-family: var(--mono); margin-left: auto}
+.wsMsgs .convMsg.in .ch b{color: rgba(255,255,255,.95)}
+.wsMsgs .convMsg.in .ch span{color: rgba(255,255,255,.7)}
+.wsMsgs .convMsg .cb{
+  font-size: 12.5px; line-height: 1.75; color: var(--sk-ink-2);
+  white-space: pre-wrap; word-break: break-word; user-select: text;
+}
+.wsMsgs .convMsg.in .cb{color: #fff}
+.wsMsgs .biliEmpty{max-width: none; margin: auto 0}
+
+/* 底部输入:白胶囊 */
+.wsComposer{
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 12px; padding: 6px 6px 6px 18px;
+  border-radius: 999px; background: var(--sk-panel-2);
+  border: 1px solid var(--sk-line-2);
+  box-shadow: var(--sk-shadow-sm), var(--sk-illust-hi);
+  transition: border-color 180ms, box-shadow 180ms;
+}
+.wsComposer:focus-within{border-color: rgba(109,139,255,.5); box-shadow: var(--sk-ring)}
+.wsComposer input{
+  flex: 1; height: 100%; padding: 0 4px; font-size: 13px;
+  border: 0; border-radius: 0; background: transparent; box-shadow: none;
+}
+.wsComposer input:focus{background: transparent; border: 0; box-shadow: none}
+.wsComposer .btn{height: 38px; border-radius: 999px; padding: 0 22px}
+
+/* 右侧:模型 / 任务 */
+.wsModel, .wsTasksCard{padding: 18px}
+.wsCfg{grid-template-columns: 1fr; gap: 10px; margin-top: 12px}
+.wsCfg label{display: flex; flex-direction: column; gap: 6px; font-size: 10.5px; color: var(--sk-muted)}
+.wsActions{display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap}
+.wsActions .btn{flex: 1; border-radius: 999px}
+.wsHelp{
+  margin-top: 14px; padding: 12px 14px; border-radius: var(--r-sm, 12px);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .wsHelp{background:var(--wash)}
+.wsHelp summary{cursor: pointer; font-size: 11px; font-weight: 600; color: var(--sk-ink-2)}
+.wsHelp summary:hover{color: var(--sk-accent)}
+.wsHelp ol{margin: 10px 0 8px 18px; padding: 0; font-size: 11px; color: var(--sk-muted); line-height: 1.9}
+.wsTbl{width: 100%; border-collapse: collapse; font-size: 10.5px; margin-top: 8px}
+.wsTbl th{text-align: left; font-weight: 600; color: var(--sk-muted); padding: 6px; border-bottom: 1px solid var(--sk-line-2)}
+.wsTbl td{padding: 6px; border-bottom: 1px solid var(--sk-line); color: var(--sk-ink-2); font-family: var(--mono); font-size: 10px}
+.wsTbl tr:last-child td{border-bottom: 0}
+
+/* ---------------------------------------------------------------- 6. 鱼的小窝(暖像素场景) */
+.page-fish .pagehead-acts{gap: 12px}
+.page-fish .conn-chip{
+  padding: 5px 12px; border-radius: 999px;
+  background:var(--wash-2); border: 1px solid var(--sk-line); font-size: 10.5px;
+}
+html[data-theme="dark"] .page-fish .conn-chip{background:var(--wash)}
+.fishStatus{
+  display: grid; grid-template-columns: auto minmax(0,1fr) auto;
+  gap: 18px; align-items: center; padding: 16px 20px; margin-bottom: 14px;
+  border-radius: var(--sk-r); background: var(--sk-panel);
+  border: 1px solid var(--wash-line); box-shadow: var(--sk-shadow-sm);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+html[data-theme="dark"] .fishStatus{border-color: var(--sk-line)}
+.fishStatus .fsAva{
+  width: 86px; height: 86px; flex: none; padding: 0; overflow: hidden;
+  display: grid; place-items: center; border-radius: 26px;
+  border: 1px solid rgba(255,196,150,.42);
+  background: linear-gradient(150deg, var(--sk-warm-1), var(--sk-warm-2) 62%, var(--sk-panel));
+}
+html[data-theme="dark"] .fishStatus .fsAva{
+  border-color: var(--sk-line);
+  background: linear-gradient(150deg, var(--sk-warm-1), var(--sk-warm-2) 62%, var(--sk-panel));
+}
+.fishStatus .fsAva canvas{width: 78px; height: 78px}
+.fishStatus .fsMain, .fishStatus .fsCoin{
+  background: none; border: 0; padding: 0; border-radius: 0; box-shadow: none; backdrop-filter: none;
+}
+.fsMain{min-width: 0}
+.fsKicker{font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--sk-faint); margin-bottom: 4px}
+.fsNow{
+  font-size: 15px; font-weight: 650; letter-spacing: -.01em; color: var(--sk-ink);
+  margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fsBars{display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px}
+.fsBar{
+  display: flex; align-items: center; gap: 8px; padding: 8px 11px;
+  border-radius: 10px; font-size: 10.5px; color: var(--sk-muted); font-family: var(--mono);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .fsBar{background:var(--wash)}
+.fsBar > span:first-child{flex: none; color: var(--sk-ink-2)}
+.fsBar > span:last-child{flex: none; color: var(--sk-ink); font-weight: 600}
+.fsBar i{
+  flex: 1; min-width: 52px; height: 6px; display: flex; gap: 2px;
+  background: none !important; border-radius: 0; overflow: visible;
+}
+.fsBar i::after{display: none !important}
+.fsBar i b{
+  flex: 1 1 0; height: 6px; float: none; border-radius: 99px;
+  background: var(--sk-line-2) !important;
+}
+.fsBar i b.mid{background: var(--sk-warn) !important}
+.fsBar i b.on{background: linear-gradient(90deg, var(--sk-accent-4), var(--sk-accent)) !important}
+.fsPhase{font-size: 10px; color: var(--sk-faint); font-family: var(--mono); grid-column: 1 / -1}
+.fsCoin{text-align: right; padding-left: 18px; border-left: 1px solid var(--sk-line)}
+.fsCoin b{display: block; font-family: var(--mono); font-size: 24px; font-weight: 700; line-height: 1.1; color: var(--sk-warn)}
+.fsCoin span{font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--sk-muted)}
+.fishIpBadge{display: none}
+
+.fishBody{display: grid; grid-template-columns: minmax(0,600px) minmax(0,1fr); gap: 14px; align-items: start}
+.fishMain{padding: 16px; overflow: hidden}
+.fishMainHead{display: flex; align-items: center; gap: 8px; padding: 2px 4px 12px; flex-wrap: wrap}
+.fishMainHead h2{font-size: 14px; font-weight: 650; color: var(--sk-ink); margin: 0}
+.fishChip{
+  font-size: 10px; padding: 3px 9px; border-radius: 8px;
+  background:var(--wash); border: 1px solid var(--sk-line);
+  color: var(--sk-muted); font-family: var(--mono);
+}
+html[data-theme="dark"] .fishChip{background:var(--wash)}
+.fishStage{
+  position: relative; display: flex; align-items: center; justify-content: center;
+  min-height: 600px; padding: 10px; overflow: hidden; border-radius: var(--r-lg, 20px);
+  border: 1px solid rgba(255,196,150,.34);
+  background:
+    radial-gradient(110% 70% at 82% 4%, rgba(255,238,196,.9), transparent 62%),
+    radial-gradient(80% 60% at 14% 102%, rgba(204,246,228,.8), transparent 68%),
+    var(--sk-cream);
+  ;
+}
+html[data-theme="dark"] .fishStage{
+  border-color: var(--sk-line);
+  ;
+  background:
+    radial-gradient(110% 70% at 82% 4%, rgba(255,206,150,.10), transparent 62%),
+    radial-gradient(80% 60% at 14% 102%, rgba(120,230,200,.07), transparent 68%),
+    var(--sk-cream);
+}
+#fishCanvas{display: block; border-radius: 12px; box-shadow: 0 16px 34px -26px rgba(90,64,44,.7)}
+
+.fishSideCol{display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; align-content: start}
+.fishSideCol .card, .fishSide .card{padding: 16px}
+.fishSide{display: flex; flex-direction: column; gap: 12px}
+.fishSide h2, .fishSideCol h2{font-size: 12px; font-weight: 650; color: var(--sk-ink); margin: 0 0 10px}
+.fishSide h3, .fishSideCol h3{
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--sk-muted); margin: 12px 0 6px;
+}
+.fishShop{display: flex; flex-direction: column; gap: 6px; margin-top: 8px}
+.fishShopItem{
+  display: flex; align-items: center; gap: 8px; padding: 9px 11px;
+  border-radius: 10px; font-size: 11.5px; color: var(--sk-ink-2);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .fishShopItem{background:var(--wash)}
+.fishShopItem b{font-weight: 600; color: var(--sk-ink)}
+.fishShopItem span{margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--sk-warn)}
+.fishShopItem i{font-size: 10px; color: var(--sk-muted); margin-left: 6px}
+.fishShopItem[data-buy]{cursor: pointer; transition: border-color 160ms, background-color 160ms}
+.fishShopItem[data-buy]:hover{border-color: rgba(109,139,255,.36); background: var(--sk-grad-soft)}
+.fishBulk{display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px}
+.fishBulkBtn{
+  height: 30px; padding: 0 13px; border-radius: 999px; font-size: 11px;
+  color: var(--sk-ink-2); background:var(--wash-2); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .fishBulkBtn{background:var(--wash)}
+.fishBulkBtn:hover{color: var(--sk-accent); border-color: rgba(109,139,255,.4)}
+.fishBulkBtn.ghost{background: transparent}
+.fishBulkBtn:disabled{opacity: .45}
+.fishLog{display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow: auto; margin-top: 8px}
+.fishLogRow{display: flex; gap: 8px; padding: 6px 2px; font-size: 11px; color: var(--sk-muted); border-bottom: 1px dashed var(--sk-line)}
+.fishLogRow:last-child{border-bottom: 0}
+.fishLogRow span{font-family: var(--mono); font-size: 10px; color: var(--sk-faint); flex: none}
+
+/* 雇佣 */
+.hireGrid{display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 12px}
+.hireCard{padding: 14px; border-radius: var(--r-sm, 12px); background:var(--wash); border: 1px solid var(--sk-line)}
+html[data-theme="dark"] .hireCard{background:var(--wash)}
+.hireCard .hireAva{
+  width: 64px; height: 64px; margin: 0 auto 10px; border-radius: 50%;
+  display: grid; place-items: center; overflow: hidden;
+  background: linear-gradient(150deg, var(--sk-warm-1), var(--sk-warm-2));
+  border: 1px solid rgba(255,196,150,.4);
+}
+.hireCard .hireAva canvas{width: 58px; height: 58px}
+.hireCard .hireInfo{display: flex; flex-direction: column; gap: 3px; text-align: center; font-size: 11.5px; color: var(--sk-ink-2); margin-bottom: 10px}
+.hireCard .hireInfo b{font-size: 12px; font-weight: 600; color: var(--sk-ink)}
+.hireCard .hireInfo span{font-size: 10px; color: var(--sk-muted)}
+.hireCard .hireInfo i{font-size: 10px; color: var(--sk-faint)}
+.hireCard .hireBar{display: block; height: 5px; margin: 0 0 10px; border-radius: 99px; background: var(--sk-line-2); overflow: hidden}
+.hireCard .hireBar b{display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--sk-accent-4), var(--sk-accent))}
+.hireCard .hireBtn{
+  width: 100%; height: 30px; border-radius: 999px; font-size: 11px;
+  color: var(--sk-ink-2); background:var(--wash-2); border: 1px solid var(--sk-line);
+}
+.hireCard .hireBtn:hover{color: var(--sk-accent); border-color: rgba(109,139,255,.4)}
+.hireCard .hireBtn.ghost{background: transparent}
+.hireStats{display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap}
+.hireStat{
+  display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 13px;
+  border-radius: 999px; font-size: 10.5px; color: var(--sk-muted); font-family: var(--mono);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+.hireStat b{font-family: var(--mono); font-size: 11.5px; color: var(--sk-ink); font-weight: 600}
+.hireStat span{font-size: 10px; color: var(--sk-muted)}
+
+/* 工坊 */
+#fishWorkshopPage{display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px}
+.wsCol{display: flex; flex-direction: column; gap: 10px}
+.wsCardHead{display: flex; align-items: center; gap: 8px; margin-bottom: 10px}
+.wsCardHead h2{font-size: 12.5px; font-weight: 650; color: var(--sk-ink); margin: 0}
+.wsChip{
+  font-size: 10px; padding: 3px 9px; border-radius: 8px;
+  background:var(--wash); border: 1px solid var(--sk-line);
+  color: var(--sk-muted); font-family: var(--mono);
+}
+html[data-theme="dark"] .wsChip{background:var(--wash)}
+.wsChip.lack{color: var(--sk-bad); border-color: rgba(255,112,137,.3); background: rgba(255,112,137,.08)}
+.wsChip.own{color: var(--sk-ok); border-color: rgba(53,191,140,.3)}
+.wsStats{display: grid; grid-template-columns: repeat(3,1fr); gap: 8px}
+.wsStat{padding: 12px 10px; border-radius: 10px; text-align: center; background:var(--wash); border: 1px solid var(--sk-line)}
+html[data-theme="dark"] .wsStat{background:var(--wash)}
+.wsStat b{display: block; font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--sk-ink)}
+.wsStat span{font-size: 9.5px; color: var(--sk-muted)}
+.wsDots{display: flex; gap: 3px; justify-content: center; margin-top: 6px}
+.wsDots i{width: 5px; height: 5px; border-radius: 50%; background: var(--sk-line-2)}
+.wsDots i.on{background: var(--sk-accent-4)}
+.wsDots i.low{background: var(--sk-warn)}
+.wsBtnRow{display: flex; gap: 6px; flex-wrap: wrap}
+.wsBtn{
+  height: 28px; padding: 0 12px; border-radius: 999px; font-size: 11px;
+  color: var(--sk-ink-2); background:var(--wash-2); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .wsBtn{background:var(--wash)}
+.wsBtn:hover{color: var(--sk-accent); border-color: rgba(109,139,255,.4)}
+.wsGather{display: flex; margin-top: 10px}
+.wsPlace{display: grid; grid-template-columns: repeat(2,1fr); gap: 10px}
+.wsPlaceTop{display: flex; align-items: center; gap: 8px; margin-bottom: 6px}
+.wsDrops{display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px}
+.wsDrop{
+  display: inline-flex; align-items: center; gap: 4px; font-size: 10px;
+  padding: 3px 8px; border-radius: 7px;
+  background:var(--wash); border: 1px solid var(--sk-line); color: var(--sk-muted);
+}
+.wsGo{
+  height: 28px; padding: 0 12px; border-radius: 999px; font-size: 11px;
+  color: var(--sk-accent); background: var(--sk-grad-soft);
+  border: 1px solid rgba(109,139,255,.28); margin-left: auto;
+}
+.wsGo:hover{background: rgba(109,139,255,.18)}
+.wsGo:disabled{opacity: .45}
+.wsRecipes{display: flex; flex-direction: column; gap: 8px}
+.wsRecipe{padding: 12px; border-radius: 10px; background:var(--wash); border: 1px solid var(--sk-line)}
+html[data-theme="dark"] .wsRecipe{background:var(--wash)}
+.wsRecipeMain{display: flex; align-items: center; gap: 8px}
+.wsRecipeName{font-size: 12px; font-weight: 600; color: var(--sk-ink)}
+.wsMats{display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px}
+.wsMat{
+  font-size: 10px; padding: 3px 8px; border-radius: 7px;
+  background:var(--wash); border: 1px solid var(--sk-line);
+  color: var(--sk-muted); font-family: var(--mono);
+}
+.wsMat.lack{color: var(--sk-bad); border-color: rgba(255,112,137,.3); background: rgba(255,112,137,.08)}
+.wsItems{display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow: auto}
+.wsItem{
+  display: flex; align-items: center; gap: 8px; padding: 9px 11px;
+  border-radius: 10px; font-size: 11.5px; color: var(--sk-ink-2);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .wsItem{background:var(--wash)}
+.wsItem b{font-weight: 600; color: var(--sk-ink)}
+.wsItem span{margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--sk-muted)}
+.wsSw{width: 14px; height: 14px; border-radius: 5px; flex: none; background: var(--sk-grad-soft); border: 1px solid var(--sk-line-2)}
+.wsMake, .wsSell{
+  height: 26px; padding: 0 11px; border-radius: 999px; font-size: 10.5px;
+  color: var(--sk-accent); background: var(--sk-grad-soft); border: 1px solid rgba(109,139,255,.26);
+}
+.wsMake:hover, .wsSell:hover{background: rgba(109,139,255,.2)}
+.wsLog{max-height: 180px; overflow: auto; display: flex; flex-direction: column; gap: 2px}
+.wsLogRow{font-size: 10.5px; color: var(--sk-muted); padding: 4px 0; border-bottom: 1px dashed var(--sk-line); font-family: var(--mono)}
+.wsLogRow:last-child{border-bottom: 0}
+.wsWarn{font-size: 10.5px; color: var(--sk-warn); margin-top: 8px}
+.wsEmpty{font-size: 11.5px; color: var(--sk-muted); padding: 14px 0; text-align: center}
+.wsHint{font-size: 10.5px; color: var(--sk-muted); line-height: 1.65}
+
+/* 账本 / 日记 */
+.ledgerCard{padding: 16px}
+.ledgerSum{display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px}
+.ledgerBal{font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--sk-warn)}
+.ledgerList{max-height: 340px; overflow: auto; display: flex; flex-direction: column}
+.ledgerRow{display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid var(--sk-line); font-size: 11.5px}
+.ledgerRow:last-child{border-bottom: 0}
+.ledgerAt{font-family: var(--mono); font-size: 10px; color: var(--sk-faint); flex: none}
+.ledgerNote{flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sk-ink-2)}
+.ledgerDelta{font-family: var(--mono); font-size: 11px}
+.ledgerDelta.in{color: var(--sk-ok)}
+.ledgerDelta.out{color: var(--sk-bad)}
+.ledgerDelta.zero{color: var(--sk-muted)}
+.diaryWrap{display: flex; flex-direction: column; gap: 16px}
+.diaryGroup{display: flex; flex-direction: column; gap: 8px}
+.diaryDay{font-size: 10.5px; letter-spacing: .12em; color: var(--sk-muted); font-family: var(--mono)}
+.diaryRow{
+  display: flex; gap: 12px; padding: 12px 14px; border-radius: var(--r-sm, 12px);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .diaryRow{background:var(--wash)}
+.diaryAt{font-family: var(--mono); font-size: 10px; color: var(--sk-faint); flex: none; padding-top: 2px}
+.diaryText{font-size: 12px; color: var(--sk-ink-2); line-height: 1.75; user-select: text}
+
+/* 小窝弹层 / 页内 toast */
+.fishPop{
+  position: absolute; z-index: 20; width: 240px; padding: 16px;
+  border-radius: var(--r-lg, 20px); background: var(--sk-panel-2);
+  border: 1px solid var(--sk-line-2); box-shadow: var(--shadow, var(--sk-shadow));
+  backdrop-filter: blur(18px) saturate(150%);
+}
+.popHead{display: flex; align-items: center; gap: 8px; margin-bottom: 8px}
+.popHead b{font-size: 12.5px; font-weight: 650; color: var(--sk-ink)}
+.popX{margin-left: auto; width: 24px; height: 24px; border-radius: 99px; display: grid; place-items: center; color: var(--sk-muted); background: rgba(140,150,220,.14)}
+.popX:hover{color: var(--sk-ink); background: rgba(140,150,220,.24)}
+.popTag{
+  display: inline-flex; font-size: 9.5px; padding: 2px 8px; border-radius: 7px;
+  background: var(--sk-grad-soft); color: var(--sk-accent); font-family: var(--mono);
+}
+.popDesc{font-size: 11px; color: var(--sk-muted); line-height: 1.65; margin: 6px 0}
+.popRow{display: flex; justify-content: space-between; gap: 10px; font-size: 11px; color: var(--sk-muted); padding: 4px 0}
+.popRow b{color: var(--sk-ink-2); font-weight: 600; font-family: var(--mono)}
+.popBar{height: 5px; border-radius: 99px; background: var(--sk-line-2); overflow: hidden; margin: 8px 0}
+.popBar i{display: block; height: 100%; border-radius: 99px; background: var(--sk-grad)}
+.popActs{display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px}
+.popLabel{font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--sk-faint); margin-top: 10px}
+.fishToast{
+  position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 21;
+  padding: 9px 18px; border-radius: 999px; font-size: 11.5px; color: var(--sk-ink);
+  background: var(--sk-panel-2); border: 1px solid var(--sk-line-2); box-shadow: var(--sk-shadow);
+}
+
+/* ---------------------------------------------------------------- 7. 记忆树 */
+.memWrap{display: flex; flex-direction: column; gap: 14px; min-height: 0}
+.memHead{display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 14px 20px}
+.memTitle{display: flex; flex-direction: column; gap: 3px; min-width: 0}
+.memTitle h2{font-size: 14px; font-weight: 650; color: var(--sk-ink)}
+.memSum{font-size: 11px; color: var(--sk-muted); font-family: var(--mono)}
+.memSum b{color: var(--sk-ink-2); font-weight: 600}
+.memSum i{color: var(--sk-bad)}
+.memFind{
+  display: flex; align-items: center; gap: 8px; flex: 1;
+  min-width: 280px; max-width: 400px; padding: 4px 4px 4px 14px;
+  border-radius: 999px; background: var(--sk-panel-2); border: 1px solid var(--sk-line);
+}
+.memFind input{
+  flex: 1; height: 32px; padding: 0 4px; border: 0; border-radius: 0;
+  background: transparent; box-shadow: none; font-size: 12.5px;
+}
+.memFind input:focus{background: transparent; box-shadow: none; border: 0}
+.memFind .btn{height: 30px; flex: none; border-radius: 999px}
+.memBody{display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 14px; align-items: stretch}
+.memStage{
+  position: relative; overflow: hidden; min-height: 540px; padding: 0;
+  border-radius: var(--sk-r);
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(109,139,255,.12), transparent 62%),
+    radial-gradient(90% 70% at 12% 104%, rgba(93,214,198,.12), transparent 68%),
+    var(--sk-panel);
+  border: 1px solid var(--wash-line); box-shadow: var(--sk-shadow-sm);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+html[data-theme="dark"] .memStage{border-color: var(--sk-line); background:
+  radial-gradient(120% 90% at 50% -10%, rgba(143,168,255,.14), transparent 62%),
+  radial-gradient(90% 70% at 12% 104%, rgba(111,227,210,.1), transparent 68%),
+  var(--sk-panel)}
+#memTree{display: block; width: 100%; height: 100%; min-height: 540px}
+.memCard{padding: 20px; overflow: auto; max-height: calc(var(--vhpx, 100vh) - 260px)}
+
+/* 树:用 style.css 的 --mem-* 语义色(清晰薄荷 / 正常琥珀 / 模糊粉红) */
+#memTree text{fill: var(--sk-ink-2); font-family: var(--sans); font-size: 11px}
+#memTree .memLabel{fill: var(--sk-muted); font-size: 11px; pointer-events: none}
+#memTree .memLabelN{fill: var(--sk-faint); font-size: 9px; font-family: var(--mono); pointer-events: none}
+#memTree .memTrunk{stroke: var(--mem-normal, #FFB454); stroke-width: 10; fill: none; stroke-linecap: round; opacity: .8}
+#memTree .memTrunkHi{stroke: #fff; opacity: .45; stroke-width: 3; fill: none}
+html[data-theme="dark"] #memTree .memTrunkHi{opacity: .18}
+#memTree .memBranch{stroke: var(--mem-normal, #FFB454); stroke-width: 4; fill: none; stroke-linecap: round; opacity: .55}
+#memTree .memTwig{stroke: var(--mem-normal, #FFB454); stroke-width: 1.6; fill: none; opacity: .38}
+#memTree .memRoots{stroke: color-mix(in srgb, var(--mem-normal, #FFB454) 32%, transparent); stroke-width: 1.6; fill: none}
+#memTree .memGround{fill: color-mix(in srgb, var(--mem-clear, #5DD6C6) 10%, transparent)}
+#memTree .memGlow{fill: color-mix(in srgb, var(--mem-normal, #FFB454) 14%, transparent); filter: blur(10px)}
+#memTree .memDust{opacity: .5}
+#memTree .memDot{fill: var(--mem-normal, #FFB454); opacity: 1}
+#memTree .memLeaf.clear .memDot{fill: var(--mem-clear, #5DD6C6)}
+#memTree .memLeaf.fuzzy .memDot{fill: var(--mem-fuzzy, #FF7089)}
+#memTree .memLeaf.fuzzy .memGlow{fill: color-mix(in srgb, var(--mem-fuzzy, #FF7089) 20%, transparent)}
+#memTree .memHeart{
+  stroke: var(--mem-fuzzy, #FF7089); stroke-width: 1.4;
+  fill: color-mix(in srgb, var(--mem-fuzzy, #FF7089) 24%, transparent);
+}
+#memTree .memPin{fill: var(--sk-warn)}
+#memTree .memCore{fill: var(--sk-warn); opacity: .9}
+#memTree .memHit{fill: transparent; cursor: pointer}
+#memTree .memLeaf{transition: opacity 200ms}
+#memTree .memLeaf.dim{opacity: .26}
+#memTree .memLeaf.sel .memDot{stroke: #fff; stroke-width: 1.6}
+#memTree .memLeaf.cracked{animation: memCrack 520ms var(--ease, cubic-bezier(.22,.8,.24,1))}
+#memTree .memRing{fill: none; stroke: var(--mem-fuzzy, #FF7089); stroke-width: 1.5; opacity: .7; animation: memRingOut 900ms ease-out forwards}
+#memTree .shard{stroke: none; opacity: .85}
+/* 只动 opacity:叶子 <g> 自带 translate 属性,动 transform 会跳回原点 */
+@keyframes memCrack{0%, 100%{opacity: 1} 38%{opacity: .42}}
+@keyframes memRingOut{from{opacity: .8} to{opacity: 0}}
+.memStage.shake{animation: memStageShake 480ms var(--ease, cubic-bezier(.22,.8,.24,1))}
+@keyframes memStageShake{0%, 100%{transform: translate(0,0)} 20%{transform: translate(-2px,1px)} 45%{transform: translate(2px,-1px)} 70%{transform: translate(-1px,-1px)}}
+
+.memTip{
+  position: absolute; z-index: 30; pointer-events: none; min-width: 170px; max-width: 290px;
+  padding: 12px 14px; border-radius: var(--r-sm, 12px);
+  background: var(--sk-panel-2); border: 1px solid var(--sk-line-2);
+  box-shadow: var(--sk-shadow); backdrop-filter: blur(16px);
+}
+.memTip .tt{display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px}
+.memTip .tt b{font-size: 11.5px; color: var(--sk-ink)}
+.memTip .tt span{font-size: 10px; color: var(--sk-muted); font-family: var(--mono)}
+.memTip .tt .pill{align-self: flex-start; margin-top: 3px; padding: 2px 9px; border-radius: 7px; font-family: var(--sans); color: var(--sk-accent); background: var(--sk-grad-soft)}
+.memTip .tx{font-size: 11.5px; line-height: 1.7; color: var(--sk-ink-2)}
+.memLegend{position: absolute; left: 18px; bottom: 16px; display: flex; gap: 14px; flex-wrap: wrap; font-size: 10px; color: var(--sk-muted)}
+.memLegend i{width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle}
+.memLegend .lg-c{background: var(--mem-clear, #5DD6C6)}
+.memLegend .lg-n{background: var(--mem-normal, #FFB454)}
+.memLegend .lg-f{background: var(--mem-fuzzy, #FF7089)}
+.memLegend .lg-p{background: var(--sk-warn)}
+
+.mcEmpty{display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 46px 12px; text-align: center; color: var(--sk-muted); font-size: 12px; line-height: 1.75}
+.mcEmpty .big{font-size: 32px; opacity: .85}
+.mcEmpty .muted{color: var(--sk-muted)}
+.memCard h3{font-size: 13px; margin: 0 0 8px; color: var(--sk-ink)}
+.mcTop{display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px}
+.mcPill{
+  font-size: 10px; padding: 3px 9px; border-radius: 8px;
+  background:var(--wash); border: 1px solid var(--sk-line);
+  color: var(--sk-muted); font-family: var(--sans);
+}
+html[data-theme="dark"] .mcPill{background:var(--wash)}
+.mcPill.clear{color: var(--mem-clear, #5DD6C6); background: color-mix(in srgb, var(--mem-clear, #5DD6C6) 12%, transparent); border-color: color-mix(in srgb, var(--mem-clear, #5DD6C6) 30%, transparent)}
+.mcPill.normal{color: var(--mem-normal, #FFB454); background: color-mix(in srgb, var(--mem-normal, #FFB454) 12%, transparent); border-color: color-mix(in srgb, var(--mem-normal, #FFB454) 30%, transparent)}
+.mcPill.fuzzy{color: var(--mem-fuzzy, #FF7089); background: color-mix(in srgb, var(--mem-fuzzy, #FF7089) 12%, transparent); border-color: color-mix(in srgb, var(--mem-fuzzy, #FF7089) 32%, transparent)}
+.mcScore{margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--sk-muted)}
+.mcScore b{font-size: 15px; font-weight: 700; color: var(--sk-ink)}
+.mcBar{height: 6px; border-radius: 99px; background: var(--sk-line-2); overflow: hidden; margin-bottom: 14px}
+.mcBar i{display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--mem-fuzzy, #FF7089), var(--mem-clear, #5DD6C6))}
+.mcBar i.clear{background: linear-gradient(90deg, #9BE8DA, var(--mem-clear, #5DD6C6))}
+.mcBar i.normal{background: linear-gradient(90deg, #FFD79B, var(--mem-normal, #FFB454))}
+.mcBar i.fuzzy{background: linear-gradient(90deg, #FFB3C1, var(--mem-fuzzy, #FF7089))}
+.mcTxt{font-size: 12.5px; line-height: 1.9; color: var(--sk-ink-2); user-select: text; white-space: pre-wrap}
+.mcMeta{display: flex; flex-direction: column; gap: 5px; margin-top: 16px; font-size: 10.5px; color: var(--sk-muted)}
+.mcMeta b{color: var(--sk-ink-2); font-weight: 600}
+.mcActs{display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--sk-line)}
+.mcActs button{
+  height: 30px; padding: 0 13px; border-radius: 999px; font-size: 11px;
+  color: var(--sk-ink-2); background:var(--wash-2); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .mcActs button{background:var(--wash)}
+.mcActs button:hover{color: var(--sk-ink); border-color: var(--sk-line-2)}
+.mcActs button.warn{color: var(--sk-warn); border-color: rgba(255,180,84,.34)}
+.mcActs button.ghost{background: transparent}
+.mcNote{font-size: 10.5px; color: var(--sk-muted); margin-top: 10px; line-height: 1.7}
+
+/* ---------------------------------------------------------------- 8. 心情 */
+.moodBody{display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; align-items: start}
+.moodBody > .card{padding: 20px}
+.moodBars{display: flex; flex-direction: column; gap: 12px; margin: 2px 0 0}
+.moodBig{padding: 12px 14px; border-radius: 10px; background:var(--wash); border: 1px solid var(--sk-line)}
+html[data-theme="dark"] .moodBig{background:var(--wash)}
+.moodBig .mh{display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px}
+.moodBig .mk{font-size: 12px; font-weight: 500; color: var(--sk-ink-2)}
+.moodBig .mw{font-size: 10.5px; color: var(--sk-muted)}
+.moodBig .mv{margin-left: auto; font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--sk-ink)}
+.moodBig .mb{height: 7px; border-radius: 99px; background: var(--sk-line-2); overflow: hidden}
+.moodBig .mb i{display: block; height: 100%; border-radius: 99px; transition: width .7s var(--ease-out, cubic-bezier(.16,1,.3,1))}
+.moodBig .mb i.warm{background: linear-gradient(90deg, var(--sk-warn), var(--sk-accent-3))}
+.moodBig .mb i.cool{background: linear-gradient(90deg, var(--sk-accent-4), var(--sk-accent))}
+.moodBig .mb i.pink{background: linear-gradient(90deg, var(--sk-accent-3), var(--sk-accent-2))}
+.moodBig .mb i.bad{background: linear-gradient(90deg, var(--sk-bad), var(--sk-accent-3))}
+.moodBrief{
+  font-size: 12.5px; line-height: 1.9; color: var(--sk-ink-2); user-select: text;
+  padding: 16px; border-radius: var(--r-sm, 12px);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .moodBrief{background:var(--wash)}
+.moodBody .hint{margin: 12px 0 0}
+.moodBody .sub-h{margin: 18px 0 10px}
+.moodNotes{display: flex; flex-direction: column; gap: 6px; max-height: 340px; overflow: auto}
+.moodNoteRow{
+  padding: 10px 14px; border-radius: 10px; line-height: 1.7; font-size: 11.5px; color: var(--sk-ink-2);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .moodNoteRow{background:var(--wash)}
+.moodNoteRow:last-child{border-bottom: 1px solid var(--sk-line)}
+
+/* ---------------------------------------------------------------- 9. 人格 */
+.pScope{
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 16px; margin-bottom: 14px; border-radius: var(--r-sm, 12px);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .pScope{background:var(--wash)}
+.pScopeLabel{font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--sk-muted)}
+.pScopeChip{
+  font-size: 10.5px; padding: 4px 11px; border-radius: 999px;
+  color: var(--sk-accent); background: rgba(109,139,255,.12);
+  border: 1px solid rgba(109,139,255,.2);
+}
+.pScopeHint{font-size: 10.5px; color: var(--sk-faint); margin-left: auto}
+.personaBody{display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; align-items: start}
+.personaBody > .card{padding: 20px}
+.personaBody > .card.span2{grid-column: span 2}
+.pQuick{
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px;
+  border-radius: var(--r-sm, 12px); background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .pQuick{background:var(--wash)}
+.pQuick input{flex: 1; min-width: 200px; height: 36px; border-radius: 999px}
+.pQuick .btn{flex: none; border-radius: 999px}
+.pGuide{border-radius: var(--r-sm, 12px); background:var(--wash); border: 1px solid var(--sk-line); padding: 14px 16px}
+html[data-theme="dark"] .pGuide{background:var(--wash)}
+.pGuide summary{cursor: pointer; font-size: 12px; font-weight: 600; color: var(--sk-ink-2)}
+.pGuide summary:hover{color: var(--sk-accent)}
+.pGuideLead{font-size: 11.5px; color: var(--sk-muted); line-height: 1.85; margin: 10px 0}
+.pGuideLead b{color: var(--sk-ink-2); font-weight: 600}
+.pEx{width: 100%; border-collapse: collapse; font-size: 11.5px; margin: 10px 0}
+.pEx th{text-align: left; color: var(--sk-muted); font-weight: 600; font-size: 10px; letter-spacing: .08em; padding: 8px; border-bottom: 1px solid var(--sk-line-2)}
+.pEx td{padding: 9px 8px; border-bottom: 1px solid var(--sk-line); color: var(--sk-ink-2); vertical-align: top}
+.pEx tr:last-child td{border-bottom: 0}
+.pAi{border-radius: var(--r-sm, 12px); background:var(--wash); border: 1px solid var(--sk-line); padding: 14px}
+html[data-theme="dark"] .pAi{background:var(--wash)}
+.pAiHead{display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px}
+.pAiHead b{font-size: 12px; color: var(--sk-ink)}
+.pAiHead span{font-size: 10.5px; color: var(--sk-muted)}
+.pAiActs{display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap}
+.pAiActs span{font-size: 10.5px; color: var(--sk-faint)}
+.pText{
+  width: 100%; min-height: 220px; padding: 16px 18px; border-radius: 14px;
+  font-size: 13px; line-height: 1.9; user-select: text;
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .pText{background:var(--wash)}
+.pText.small{min-height: 96px; font-size: 12px; padding: 12px 14px}
+.pFoot{display: flex; align-items: center; gap: 14px; margin-top: 10px; font-size: 10.5px; color: var(--sk-faint); flex-wrap: wrap}
+.pFootHint{margin-left: auto}
+.pPresets{display: grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap: 10px}
+.pPresets button{
+  text-align: left; padding: 12px 14px; border-radius: var(--r-sm, 12px);
+  background:var(--wash); border: 1px solid var(--sk-line);
+  font-size: 11.5px; color: var(--sk-ink-2); line-height: 1.55;
+  transition: border-color 160ms, background-color 160ms, transform 160ms;
+}
+html[data-theme="dark"] .pPresets button{background:var(--wash)}
+.pPresets button:hover{border-color: rgba(109,139,255,.4); background: var(--sk-grad-soft); transform: translateY(-1px)}
+.pPresets button b{display: block; font-size: 12px; font-weight: 600; color: var(--sk-ink); margin-bottom: 3px}
+.pPresets button span{font-size: 10px; color: var(--sk-muted)}
+
+/* ---------------------------------------------------------------- 10. 一键部署 */
+.setupProgWrap{
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding: 12px 18px;
+  border-radius: 999px; background: var(--sk-panel); border: 1px solid var(--wash-line);
+  box-shadow: var(--sk-shadow-sm);
+}
+html[data-theme="dark"] .setupProgWrap{border-color: var(--sk-line)}
+.setupProg{flex: 1; height: 8px; border-radius: 99px; background: var(--sk-line-2); overflow: hidden}
+.setupProg i{display: block; height: 100%; width: 0; border-radius: 99px; background: var(--sk-grad); transition: width .6s var(--ease-out, cubic-bezier(.16,1,.3,1))}
+.setupProgTxt{flex: none; font-family: var(--mono); font-size: 12px; color: var(--sk-ink-2)}
+.setupSteps{display: flex; flex-direction: column; gap: 12px; max-width: 900px}
+.setupCard{display: block; padding: 20px 22px; border-radius: var(--sk-r)}
+.setupCard.done{border-color: rgba(53,191,140,.28)}
+.setupCard .scHead{display: flex; align-items: center; justify-content: flex-start; gap: 10px; flex-wrap: wrap}
+.scNo{
+  width: 24px; height: 24px; flex: none; border-radius: 99px; display: grid; place-items: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 600; color: #fff; background: var(--sk-grad);
+}
+.setupCard .scHead b{font-size: 14px; font-weight: 650; color: var(--sk-ink)}
+.scBadge{
+  display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 7px;
+  font-size: 10px; color: var(--sk-muted); background:var(--wash);
+  border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .scBadge{background:var(--wash)}
+.scBadge.ok{color: var(--sk-ok); background: rgba(53,191,140,.12); border-color: rgba(53,191,140,.3)}
+.scBadge.warn{color: var(--sk-warn); background: rgba(255,180,84,.14); border-color: rgba(255,180,84,.32)}
+.scBadge.bad{color: var(--sk-bad); background: rgba(255,112,137,.12); border-color: rgba(255,112,137,.3)}
+.scDetail{font-size: 11.5px; color: var(--sk-muted); margin-top: 8px; padding-left: 34px; line-height: 1.75}
+.scHint{font-size: 10.5px; color: var(--sk-faint); margin-top: 8px; padding-left: 34px; line-height: 1.65}
+.scActs{display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-left: 34px}
+.scActs button{
+  height: 30px; padding: 0 14px; border-radius: 999px; font-size: 11.5px;
+  color: var(--sk-ink-2); background:var(--wash-2); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .scActs button{background:var(--wash)}
+.scActs button:hover{color: var(--sk-accent); border-color: rgba(109,139,255,.4); background: var(--sk-grad-soft)}
+.scActs button.ghost{background: transparent}
+.scForm{
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px;
+  margin: 14px 0 4px 34px; padding: 16px; border-radius: var(--r-sm, 12px);
+  background:var(--wash); border: 1px solid var(--sk-line);
+}
+html[data-theme="dark"] .scForm{background:var(--wash)}
+.scForm.hidden{display: none !important}
+.scForm .scHint{padding-left: 0; margin: 0; grid-column: 1 / -1}
+.pField{display: flex; flex-direction: column; gap: 6px; font-size: 10.5px; color: var(--sk-muted)}
+.pField input, .pField select{height: 34px}
+.scQr{display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 12px 0 0 34px}
+.scQr img{width: 148px; height: 148px; border-radius: 12px; background: #fff; padding: 8px; box-shadow: var(--sk-shadow-sm)}
+.scRow{display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px}
+
+/* ---------------------------------------------------------------- 11. 节点 / 命令 / 账号 */
+.acctGrid{display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; align-items: start}
+#accountBody .tbl td:first-child{width: 120px; color: var(--sk-muted)}
+#p-nodes .tbl td:first-child b{font-weight: 600; color: var(--sk-ink)}
+#nodeBody, #cmdBody, #accountBody{font-size: 12px}
+
+/* ---------------------------------------------------------------- 12. 全局挂件(JS 现造) */
+.toast{
+  padding: 10px 18px; border-radius: 999px; font-size: 11.5px; color: var(--sk-ink);
+  background: var(--sk-panel-2); border: 1px solid var(--sk-line-2);
+  box-shadow: var(--sk-shadow); backdrop-filter: blur(18px);
+}
+
+/* ---------------------------------------------------------------- 13. 响应式(必须重写) */
+@media (max-width: 1400px){
+  .wsGrid{grid-template-columns: 236px minmax(0,1fr) 284px}
+  .fishBody{grid-template-columns: minmax(0,560px) minmax(0,1fr)}
+}
+@media (max-width: 1320px){
+  .wsGrid{grid-template-columns: 236px minmax(0,1fr)}
+  .wsRight{grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px}
+  .fishBody{grid-template-columns: minmax(0,1fr) 340px}
+  .fishSideCol{grid-template-columns: minmax(0,1fr)}
+  .memBody{grid-template-columns: minmax(0,1fr) 300px}
+  .svcBody, .qqBody, .biliBody{grid-template-columns: 264px minmax(0,1fr)}
+}
+@media (max-width: 1180px){
+  .svcBody, .qqBody, .biliBody{grid-template-columns: minmax(0,1fr)}
+  .qqBody > .svcSide, .biliBody > .svcSide{grid-column: 1; grid-row: auto; position: static}
+  .qqBody > .svcMain, .biliBody > .svcMain{grid-column: 1}
+  .wsGrid{grid-template-columns: minmax(0,1fr)}
+  .wsLeftCol{position: static}
+  .wsRight{grid-template-columns: minmax(0,1fr)}
+  .memBody{grid-template-columns: minmax(0,1fr)}
+  .memStage{min-height: 460px}
+  #memTree{min-height: 460px}
+  .memCard{max-height: none}
+  .personaBody, .moodBody{grid-template-columns: minmax(0,1fr)}
+  .personaBody > .card.span2{grid-column: auto}
+  .fishBody{grid-template-columns: minmax(0,1fr)}
+  .fishSideCol{grid-template-columns: repeat(2,minmax(0,1fr))}
+  #fishWorkshopPage{grid-template-columns: minmax(0,1fr)}
+  .acctGrid{grid-template-columns: minmax(0,1fr)}
+  .fishStage{min-height: 520px}
+}
+@media (max-width: 900px){
+  .fishStatus{grid-template-columns: auto minmax(0,1fr)}
+  .fishStatus .fsCoin{grid-column: 1 / -1; text-align: left; padding-left: 0; border-left: 0; padding-top: 10px; border-top: 1px solid var(--sk-line)}
+  .fsBars{grid-template-columns: minmax(0,1fr)}
+  .fishSideCol{grid-template-columns: minmax(0,1fr)}
+  .memFind{min-width: 200px}
+  .scForm{grid-template-columns: minmax(0,1fr); margin-left: 0}
+  .scDetail, .scHint, .scActs, .scQr{padding-left: 0; margin-left: 0}
+  .wsMsgs .convMsg{max-width: 100%}
+  .biliVid .editBox{grid-template-columns: minmax(0,1fr)}
+}
+
+/* ---------------------------------------------------------------- 14. 减少动态效果 */
+@media (prefers-reduced-motion: reduce){
+  #view .page *,
+  #view .page *::before,
+  #view .page *::after{
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  #wsFish .rvFish img{animation: none !important}
+  #memTree .memGlow{filter: none}
+  .mouseGlow{display: none !important}
+}
+
+
+/* ==========================================================================
+   v20 工作区重构:面包屑 + 大立绘对话区 + 右侧模型/运行/快捷面板
+   ========================================================================== */
+#p-workspace.wsPage{
+  height:calc(var(--vhpx, 100vh) - 88px); min-height:540px;
+  display:flex; flex-direction:column; padding:0 0 2px;
+}
+.wsLegacy{display:none !important}
+.wsHead{display:flex; align-items:center; gap:14px; height:44px; flex:none}
+.wsCrumb{display:flex; align-items:center; gap:8px; min-width:0}
+.wsCrumbHome{
+  width:34px; height:34px; border-radius:11px; display:grid; place-items:center;
+  color:var(--ink-2); background:var(--wash-2); border:1px solid var(--wash-line);
+  box-shadow:0 6px 14px -12px rgba(96,110,220,.6); transition:background-color 160ms, transform 160ms;
+}
+.wsCrumbHome svg{width:17px;height:17px}
+.wsCrumbHome:hover{background:#fff; transform:translateY(-1px)}
+.wsCrumbTile{
+  height:34px; padding:0 13px; border-radius:11px; display:flex; align-items:center; gap:8px;
+  color:var(--ink-2); font-size:12.5px; font-weight:500;
+  background:var(--wash-2); border:1px solid var(--wash-line);
+  box-shadow:0 6px 14px -12px rgba(96,110,220,.6);
+}
+.wsCrumbTile svg{width:15px;height:15px;color:var(--accent)}
+.wsCrumbTile:hover{background:#fff;color:var(--ink)}
+.wsCrumbSep{color:var(--faint);font-size:12px}
+.wsCrumbCur{
+  height:34px; padding:0 8px 0 10px; border-radius:11px; display:flex; align-items:center; gap:5px;
+  color:var(--ink); font-size:12.5px; font-weight:600;
+}
+.wsCrumbCur svg{width:14px;height:14px;color:var(--muted)}
+.wsCrumbCur:hover{background:var(--wash-2)}
+.wsHeadActs{margin-left:auto; display:flex; align-items:center; gap:9px}
+.wsSub{font-size:11px; color:var(--muted); max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wsState{
+  height:24px; padding:0 9px; border-radius:8px; display:inline-flex; align-items:center;
+  font-size:10.5px; color:var(--accent); background:rgba(109,139,255,.12); border:1px solid rgba(109,139,255,.2);
+}
+.wsLayout{flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) 316px; gap:16px; margin-top:8px}
+
+/* ---- 对话区 ---- */
+.wsChat{
+  position:relative; min-height:0; display:flex; flex-direction:column; overflow:hidden;
+  border-radius:24px; border:1px solid var(--wash-line);
+  background:linear-gradient(165deg,#EEF4FF 0%,#F3EEFF 48%,#FFF1F7 100%);
+  box-shadow:0 22px 50px -40px rgba(96,96,190,.55), inset 0 1px 0 rgba(255,255,255,.9);
+  isolation:isolate;
+}
+.wsChatSky{position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(60% 50% at 18% 0%, rgba(255,255,255,.9), transparent 70%),
+    radial-gradient(50% 40% at 82% 8%, rgba(255,226,246,.7), transparent 70%),
+    radial-gradient(60% 40% at 50% 100%, rgba(255,246,234,.8), transparent 70%);
+}
+.wsGirlWrap{position:absolute; right:-26px; top:0; bottom:0; width:66%; z-index:0; pointer-events:none;
+  display:flex; align-items:flex-end; justify-content:flex-end}
+.wsGirl{height:104%; width:auto; object-fit:contain; object-position:bottom right;
+  filter:drop-shadow(0 24px 40px rgba(80,90,180,.22));
+  -webkit-mask-image:linear-gradient(180deg,#000 78%,rgba(0,0,0,.35) 96%,transparent 100%);
+  mask-image:linear-gradient(180deg,#000 78%,rgba(0,0,0,.35) 96%,transparent 100%);
+}
+.wsChat::after{content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(96deg, rgba(250,252,255,.95) 0%, rgba(250,252,255,.78) 30%, rgba(250,252,255,.28) 55%, rgba(250,252,255,0) 72%);
+}
+.wsScroller{position:relative; z-index:2; flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:20px 26px 8px}
+.wsMsgs{display:flex; flex-direction:column; gap:20px; max-width:720px; margin:0}
+.wsMsgs .convMsg{display:flex; gap:10px; align-items:flex-start; max-width:84%; animation:wsMsgIn 260ms var(--ease-out) both}
+.wsMsgs .convMsg.out{align-self:flex-end; flex-direction:row-reverse; text-align:right}
+.wsMsgs .convAva{
+  width:36px; height:36px; border-radius:50%; flex:none; overflow:hidden; display:grid; place-items:center;
+  background:linear-gradient(150deg,#DCE6FF,#F0E4FF); border:2px solid var(--wash-line);
+  box-shadow:0 8px 16px -12px rgba(96,110,220,.7); color:var(--accent); font-size:12px;
+}
+.wsMsgs .convAva .rvAva{width:36px;height:36px}
+.wsMsgs .convAva img{width:100%;height:100%;object-fit:cover}
+.wsMsgs .convAvaUser{background:linear-gradient(150deg,#8FA8FF,#A996FF); color:#fff; border-color:var(--wash-line)}
+.wsMsgs .convBody{min-width:0}
+.wsMsgs .ch{display:flex; align-items:baseline; gap:8px; margin:0 0 5px 4px; font-size:10.5px; color:var(--muted)}
+.wsMsgs .ch b{font-size:12px; color:var(--ink-2); font-weight:600}
+.wsMsgs .convMsg.out .ch{justify-content:flex-end; margin-right:4px}
+.wsMsgs .cb{
+  padding:13px 16px; border-radius:18px; font-size:13px; line-height:1.75; color:var(--ink);
+  background:var(--wash-3); border:1px solid var(--wash-line);
+  box-shadow:0 14px 28px -26px rgba(80,80,160,.5);
+  white-space:pre-wrap; word-break:break-word; user-select:text; text-align:left;
+}
+.wsMsgs .convMsg.out .cb{
+  background:linear-gradient(135deg,#7C93FF,#9A82FF); color:#fff; border-color:transparent;
+  box-shadow:0 16px 28px -20px rgba(109,139,255,.85);
+}
+@keyframes wsMsgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* 欢迎态 */
+.wsWelcome{position:relative; z-index:2; display:flex; flex-direction:column; gap:14px; max-width:560px; padding-top:10px}
+.wsWelcomeRow{display:flex; gap:10px; align-items:flex-start}
+.wsWelcome .convAva{width:40px;height:40px;border-radius:50%;overflow:hidden;flex:none;
+  background:linear-gradient(150deg,#DCE6FF,#F0E4FF);border:2px solid var(--wash-line);
+  box-shadow:0 8px 16px -12px rgba(96,110,220,.7);display:grid;place-items:center}
+.wsWelcome .convAva .rvAva{width:40px;height:40px}
+.wsWelcomeBubble{
+  padding:15px 18px; border-radius:20px; background:var(--wash-3); border:1px solid var(--wash-line);
+  box-shadow:0 16px 32px -28px rgba(80,80,160,.55); font-size:13.5px; line-height:1.8; color:var(--ink);
+  white-space:pre-wrap;
+}
+.wsChips{display:flex; flex-wrap:wrap; gap:8px; margin-left:50px}
+.wsChips button{
+  height:32px; padding:0 13px; border-radius:999px; font-size:11.5px; color:var(--ink-2);
+  background:var(--wash-3); border:1px solid var(--wash-line);
+  box-shadow:0 8px 18px -18px rgba(96,110,220,.7);
+  display:inline-flex; align-items:center; gap:6px;
+}
+.wsChips button svg{width:14px;height:14px;color:var(--accent)}
+.wsChips button:hover{background:#fff;color:var(--ink);transform:translateY(-1px)}
+
+/* ---- 输入区 ---- */
+.wsComposerBar{position:relative; z-index:3; padding:4px 22px 12px; flex:none}
+.wsComposer{
+  background:var(--wash-3); border:1px solid var(--wash-line); border-radius:22px;
+  padding:12px 14px 10px; box-shadow:0 22px 40px -34px rgba(80,90,170,.7), inset 0 1px 0 rgba(255,255,255,.95);
+  transition:box-shadow 200ms, border-color 200ms;
+}
+.wsComposer:focus-within{border-color:rgba(109,139,255,.5); box-shadow:0 0 0 4px rgba(109,139,255,.1), 0 22px 40px -34px rgba(80,90,170,.7)}
+.wsComposer textarea{
+  width:100%; border:0; background:none; box-shadow:none; padding:2px 4px; margin:0;
+  font-size:13.5px; line-height:1.6; resize:none; min-height:24px; max-height:120px; color:var(--ink);
+}
+.wsComposer textarea:focus{box-shadow:none;background:none}
+.wsComposerFoot{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:6px}
+.wsTools{display:flex; align-items:center; gap:2px}
+.wsTools button{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:var(--muted);transition:background-color 150ms,color 150ms}
+.wsTools button svg{width:17px;height:17px}
+.wsTools button:hover{background:rgba(109,139,255,.1);color:var(--accent)}
+.wsComposerRight{display:flex; align-items:center; gap:8px}
+.wsModelChip{
+  height:32px; padding:0 11px; border-radius:999px; display:inline-flex; align-items:center; gap:7px;
+  font-size:11.5px; color:var(--ink-2); background:var(--wash-2); border:1px solid var(--line);
+}
+.wsModelChip:hover{background:#fff;color:var(--ink)}
+.wsModelChip svg{width:13px;height:13px;color:var(--muted)}
+.wsModelDot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(53,191,140,.7)}
+.wsModelDot.off{background:var(--warn);box-shadow:none}
+.wsSendBtn{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 14px 26px -14px rgba(109,139,255,.9);
+  transition:transform 150ms var(--spring), filter 160ms;
+}
+.wsSendBtn svg{width:18px;height:18px}
+.wsSendBtn:hover{filter:brightness(1.06);transform:scale(1.04)}
+.wsSendBtn:disabled{opacity:.55;transform:none;filter:none}
+.wsComposeHint{text-align:center; font-size:10px; color:var(--faint); margin-top:6px}
+
+/* ---- 右侧信息栏 ---- */
+.wsAside{min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding:0 2px 6px 0}
+.wsSideCard{padding:16px; border-radius:20px; background:var(--wash-3); border:1px solid var(--wash-line)}
+.wsCardHead{display:flex; align-items:center; gap:8px; margin-bottom:12px}
+.wsCardHead b{font-size:13px; font-weight:600; color:var(--ink)}
+.wsCardHead .st{margin-left:auto; display:inline-flex; align-items:center; gap:5px; font-size:10.5px; color:var(--ok)}
+.wsCardHead .st i{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(53,191,140,.8)}
+.wsCardIco{width:22px;height:22px;display:grid;place-items:center;color:var(--accent);background:rgba(109,139,255,.12);border-radius:7px}
+.wsCardIco svg{width:14px;height:14px}
+.wsModelHero{display:flex; align-items:center; gap:10px; padding:10px; border-radius:14px; background:var(--wash-2); border:1px solid var(--line)}
+.wsModelAva{width:38px;height:38px;border-radius:12px;overflow:hidden;flex:none;background:linear-gradient(150deg,#DCE6FF,#F0E4FF)}
+.wsModelAva img{width:100%;height:100%;object-fit:cover}
+.wsModelTxt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.wsModelTxt b{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wsModelTxt small{font-size:10.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wsChevBtn{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--muted);margin-left:auto;flex:none}
+.wsChevBtn:hover{background:rgba(109,139,255,.1);color:var(--accent)}
+.wsChevBtn svg{width:15px;height:15px;transition:transform 180ms}
+.wsChevBtn.open svg{transform:rotate(180deg)}
+.wsCfgPanel{margin-top:10px; padding-top:10px; border-top:1px solid var(--line)}
+.wsCfgPanel .cfgGrid{grid-template-columns:1fr 1fr; gap:8px}
+.wsCfgPanel label{font-size:10px}
+.wsCfgPanel input,.wsCfgPanel select{height:30px; font-size:11.5px; padding:4px 9px; border-radius:9px}
+.wsCfgPanel .wsActions{margin-top:8px}
+.wsRunState{display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--ok); margin-bottom:4px}
+.wsRunState i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(53,191,140,.8)}
+.wsRunState.bad{color:var(--bad)}
+.wsRunState.bad i{background:var(--bad);box-shadow:none}
+.wsSpark{width:100%;height:46px;display:block;margin:2px 0 8px}
+.wsSpark polyline{fill:none;stroke:url(#wsSparkGrad);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wsSpark .area{fill:url(#wsSparkArea);stroke:none}
+.wsRunRows{display:flex; flex-direction:column; gap:2px; border-top:1px solid var(--line); padding-top:8px}
+.wsRunRow{display:flex; align-items:center; justify-content:space-between; height:30px; font-size:11.5px; color:var(--muted)}
+.wsRunRow span{display:inline-flex; align-items:center; gap:7px}
+.wsRunRow i{width:13px;height:13px;border-radius:4px;background:rgba(109,139,255,.16);display:inline-block}
+.wsRunRow b{font-size:11.5px; color:var(--ink-2); font-family:var(--mono)}
+.wsQuickCard{display:flex;flex-direction:column;gap:2px}
+.wsQuickRow{display:flex;align-items:center;gap:10px;height:36px;padding:0 8px;border-radius:10px;font-size:12px;color:var(--ink-2);text-align:left}
+.wsQuickRow:hover{background:var(--wash-3);color:var(--ink)}
+.wsQuickRow .qi{width:20px;height:20px;display:grid;place-items:center;color:var(--accent);flex:none}
+.wsQuickRow .qi svg{width:16px;height:16px}
+.wsQuickRow kbd{margin-left:auto;font-family:var(--sans);font-size:10px;color:var(--faint);background:var(--wash-2);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+.wsTasksMini{margin-bottom:2px}
+.wsTasksMini .wsTasks{max-height:132px;overflow:auto}
+
+/* 会话抽屉 */
+.wsDrawer{
+  position:absolute; left:0; top:52px; bottom:16px; width:300px; z-index:30;
+  display:flex; flex-direction:column; padding:12px;
+  background:var(--wash-3); border:1px solid var(--wash-line); border-radius:18px;
+  box-shadow:0 30px 60px -30px rgba(60,60,130,.45);
+  backdrop-filter:blur(16px);
+}
+.wsPage{position:relative}
+.wsDrawerHead{display:flex;align-items:center;gap:8px;padding:0 4px 10px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.wsDrawerHead b{font-size:12.5px}
+.wsDrawerHead .tag{margin-left:auto}
+.wsDrawerHead button{width:24px;height:24px;border-radius:7px;color:var(--muted)}
+.wsDrawerHead button:hover{background:rgba(109,139,255,.1);color:var(--ink)}
+#wsSide{flex:1;overflow:auto}
+#wsSide .wsConv{...}
+
+/* 深色 */
+html[data-theme="dark"] .wsChat{background:linear-gradient(165deg,#241E45,#2A2350 50%,#2E2140);border-color:rgba(200,200,255,.12)}
+html[data-theme="dark"] .wsChat::after{background:linear-gradient(96deg, rgba(30,25,55,.96) 0%, rgba(30,25,55,.8) 32%, rgba(30,25,55,.3) 58%, rgba(30,25,55,0) 74%)}
+html[data-theme="dark"] .wsChatSky{opacity:.5}
+html[data-theme="dark"] .wsGirl{filter:brightness(.85) drop-shadow(0 24px 40px rgba(0,0,0,.5))}
+html[data-theme="dark"] .wsMsgs .cb{background:rgba(52,45,86,.94);border-color:rgba(200,200,255,.14);color:#F2EEFF}
+html[data-theme="dark"] .wsMsgs .convMsg.out .cb{background:linear-gradient(135deg,#6D7FE8,#8069D8)}
+html[data-theme="dark"] .wsSideCard{background:rgba(44,38,78,.9);border-color:rgba(200,200,255,.1)}
+html[data-theme="dark"] .wsComposer{background:rgba(46,40,80,.96);border-color:rgba(200,200,255,.14)}
+html[data-theme="dark"] .wsWelcomeBubble{background:rgba(52,45,86,.94);border-color:rgba(200,200,255,.14)}
+html[data-theme="dark"] .wsDrawer{background:rgba(42,36,74,.97);border-color:rgba(200,200,255,.14)}
+html[data-theme="dark"] .wsCrumbHome,html[data-theme="dark"] .wsCrumbTile{background:var(--wash);border-color:rgba(200,200,255,.14)}
+html[data-theme="dark"] .wsChips button{background:var(--wash);border-color:rgba(200,200,255,.14);color:#C6C0E8}
+
+/* 响应式 */
+@media (max-width:1180px){
+  .wsLayout{grid-template-columns:minmax(0,1fr) 288px}
+  .wsGirlWrap{width:58%; right:-40px}
+}
+@media (max-width:1000px){
+  #p-workspace.wsPage{height:auto; min-height:0}
+  .wsLayout{grid-template-columns:1fr}
+  .wsChat{min-height:540px}
+  .wsAside{display:grid; grid-template-columns:1fr 1fr; overflow:visible}
+  .wsGirlWrap{width:56%; right:-70px; opacity:.55}
+  .wsSub{display:none}
+}
+
+
+/* v20b 修正旧 convMsg / wsMsgs 规则冲突 */
+#p-workspace .wsMsgs{
+  display:flex !important; flex-direction:column !important; align-items:flex-start !important;
+  gap:20px !important; max-width:none !important; min-height:0 !important;
+  max-height:none !important; overflow:visible !important; padding:0 !important;
+}
+#p-workspace .wsMsgs .convMsg{
+  display:flex !important; flex-direction:row !important; align-items:flex-start !important;
+  width:auto !important; max-width:82% !important; padding:0 !important; margin:0 !important;
+  border:0 !important; background:none !important; border-radius:0 !important;
+  box-shadow:none !important;
+}
+#p-workspace .wsMsgs .convMsg:hover{background:none !important}
+#p-workspace .wsMsgs .convMsg.out{margin-left:auto !important; flex-direction:row-reverse !important}
+#p-workspace .wsMsgs .convBody{flex:0 1 auto !important; min-width:0 !important; max-width:100% !important}
+#p-workspace .wsMsgs .convBody .ch{margin:0 0 5px 2px !important; padding:0 !important}
+#p-workspace .wsMsgs .convBody .ch span{margin-left:0 !important}
+#p-workspace .wsMsgs .convMsg.out .convBody .ch{margin:0 2px 5px 0 !important; justify-content:flex-end !important}
+#p-workspace .wsMsgs .cb{
+  font-size:13px !important; line-height:1.75 !important; padding:13px 16px !important;
+  border-radius:18px !important; background:var(--wash-3) !important;
+  border:1px solid var(--wash-line) !important; color:var(--ink) !important;
+  white-space:pre-wrap !important; text-align:left !important;
+}
+#p-workspace .wsMsgs .convMsg.out .cb{
+  background:linear-gradient(135deg,#7C93FF,#9A82FF) !important; color:#fff !important; border-color:transparent !important;
+}
+#p-workspace .wsMsgs .convAva{width:36px !important;height:36px !important;border-radius:50% !important;flex:none !important}
+#p-workspace .wsMsgs .convAva .rvAva{width:36px !important;height:36px !important}
+/* 输入框 chips 不换行 / 发送按钮不被压缩 */
+.wsModelChip{white-space:nowrap; flex:none}
+.wsModelChip #wsChipModel{max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wsSendBtn{flex:none}
+.wsComposerFoot{min-height:40px}
+/* 参考图右栏只有 模型/运行/快捷,任务收进抽屉 */
+.wsTasksMini{display:none !important}
+/* 聊天区天空 + 远处城堡氛围 */
+.wsChatSky::after{
+  content:""; position:absolute; right:6%; top:12%; width:300px; height:180px; opacity:.35;
+  background:
+    radial-gradient(closest-side at 50% 100%, rgba(160,175,255,.55), transparent 70%),
+    radial-gradient(closest-side at 30% 70%, rgba(180,195,255,.5), transparent 70%),
+    radial-gradient(closest-side at 70% 70%, rgba(180,195,255,.5), transparent 70%);
+  filter:blur(2px);
+}
+
+
+/* v20c 运行状态行 / 欢迎 chips 精细修正 */
+.wsRunRow{height:34px !important; gap:10px}
+.wsRunRow span{gap:7px !important; white-space:nowrap; flex:none}
+.wsRunRow span svg{width:14px !important; height:14px !important; flex:none; color:var(--muted)}
+.wsRunRow b{white-space:nowrap; flex:none}
+.wsChips{gap:6px !important; margin-left:50px; flex-wrap:nowrap}
+.wsChips button{height:30px !important; padding:0 10px !important; font-size:11px !important; white-space:nowrap; flex:none}
+.wsChips button svg{width:13px !important; height:13px !important}
+/* 聊天背景更接近参考图的蓝天 */
+.wsChat{background:linear-gradient(165deg,#E8F1FF 0%,#EEEBFF 42%,#F9EDFF 72%,#FFF3F8 100%)}
+
+
+/* v20d 对话气泡方向修正:in=用户(右,紫),out=若(左,白) */
+#p-workspace .wsMsgs .convMsg.in{margin-left:auto !important; margin-right:0 !important; flex-direction:row-reverse !important}
+#p-workspace .wsMsgs .convMsg.out{margin-left:0 !important; margin-right:auto !important; flex-direction:row !important}
+#p-workspace .wsMsgs .convMsg.in .convBody{text-align:right !important}
+#p-workspace .wsMsgs .convMsg.in .convBody .ch{justify-content:flex-end !important; margin:0 2px 5px 0 !important}
+#p-workspace .wsMsgs .convMsg.out .convBody .ch{justify-content:flex-start !important; margin:0 0 5px 2px !important}
+#p-workspace .wsMsgs .convMsg.in .cb{
+  background:linear-gradient(135deg,#7C93FF,#9A82FF) !important; color:#fff !important; border-color:transparent !important;
+  border-bottom-right-radius:6px !important;
+}
+#p-workspace .wsMsgs .convMsg.out .cb{
+  background:var(--wash-3) !important; color:var(--ink) !important;
+  border:1px solid var(--wash-line) !important; border-bottom-left-radius:6px !important;
+}
+#p-workspace .wsMsgs .convMsg.in .ch b{color:var(--ink-2) !important}
+html[data-theme="dark"] #p-workspace .wsMsgs .convMsg.out .cb{background:rgba(52,45,86,.94) !important;border-color:rgba(200,200,255,.14) !important;color:#F2EEFF !important}
+html[data-theme="dark"] #p-workspace .wsMsgs .convMsg.in .cb{background:linear-gradient(135deg,#6D7FE8,#8069D8) !important;color:#fff !important}
+
+
+/* v20e 深色模式工作区可读性 */
+html[data-theme="dark"] .wsModelHero{background:var(--wash) !important;border-color:rgba(200,200,255,.12) !important}
+html[data-theme="dark"] .wsModelHero b{color:#F2EEFF}
+html[data-theme="dark"] .wsModelHero small{color:#A9A3CC}
+html[data-theme="dark"] .wsModelChip{background:var(--wash) !important;border-color:rgba(200,200,255,.14) !important;color:#D8D2FF !important}
+html[data-theme="dark"] .wsModelChip #wsChipModel{color:#F2EEFF !important}
+html[data-theme="dark"] .wsCfgPanel input,html[data-theme="dark"] .wsCfgPanel select{background:var(--wash);color:#F2EEFF;border-color:rgba(200,200,255,.14)}
+html[data-theme="dark"] .wsCrumbCur{color:#F2EEFF}
+html[data-theme="dark"] .wsModelAva{background:linear-gradient(150deg,#3A3666,#4A3A6E)}
+
+
+/* v20f 去掉角色周围那圈蓝色矩形辉光(之前加的城堡氛围层),阴影改中性 */
+.wsChatSky::after{display:none !important}
+.wsGirl{filter:drop-shadow(0 22px 36px rgba(52,52,86,.16)) !important}
+html[data-theme="dark"] .wsGirl{filter:brightness(.9) drop-shadow(0 22px 36px rgba(0,0,0,.45)) !important}
+.wsComposer textarea:focus,.wsComposer textarea:focus-visible{outline:none !important; box-shadow:none !important}
+
+
+/* v20g 角色立绘:彻底去掉 drop-shadow(半透明底图会产生一圈矩形黑边/蓝边) */
+.wsGirl,.wsGirlWrap img{filter:none !important}
+html[data-theme="dark"] .wsGirl{filter:none !important}
+
+
+/* ==========================================================================
+   v22 工作区/页面:输入框融入面板,去掉头像白框和重复内层卡片
+   ========================================================================== */
+/* 聊天输入:只有一个长圆角面板,里面 textarea 透明 */
+.wsComposer textarea,
+html[data-theme="dark"] .wsComposer textarea{
+  background:transparent !important; border:0 !important; box-shadow:none !important;
+  border-radius:0 !important; padding:2px 4px !important;
+}
+.wsComposer textarea:focus,
+html[data-theme="dark"] .wsComposer textarea:focus{
+  background:transparent !important; box-shadow:none !important;
+}
+/* 模型状态:去掉卡片里的第二层卡片 */
+.wsModelHero{
+  background:transparent !important; border:0 !important; box-shadow:none !important;
+  padding:2px 0 !important; border-radius:0 !important;
+}
+.wsModelAva{background:none !important;border:0 !important;border-radius:12px;overflow:hidden}
+.wsCardIco{background:none !important;border:0 !important;color:var(--accent)}
+/* 页面头部的角色头像 / 平台图标:不再套白框 */
+.svcRole{background:transparent !important;border:0 !important}
+.svcRole .rvAva,.svcRole canvas{border-radius:50%}
+.platLogo{border-radius:0;background:none}
+
+
+/* v23:工作区/页面里再清一层多余容器 */
+.wsModelHero,.wsCardIco,.svcRole{background:none !important;border:0 !important;box-shadow:none !important}
+.wsModelAva{background:none !important}
+/* 消息列表里不要每行再加底色条 */
+#p-workspace .wsMsgs .convMsg{background:none !important}
+
+/* ==========================================================================
+   v5 页面统一美化层(2026-11-16) —— 参考首页/工作区的视觉密度:
+   每页一个主题色、页头下划线、卡片图标位、侧栏吸附、行级交互反馈。
+   只加不改:所有既有规则照旧,这层做增量。
+   ========================================================================== */
+
+/* —— 0. 每页主题色(明暗通用,--pa-soft 用低饱和清洗) —— */
+html[data-page="home"]     {--pa:#6D8BFF;--pa-soft:rgba(109,139,255,.14)}
+html[data-page="workspace"]{--pa:#6D8BFF;--pa-soft:rgba(109,139,255,.14)}
+html[data-page="qq"]       {--pa:#12B7F5;--pa-soft:rgba(18,183,245,.13)}
+html[data-page="bili"]     {--pa:#FB7299;--pa-soft:rgba(251,114,153,.13)}
+html[data-page="fish"]     {--pa:#35BF8C;--pa-soft:rgba(53,191,140,.13)}
+html[data-page="memory"]   {--pa:#8E7BFF;--pa-soft:rgba(142,123,255,.13)}
+html[data-page="mood"]     {--pa:#FF9EC4;--pa-soft:rgba(255,158,196,.14)}
+html[data-page="persona"]  {--pa:#A78BFA;--pa-soft:rgba(167,139,250,.13)}
+html[data-page="setup"]    {--pa:#5DD6C6;--pa-soft:rgba(93,214,198,.13)}
+html[data-page="nodes"]    {--pa:#6D8BFF;--pa-soft:rgba(109,139,255,.13)}
+html[data-page="cmds"]     {--pa:#FFB454;--pa-soft:rgba(255,180,84,.14)}
+html[data-page="account"]  {--pa:#8E7BFF;--pa-soft:rgba(142,123,255,.13)}
+html[data-page="settings"] {--pa:#8E7BFF;--pa-soft:rgba(142,123,255,.13)}
+html[data-theme="dark"] [data-page] {color-scheme:dark}
+
+/* —— 1. 页头:eyebrow 分隔点染上页色;标题下加页色短杠 —— */
+.page .eyebrow i{width:5px;height:5px;border-radius:50%;background:var(--pa,var(--accent));box-shadow:0 0 8px var(--pa,var(--accent));flex:none}
+.pagehead h1{position:relative}
+.pagehead h1::after{content:"";display:block;width:36px;height:4px;border-radius:99px;margin-top:9px;
+  background:linear-gradient(90deg,var(--pa,var(--accent)),color-mix(in srgb,var(--pa,var(--accent)) 30%,transparent))}
+html[data-theme="dark"] .pagehead h1::after{opacity:.85}
+
+/* —— 2. 卡片头图标位(和右侧信息栏 wsCardIco 同一语言) —— */
+.card-h{align-items:center}
+.chi{width:34px;height:34px;flex:none;border-radius:11px;display:grid;place-items:center;
+  color:var(--pa,var(--accent));background:var(--pa-soft,var(--accent-soft));
+  border:1px solid color-mix(in srgb,var(--pa,var(--accent)) 22%,var(--line))}
+.chi svg{width:18px;height:18px}
+.card-h .card-h-txt{min-width:0}
+.card-h .card-h-txt h2{display:flex;align-items:center;gap:0}
+.card-h p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* —— 3. 服务页布局:左栏整列吸附 + 主卡轻交互 —— */
+.svcBody .svcSide{grid-row:1 / -1; align-self:start; position:sticky; top:16px;
+  max-height:calc(var(--vhpx, 100vh) - 130px); overflow:auto; scrollbar-width:thin}
+.svcBody .svcMain{transition:box-shadow 220ms var(--ease), transform 220ms var(--ease)}
+.svcBody .svcMain:hover{box-shadow:var(--shadow)}
+.svcKv{transition:background 160ms}
+.svcKv:hover{background:var(--wash)}
+.svcKv .k{font-weight:500}
+.qrBox{margin:12px 0 4px}
+.extBox{margin-top:14px; padding-top:12px; border-top:1px dashed var(--line)}
+
+/* —— 4. mood / persona 主卡同样的微交互 —— */
+.moodBody > .glass, .personaBody > .glass, .acctGrid > .glass, #p-nodes .card, #p-cmds .card{
+  transition:box-shadow 220ms var(--ease), transform 220ms var(--ease)}
+.moodBody > .glass:hover, .personaBody > .glass:hover, .acctGrid > .glass:hover,
+#p-nodes .card:hover, #p-cmds .card:hover{box-shadow:var(--shadow)}
+
+/* —— 5. mood 条形图:加页色渐变与端点光 —— */
+.moodBig .mb i{box-shadow:0 0 10px -2px currentColor}
+.moodBig .mb i.cool{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:var(--accent)}
+.moodBig .mb i.warm{color:var(--warn)}
+.moodBig .mb i.pink{background:linear-gradient(90deg,var(--accent-3),var(--accent));color:var(--accent-3)}
+.moodBig .mb i.bad{color:var(--bad)}
+.moodNoteRow:hover{border-color:color-mix(in srgb,var(--pa,var(--accent-3)) 32%,var(--line))}
+
+/* —— 6. 空态 / 只读提示:统一成虚线小面板 —— */
+.biliEmpty{display:flex;align-items:center;justify-content:center;min-height:88px;
+  border:1.5px dashed var(--line-2);border-radius:12px;padding:16px;text-align:center;
+  color:var(--muted);background:var(--wash);line-height:1.8}
+#nodeBody, #cmdBody{color:var(--ink-2)}
+
+/* —— 7. setup 三步卡:序号徽章染色 + 完成态描边 —— */
+.setupCard{transition:box-shadow 220ms var(--ease)}
+.setupCard:hover{box-shadow:var(--shadow-sm)}
+.setupCard.done{border-color:color-mix(in srgb,var(--pa,#5DD6C6) 34%,var(--line))}
+.setupCard.done .scBadge{box-shadow:0 0 0 4px var(--pa-soft,rgba(93,214,198,.13))}
+
+/* —— 8. 表格类(节点/命令/工作区):表头与斑马纹 —— */
+.wsTbl{width:100%;border-collapse:collapse}
+.wsTbl tr:nth-child(even) td{background:var(--wash)}
+.wsTbl td{padding:7px 6px;border-bottom:1px solid var(--line);font-size:11.5px;color:var(--ink-2)}
+
+/* ==========================================================================
+   v7 QQ 页:参照设计稿(Hero 头图 + 胶囊页签 + 三栏卡片)
+   功能全保留:配置/运行状态/白名单/对话/说说/主动消息/审计
+   ========================================================================== */
+#p-qq{display:block; padding-bottom:18px}
+
+/* ---- Hero ---- */
+.qqHero{position:relative; display:grid; grid-template-columns:minmax(0,1fr) 44%; align-items:center;
+  min-height:204px; margin:2px 0 14px; border-radius:24px; overflow:hidden;
+  background:linear-gradient(120deg, rgba(124,147,255,.18), rgba(154,130,255,.10) 46%, rgba(255,158,196,.10));
+  border:1px solid var(--line)}
+html[data-theme="dark"] .qqHero{background:linear-gradient(120deg, rgba(124,147,255,.13), rgba(154,130,255,.07) 50%, rgba(255,158,196,.06))}
+.qqHeroText{padding:22px 26px; position:relative; z-index:2}
+.qqHeroTitle{display:flex; align-items:center; gap:12px}
+.qqHeroIcon{width:54px; height:54px; border-radius:16px; overflow:hidden; display:grid; place-items:center;
+  background:rgba(255,255,255,.55); border:1px solid var(--line); flex:none}
+html[data-theme="dark"] .qqHeroIcon{background:rgba(255,255,255,.07)}
+.qqHeroIcon img{width:100%; height:100%; object-fit:cover; border-radius:0 !important}
+.qqHeroTitle h1{font-size:33px; font-weight:700; letter-spacing:-.02em; display:flex; align-items:center; gap:10px; margin:0; color:var(--ink)}
+.qqPulse{width:9px; height:9px; border-radius:50%; background:var(--ok); display:inline-block;
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--ok) 20%, transparent)}
+.qqPulse.warn{background:var(--warn); box-shadow:0 0 0 4px color-mix(in srgb, var(--warn) 20%, transparent)}
+.qqPulse.bad{background:var(--bad); box-shadow:0 0 0 4px color-mix(in srgb, var(--bad) 20%, transparent)}
+.qqHeroSub{font-size:17px; color:var(--ink-2); margin:8px 0 0; font-weight:600; letter-spacing:-.01em}
+.qqHeroDesc{font-size:12.5px; color:var(--muted); margin:10px 0 0; display:flex; align-items:center; gap:9px}
+.qqHeroDesc i{width:2px; height:15px; border-radius:2px; background:var(--accent); flex:none}
+.qqHeroActs{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px}
+.qqHeroState{font-size:11px; color:var(--muted); font-family:var(--mono)}
+.qqHeroArt{position:relative; height:100%; min-height:204px; pointer-events:none}
+.qqHeroArt img{position:absolute; right:4px; bottom:-20px; height:236px; width:auto; object-fit:contain;
+  filter:drop-shadow(0 18px 30px rgba(60,60,140,.22))}
+html[data-theme="dark"] .qqHeroArt img{filter:drop-shadow(0 18px 30px rgba(0,0,0,.42))}
+
+/* ---- 胶囊页签 ---- */
+.qqTabs{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 14px}
+.qqTabs button{display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 15px; border-radius:999px;
+  font-size:12px; color:var(--muted); background:var(--wash); border:1px solid var(--line);
+  transition:background 180ms, color 160ms, transform 160ms}
+.qqTabs button svg{width:15px; height:15px}
+.qqTabs button:hover{background:var(--wash-2); color:var(--ink); transform:translateY(-1px)}
+.qqTabs button.on{background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; border-color:transparent;
+  box-shadow:0 10px 22px -14px rgba(109,139,255,.85)}
+
+/* ---- 三栏 ---- */
+.qqCols{display:grid; grid-template-columns:300px minmax(0,1fr) 300px; gap:14px; align-items:start}
+.qqCol{display:flex; flex-direction:column; gap:14px; min-width:0}
+.qqCard{padding:16px}
+.qqCardHead{display:flex; align-items:center; gap:9px; margin-bottom:12px; flex-wrap:wrap}
+.qqCardHead b{font-size:13px; font-weight:650; color:var(--ink)}
+.qqHeadNote{font-size:10.5px; color:var(--faint); font-weight:400}
+.qqHeadSwitch{margin-left:auto}
+.qqCardNote{font-size:10.5px; color:var(--muted); margin:-6px 0 10px}
+.qqCardActs{display:flex; gap:8px; margin-top:14px}
+.qqCardActs .btn{flex:1}
+.btn.xs{height:24px; padding:0 10px; font-size:11px; border-radius:8px; flex:none}
+
+/* ---- 配置行 ---- */
+.qqRow{display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--line)}
+.qqRow:last-of-type{border-bottom:0}
+.qqLabel{width:84px; flex:none; font-size:11.5px; color:var(--muted)}
+.qqVal{display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--ink); font-weight:600}
+.qqRow input{flex:1; min-width:0; height:30px; font-size:11.5px}
+.qqRow .btn.xs{margin-left:auto}
+
+/* ---- 运行状态 kv ---- */
+.qqKv{display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:7px 0;
+  border-bottom:1px solid var(--line); font-size:11.5px}
+.qqKv:last-child{border-bottom:0}
+.qqKv .k{color:var(--muted); flex:none}
+.qqKv .v{color:var(--ink-2); text-align:right; font-family:var(--mono); font-size:11px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+/* ---- 白名单 ---- */
+.qqWlTabs{display:flex; gap:4px; padding:3px; border-radius:10px; background:var(--wash);
+  border:1px solid var(--line); width:fit-content; margin-bottom:10px}
+.qqWlTabs button{height:26px; padding:0 12px; border-radius:8px; font-size:11px; color:var(--muted);
+  display:inline-flex; align-items:center; gap:6px}
+.qqWlTabs button b{font-family:var(--mono); font-size:9.5px; color:var(--faint); font-weight:500}
+.qqWlTabs button.on{background:var(--wash-3); color:var(--ink); box-shadow:var(--shadow-sm)}
+html[data-theme="dark"] .qqWlTabs button.on{background:rgba(255,255,255,.14)}
+.qqWlTabs button.on b{color:var(--accent)}
+.wlAdd{display:flex; gap:8px; margin-bottom:6px; flex-wrap:wrap}
+.wlAdd input{flex:1; min-width:104px; height:32px; font-size:11.5px}
+.wlAdd select{height:32px; font-size:11.5px; flex:none}
+.wlAdd .btn{height:32px; flex:none}
+.wlRow{display:flex; align-items:center; gap:10px; padding:8px 2px; border-bottom:1px solid var(--line)}
+.wlRow:last-child{border-bottom:0}
+.wlAva{width:32px; height:32px; border-radius:50%; flex:none; display:grid; place-items:center;
+  background:linear-gradient(140deg, var(--accent-soft), var(--wash-2)); color:var(--accent);
+  font-size:12px; font-weight:600; border:1px solid var(--line)}
+.wlInfo{min-width:0; flex:1; display:flex; flex-direction:column; line-height:1.35}
+.wlInfo b{font-size:12px; font-weight:600; color:var(--ink); display:flex; align-items:center; gap:6px}
+.wlInfo small{font-size:10px; color:var(--muted); font-family:var(--mono)}
+.wlTag{font-size:9px; padding:1px 6px; border-radius:6px; background:var(--accent-soft);
+  color:var(--accent); font-style:normal; font-weight:500}
+.wlDel{width:26px; height:26px; border-radius:8px; display:grid; place-items:center; color:var(--faint); flex:none}
+.wlDel:hover{background:rgba(255,112,137,.12); color:var(--bad)}
+.wlDel svg{width:15px; height:15px}
+
+/* ---- 对话卡 ---- */
+.qqChatCard{display:flex; flex-direction:column}
+.qqMsgs{max-width:100%; width:100%; margin:0; height:332px; max-height:332px; min-height:0;
+  overflow-y:auto; padding:2px 4px 6px; gap:14px}
+.qqChatFoot{font-size:10px; color:var(--faint); text-align:center; padding-top:8px}
+
+/* ---- 功能说明 ---- */
+.qqHelp{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px}
+.qqHelp li{font-size:11.5px; color:var(--ink-2); display:flex; align-items:center; gap:9px}
+.qqHelp li::before{content:""; width:15px; height:15px; flex:none; border-radius:50%;
+  background:var(--accent-soft); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 28%,transparent)}
+
+/* ---- 审计通栏 ---- */
+.qqAuditCard{margin-top:14px; padding:16px}
+
+/* ---- 气泡方向与配色(对齐工作区):out=她的回复(左·紫) / in=对方消息(右·浅底) ---- */
+#p-qq .wsMsgs .convMsg.out{align-self:flex-start; flex-direction:column; align-items:flex-start; text-align:left}
+#p-qq .wsMsgs .convMsg.in{align-self:flex-end; flex-direction:column; align-items:flex-end; text-align:right}
+#p-qq .wsMsgs .convMsg.out .ch{justify-content:flex-start; margin:0 0 5px 4px}
+#p-qq .wsMsgs .convMsg.in .ch{justify-content:flex-end; margin-right:4px}
+#p-qq .wsMsgs .convMsg.out .cb{
+  background:linear-gradient(135deg,#7C93FF,#9A82FF); color:#fff; border:1px solid transparent;
+  border-bottom-left-radius:6px; border-bottom-right-radius:18px;
+}
+#p-qq .wsMsgs .convMsg.in .cb{
+  background:var(--wash-3); color:var(--ink); border:1px solid var(--wash-line);
+  border-bottom-right-radius:6px; border-bottom-left-radius:18px;
+}
+#p-qq .wsMsgs .convMsg.err .cb{background:rgba(255,112,137,.12); color:var(--bad); border-color:rgba(255,112,137,.3)}
+html[data-theme="dark"] #p-qq .wsMsgs .convMsg.out .cb{background:linear-gradient(135deg,#6D7FE8,#8069D8); color:#fff}
+html[data-theme="dark"] #p-qq .wsMsgs .convMsg.in .cb{background:rgba(52,45,86,.94); border-color:rgba(200,200,255,.14); color:#F2EEFF}
+
+/* ---- v7.1 分页容器:每页最多 3 张卡,一屏放完 ---- */
+.qqPanes{position:relative}
+.qqPane{display:none; gap:14px; align-items:stretch}
+.qqPane.on{display:grid; flex:1; min-height:0; height:auto}
+.qqPane.on > .qqCard{height:100%; min-height:0; overflow:auto}
+.qqPane-1{grid-template-columns:minmax(0,1fr)}
+.qqPane-2{grid-template-columns:340px minmax(0,1fr)}
+.qqPane-2b{grid-template-columns:minmax(0,1fr) 300px}
+.qqWlTagInline{margin-left:auto}
+/* 对话页:卡片吃满剩余高度,内部滚动 */
+.qqPane-1 .qqChatCard{height:100%; min-height:0; display:flex; flex-direction:column}
+#p-qq .qqChatCard{height:100%; min-height:0; display:flex; flex-direction:column; overflow:hidden}
+#p-qq .qqChatCard .qqMsgs{flex:1; min-height:0; height:auto; max-height:none; overflow-y:auto}
+.qqAuditCard{max-height:calc(var(--vhpx, 100vh) - 380px); overflow:auto}
+/* 配置卡底部的状态说明:与按钮行拉开,避免负 margin 压上去 */
+.qqCard .qqCardActs + .qqCardNote{margin:12px 0 0; line-height:1.6; white-space:normal}
+
+/* ---- v7.2 浅色模式:QQ 页卡片改为半透明玻璃,与 Hero 同一层材质 ---- */
+html[data-theme="light"] #p-qq .qqCard{
+  /* 与 Hero 同一种「淡紫玻璃」:低透明度的彩色渐变 + 薄白底 */
+  background:
+    linear-gradient(120deg, rgba(124,147,255,.13), rgba(154,130,255,.075) 46%, rgba(255,158,196,.085)),
+    rgba(255,255,255,.34);
+  border-color:rgba(255,255,255,.85);
+  box-shadow:0 20px 44px -34px rgba(96,86,170,.34), inset 0 1px 0 rgba(255,255,255,.72);
+}
+/* 卡片内部的输入框/分段控件同步降一档,避免出现「实心白块」 */
+html[data-theme="light"] #p-qq .qqCard .qqRow input,
+html[data-theme="light"] #p-qq .qqCard .wlAdd input,
+html[data-theme="light"] #p-qq .qqCard .wlAdd select{
+  background:rgba(124,147,255,.10);
+  border-color:rgba(109,139,255,.22);
+}
+html[data-theme="light"] #p-qq .qqCard .qqWlTabs{background:rgba(124,147,255,.07)}
+html[data-theme="light"] #p-qq .qqCard .qqWlTabs button.on{
+  background:rgba(109,139,255,.14);
+  color:#5B6FE0;
+  box-shadow:inset 0 0 0 1px rgba(109,139,255,.26);
+}
+/* 卡片内的行分隔线也随之变淡 */
+html[data-theme="light"] #p-qq .qqCard .qqRow,
+html[data-theme="light"] #p-qq .qqCard .qqKv,
+html[data-theme="light"] #p-qq .qqCard .wlRow{border-bottom-color:rgba(122,124,180,.14)}
+
+/* ---- v7.3 玻璃下拉:替代原生 select 弹层(系统弹层无法改色) ---- */
+.gsel{position:relative; flex:none; width:104px}
+.gsel-native{position:absolute !important; opacity:0 !important; width:0 !important; height:0 !important;
+  pointer-events:none !important; margin:0 !important; padding:0 !important; border:0 !important}
+.gselBtn{display:flex; align-items:center; gap:6px; width:100%; height:32px; padding:0 10px 0 12px;
+  border-radius:12px; font-size:11.5px; color:var(--ink);
+  background:rgba(124,147,255,.10); border:1px solid rgba(109,139,255,.22);
+  transition:background 160ms, border-color 160ms}
+html[data-theme="dark"] .gselBtn{background:rgba(255,255,255,.06); border-color:rgba(200,195,255,.16)}
+.gselBtn:hover{background:rgba(124,147,255,.18)}
+html[data-theme="dark"] .gselBtn:hover{background:rgba(255,255,255,.12)}
+.gselBtn.open{background:rgba(124,147,255,.20); border-color:rgba(109,139,255,.5)}
+.gselTxt{flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.gselBtn svg{width:13px; height:13px; flex:none; color:var(--muted); transition:transform 180ms}
+.gselBtn.open svg{transform:rotate(180deg)}
+.gselMenu{position:absolute; left:0; top:calc(100% + 6px); min-width:100%; z-index:60;
+  display:flex; flex-direction:column; gap:2px; padding:5px; border-radius:14px;
+  background:linear-gradient(120deg, rgba(124,147,255,.18), rgba(154,130,255,.12) 50%, rgba(255,158,196,.12)), rgba(255,255,255,.90);
+  border:1px solid rgba(255,255,255,.85);
+  box-shadow:0 18px 36px -18px rgba(96,86,170,.45);
+  backdrop-filter:blur(16px) saturate(140%)}
+html[data-theme="dark"] .gselMenu{background:rgba(44,38,78,.96); border-color:rgba(200,195,255,.18);
+  box-shadow:0 18px 36px -18px rgba(0,0,0,.6)}
+.gselMenu[hidden]{display:none}
+.gselMenu button{height:28px; padding:0 10px; border-radius:9px; font-size:11.5px; color:var(--ink-2); text-align:left; white-space:nowrap}
+.gselMenu button:hover{background:rgba(124,147,255,.16); color:var(--ink)}
+html[data-theme="dark"] .gselMenu button:hover{background:rgba(255,255,255,.1)}
+.gselMenu button.on{background:rgba(109,139,255,.20); color:#4B5FD6; font-weight:600}
+html[data-theme="dark"] .gselMenu button.on{background:rgba(109,139,255,.28); color:#DCE4FF}
+
+/* 页签未选中态:浅色下也走玻璃色,不要白胶囊 */
+html[data-theme="light"] .qqTabs button{
+  background:rgba(124,147,255,.08);
+  border-color:rgba(109,139,255,.18);
+  color:var(--ink-2);
+}
+html[data-theme="light"] .qqTabs button:hover{background:rgba(124,147,255,.16); color:var(--ink)}
+
+/* ==========================================================================
+   v8 通用页面骨架:紧凑 Hero(功能页) + 分页面板
+   说明:产品页(QQ/B站/鱼窝)用标准 Hero(qqHero, 204 高 + 立绘);
+        功能页(心情/人格/记忆/部署/节点/命令/账号/设置)用 pgHero(紧凑)。
+   ========================================================================== */
+.pgHero{display:flex; align-items:center; gap:14px; padding:16px 20px; margin:2px 0 14px;
+  border-radius:20px; border:1px solid var(--line);
+  background:linear-gradient(120deg, rgba(124,147,255,.16), rgba(154,130,255,.09) 48%, rgba(255,158,196,.09))}
+html[data-theme="dark"] .pgHero{background:linear-gradient(120deg, rgba(124,147,255,.12), rgba(154,130,255,.07) 50%, rgba(255,158,196,.06))}
+.pgHeroIcon{width:44px; height:44px; border-radius:14px; flex:none; display:grid; place-items:center;
+  color:var(--pa,var(--accent)); background:var(--pa-soft,var(--accent-soft));
+  border:1px solid color-mix(in srgb,var(--pa,var(--accent)) 22%,var(--line))}
+.pgHeroIcon svg{width:22px; height:22px}
+.pgHeroTxt{min-width:0}
+.pgHeroTxt h1{font-size:23px; font-weight:700; letter-spacing:-.02em; color:var(--ink);
+  display:flex; align-items:center; gap:10px; margin:0}
+.pgHeroTxt p{font-size:12px; color:var(--muted); margin:4px 0 0; line-height:1.5}
+.pgDot{width:8px; height:8px; border-radius:50%; background:var(--ok); display:inline-block;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 20%,transparent)}
+.pgDot.warn{background:var(--warn); box-shadow:0 0 0 4px color-mix(in srgb,var(--warn) 20%,transparent)}
+.pgDot.bad{background:var(--bad); box-shadow:0 0 0 4px color-mix(in srgb,var(--bad) 20%,transparent)}
+.pgHeroActs{margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:none}
+
+/* ---- v8.1 人格页内层容器统一为「凹槽」材质(不再白底嵌套) ---- */
+.pQuick,.pAi,.pGuide,.pPresets button{
+  background:rgba(124,147,255,.09);
+  border-color:rgba(109,139,255,.20);
+}
+html[data-theme="dark"] .pQuick,html[data-theme="dark"] .pAi,
+html[data-theme="dark"] .pGuide,html[data-theme="dark"] .pPresets button{
+  background:rgba(255,255,255,.05);
+  border-color:rgba(200,195,255,.14);
+}
+.pGuide summary{cursor:pointer; font-size:11.5px; color:var(--ink-2)}
+.pGuide[open] summary{margin-bottom:8px}
+
+/* 深色下页签选中态:浅紫渐变底配深字,避免白字对比不足 */
+html[data-theme="dark"] .qqTabs button.on{color:var(--accent-ink)}
+
+/* 心情简述块同样走凹槽材质 */
+.moodBrief{background:rgba(124,147,255,.09); border-color:rgba(109,139,255,.20)}
+html[data-theme="dark"] .moodBrief{background:rgba(255,255,255,.05); border-color:rgba(200,195,255,.14)}
+
+/* ---- v8.2 部署页:三步改为「一个容器内的行」,不再多卡堆叠 ---- */
+#p-setup .setupSteps{display:flex; flex-direction:column; margin-top:14px}
+#p-setup .setupSteps .setupCard{
+  background:none; border:0; border-radius:0; box-shadow:none;
+  padding:16px 0; border-top:1px solid var(--line); display:block;
+}
+#p-setup .setupSteps .setupCard.done{border-color:var(--line)}
+#p-setup .setupSteps .setupCard:first-child{border-top:0; padding-top:6px}
+#p-setup .setupSteps .setupCard:hover{box-shadow:none}
+#p-setup .setupProg{margin-top:2px}
+
+/* 1:1 双栏变体(两块体量相近时用) */
+.qqPane-2e{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+
+/* ---- v8.3 部署步骤:序号圆 + 状态胶囊(原来 36px 圆塞不下四个字) ---- */
+#p-setup .scNo{width:26px; height:26px; border-radius:50%; display:grid; place-items:center; flex:none;
+  background:var(--accent-soft); color:var(--accent); font-family:var(--mono);
+  font-size:11.5px; font-weight:600; border:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
+#p-setup .scHead b{font-size:13px; font-weight:650; color:var(--ink)}
+#p-setup .scBadge{width:auto; height:20px; padding:0 8px; border-radius:7px; font-size:10px; font-weight:500;
+  display:inline-flex; align-items:center; background:var(--wash-2); border:1px solid var(--line-2); color:var(--muted)}
+#p-setup .scBadge.ok{background:color-mix(in srgb,var(--ok) 14%,transparent); border-color:color-mix(in srgb,var(--ok) 30%,transparent); color:var(--ok)}
+#p-setup .scBadge.warn{background:color-mix(in srgb,var(--warn) 16%,transparent); border-color:color-mix(in srgb,var(--warn) 32%,transparent); color:var(--warn)}
+#p-setup .scBadge.bad{background:color-mix(in srgb,var(--bad) 14%,transparent); border-color:color-mix(in srgb,var(--bad) 30%,transparent); color:var(--bad)}
+#p-setup .setupProg{height:6px; border-radius:99px; background:var(--line-strong); overflow:hidden; margin:4px 0 6px}
+#p-setup .setupProg i{display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width 400ms var(--ease-out)}
+
+/* ---- v8.4 记忆页:树卡 + 详情卡等高,树高度跟随可视区 ---- */
+#p-memory .memStage{height:calc(var(--vhpx,100vh) - 330px); min-height:360px; margin-top:4px}
+#p-memory .memCard{max-height:calc(var(--vhpx,100vh) - 330px)}
+#p-memory .memChips{margin:2px 0 8px}
+#p-memory .qqPane{align-items:stretch}
+/* B站 Hero 里的角色槽 */
+.qqFishSlot{position:absolute; right:18px; bottom:-6px; width:132px; height:150px; display:grid; place-items:end center}
+.qqFishSlot .rvAva,.qqFishSlot canvas,.qqFishSlot img{width:100%; height:auto; max-height:150px; object-fit:contain}
+.biliFace{border-radius:50%; width:22px; height:22px; object-fit:cover; margin-left:auto}
+.biliFace:not([src]),.biliFace[src=""]{display:none}
+
+/* ==========================================================================
+   v9 鱼窝:一屏放完(状态并入 Hero,画布/侧栏按可视区高度)
+   ========================================================================== */
+.fishHero{display:grid; grid-template-columns:auto minmax(0,1fr) auto; grid-template-rows:auto auto;
+  gap:10px 16px; align-items:center}
+.fishHero .pgHeroIcon{grid-row:1 / span 2}
+.fishHero .pgHeroTxt{grid-column:2; grid-row:1; max-width:none}
+.fishHero .pgHeroActs{grid-column:3; grid-row:1; justify-content:flex-end}
+.fishStatusInline{grid-column:2 / span 2; grid-row:2; display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto; gap:16px; align-items:center;
+  margin:0; padding:0; background:none; border:0; box-shadow:none; border-radius:0}
+.fishStatusInline .fsAva{width:54px; height:54px; border-radius:16px}
+.fishStatusInline .fsAva canvas{width:50px; height:50px}
+.fishStatusInline .fsNow{font-size:13px; margin-bottom:5px}
+.fishStatusInline .fsKicker{font-size:8.5px; margin-bottom:2px}
+.fishStatusInline .fsCoin{text-align:right; padding-right:4px}
+.fishHero .pgHeroActs{flex:none}
+
+/* 场景页:画布卡与侧栏各占一栏,高度锁定后内部滚动 —— 页面本身不滚 */
+/* 页面本身占满可视高度,内容用 flex 填满 —— 不写死高度,任何窗口都不会溢出 */
+#p-fish{display:flex; flex-direction:column; height:100%; min-height:0}
+#p-fish .pgHero,#p-fish #fishTabs{flex:none}
+#p-fish .fishBody{flex:1; min-height:0; grid-template-columns:minmax(0,1fr) 320px; gap:14px; align-items:stretch}
+#p-fish .fishMain{height:auto; min-height:0; display:flex; flex-direction:column; overflow:hidden}
+#p-fish .fishStage{flex:1; min-height:0}
+#p-fish .fishSide{height:auto; min-height:0; overflow-y:auto}
+/* 整页视图(雇佣/工坊/账本/日记):同样吃满剩余高度,卡内滚动 */
+#p-fish > .fishSide:not(#fishSide){flex:1; min-height:0; height:auto; overflow-y:auto}
+
+/* ---- v11.1 三个页面各压 30px,让卡片不再内部滚动 ---- */
+#p-memory .memStage{height:calc(var(--vhpx,100vh) - 390px)}
+#p-persona .pText{min-height:170px}
+#p-persona .pText.small{min-height:74px}
+#p-bili .pubForm textarea{height:62px; min-height:62px}
+#p-bili .pubForm{gap:8px}
+
+/* ---- v11.2 QQ 运行状态卡:二维码收小 + 行距压紧,保证一屏内完整 ---- */
+#p-qq .qqKv{padding:5px 0}
+#p-qq .qqCard .qqCardHead{margin-bottom:10px}
+#p-qq .qrBox{margin-top:6px; gap:5px}
+#p-qq .qrBox img{width:104px; height:104px; border-radius:8px; padding:4px}
+#p-qq .qrBox .qrT{font-size:10px}
+
+/* ---- v11.4 B站 稿件列表 / 账号页:压掉内部溢出 ---- */
+#p-bili .biliVids .biliVid{padding:9px 12px}
+#p-bili .biliVidRow{font-size:11.5px}
+#p-bili #biliStats .qqKv{padding:4px 0}
+#p-bili #biliStats .biliStat{padding:6px 0}
+#p-bili .qqPane[data-pane="acc"] .qqHelp{gap:6px}
+
+/* ---- v11.5 B站账号卡/稿件列表:压紧到一屏 ---- */
+#p-bili #biliStats .svcKv{padding:5px 0}
+#p-bili #biliStats .extBox{margin-top:12px; padding-top:10px}
+#p-bili #biliStats .extBox h3{margin-bottom:6px}
+#p-bili #biliStats .cfgRow{margin-top:6px; gap:8px}
+#p-bili #biliStats .svcActs{margin-top:8px}
+#p-bili .biliVids{gap:4px}
+#p-bili .biliVid{padding:7px 10px}
+
+/* 刷推荐独立页:两列铺开,不用纵向挤 */
+#p-bili .biliDailyBox .cfgRow{display:flex; flex-wrap:wrap; gap:14px 18px; align-items:center; margin-top:12px}
+#p-bili .biliDailyBox .svcKv{padding:6px 0}
+#p-bili .biliDailyBox .pubLog{max-height:180px; margin-top:10px}
+
+/* 稿件列表最后 9px */
+#p-bili .biliVids{gap:3px}
+#p-bili .biliVid{padding:6px 10px}
+
+/* B站稿件列表最后 9px */
+#p-bili .biliVids{padding-bottom:0}
+#p-bili .biliVid:last-child{border-bottom:0}
+#p-bili .biliVid{margin-bottom:0}
+
+/* ==========================================================================
+   v12.1 鱼窝拆页(修正):拆页场景下强制单容器、画布完整可见
+   录制/镜头层的 transform scale 会让 100% 高度基准失效,这里用视口像素锁定
+   ========================================================================== */
+#p-fish{height:calc(var(--vhpx,100vh) - 0px)}
+#p-fish .fishHero{flex:none}
+/* 视口 860 时:Hero 约 150 + 页签 40 + 内边距 26 => 画布容器约 640 */
+#p-fish .fishBody{height:calc(var(--vhpx,100vh) - 250px); min-height:340px; flex:none}
+
+/* 画布页:强制隐藏侧栏,画布卡吃满整行 */
+#p-fish[data-view="house"] .fishSideCol,
+#p-fish[data-view="farm"] .fishSideCol,
+#p-fish[data-view="workshop"] .fishSideCol,
+#p-fish[data-view="hire"] .fishSideCol,
+#p-fish[data-view="ledger"] .fishSideCol,
+#p-fish[data-view="diary"] .fishSideCol,
+/* 侧栏页:显示 fishSideCol,里面只有一张卡 */
+#p-fish[data-view="bag"] .fishSideCol,
+#p-fish[data-view="shop"] .fishSideCol,
+#p-fish[data-view="hlog"] .fishSideCol,
+#p-fish[data-view="farmWork"] .fishSideCol,
+#p-fish[data-view="warehouse"] .fishSideCol,
+#p-fish[data-view="farmLog"] .fishSideCol{display:grid !important; grid-template-columns:minmax(0,1fr); height:100%}
+/* 画布页:fishBody 单列 */
+#p-fish[data-view="house"] .fishBody,
+#p-fish[data-view="farm"] .fishBody{grid-template-columns:minmax(0,1fr)}
+/* 画布按容器完整显示,不再被裁掉下半部分 */
+#p-fish[data-view="house"] .fishStage,
+#p-fish[data-view="farm"] .fishStage{overflow:auto; min-height:0}
+#p-fish[data-view="house"] .fishMain,
+#p-fish[data-view="farm"] .fishMain{overflow:hidden}
+
+/* 非画布页:隐藏画布,单卡全宽 */
+#p-fish[data-view="bag"] .fishMain,
+#p-fish[data-view="shop"] .fishMain,
+#p-fish[data-view="hlog"] .fishMain,
+#p-fish[data-view="farmWork"] .fishMain,
+#p-fish[data-view="warehouse"] .fishMain,
+#p-fish[data-view="farmLog"] .fishMain,
+#p-fish[data-view="workshop"] .fishMain,
+#p-fish[data-view="hire"] .fishMain,
+#p-fish[data-view="ledger"] .fishMain,
+#p-fish[data-view="diary"] .fishMain{display:none !important}
+
+/* 侧栏页只显示第一张卡(拆页后 renderSide 本就只产一张,这里兜底) */
+#p-fish .fishSideCol > .card:not(:first-child){display:none !important}
+
+/* 最终裁决:画布/整页视图一律隐藏侧栏(放在最后,优先级压过上面的 grid !important) */
+#p-fish[data-view="house"] .fishSideCol,
+#p-fish[data-view="farm"] .fishSideCol,
+#p-fish[data-view="workshop"] .fishSideCol,
+#p-fish[data-view="hire"] .fishSideCol,
+#p-fish[data-view="ledger"] .fishSideCol,
+#p-fish[data-view="diary"] .fishSideCol{display:none !important}
+
+/* ---------------------------------------------------------------- 新用户首启引导条 */
+.setupGuideBar{
+  display:flex; align-items:center; gap:12px; margin:0 0 14px;
+  padding:12px 18px; border-radius:14px;
+  background:linear-gradient(135deg,rgba(235,240,255,.96),rgba(244,235,252,.94));
+  border:1px solid rgba(140,160,235,.55);
+  box-shadow:0 12px 28px -16px rgba(60,50,140,.45),inset 0 1px 0 rgba(255,255,255,.9);
+  font-size:13px; color:#3A3D66;
+}
+.setupGuideIcon{
+  flex:0 0 auto; width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#6E82E8,#9A7BE0);color:#fff;font-size:14px;
+  box-shadow:0 6px 14px -6px rgba(90,80,200,.8);
+}
+.setupGuideText{flex:1 1 auto; line-height:1.5}
+.setupGuideText b{color:#5A63C8}
+.setupGuideSkip{
+  flex:0 0 auto; padding:6px 14px; border-radius:999px; cursor:pointer;
+  font-size:12px; color:#5A5E88; background:rgba(255,255,255,.85);
+  border:1px solid rgba(150,165,235,.6);
+}
+.setupGuideSkip:hover{background:#fff;color:#3A3D66}
+html[data-theme="dark"] .setupGuideBar{
+  background:linear-gradient(135deg,rgba(48,44,86,.92),rgba(58,44,92,.9));
+  border-color:rgba(140,160,235,.35); color:#D9DCF5;
+}
+html[data-theme="dark"] .setupGuideSkip{background:rgba(60,56,100,.9);color:#C9CDF0}

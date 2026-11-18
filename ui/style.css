@@ -1,0 +1,1791 @@
+/* ==========================================================================
+   Rivulet 若 · 概念稿皮肤 v10
+   梦幻浅蓝紫 / 柔和粉 / 清透白 / 二次元角色 / 现代 AI 桌面应用
+   布局:左侧导航 + 顶部搜索 + 中央欢迎 + 四入口卡 + 底部输入 + 右侧信息栏
+   ========================================================================== */
+
+:root{
+  --r-xl: 26px;
+  --r-lg: 20px;
+  --r: 16px;
+  --r-sm: 12px;
+  --r-xs: 9px;
+  --sans: "PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",
+          -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono: "Cascadia Mono","Consolas","SF Mono",ui-monospace,monospace;
+  --rail-w: 204px;
+  --ease: cubic-bezier(.22,.8,.24,1);
+  --ease-out: cubic-bezier(.16,1,.3,1);
+  --spring: cubic-bezier(.34,1.4,.5,1);
+  --t: 200ms;
+  --t-slow: 320ms;
+}
+
+/* 浅色(主方向) */
+html[data-theme="light"]{
+  color-scheme: light;
+  --ink:#2A2442;
+  --ink-2:#575174;
+  --muted:#8C87A8;
+  --faint:#B9B6D0;
+  --panel:rgba(255,255,255,.74);
+  --panel-2:rgba(255,255,255,.92);
+  --panel-solid:#FFFFFF;
+  --line:rgba(122,124,180,.14);
+  --line-2:rgba(122,124,180,.26);
+  --chip:rgba(255,255,255,.55);
+  --chip-hover:rgba(255,255,255,.85);
+  --accent:#6D8BFF;
+  --accent-2:#8E7BFF;
+  --accent-3:#FF9EC4;
+  --accent-4:#5DD6C6;
+  --accent-soft:rgba(109,139,255,.12);
+  --accent-ink:#FFFFFF;
+  --ok:#35BF8C; --bad:#FF7089; --warn:#FFB454; --warm:#FFB454;
+  --shadow:0 18px 40px -26px rgba(96,86,170,.42), 0 2px 8px rgba(96,86,170,.06);
+  --shadow-sm:0 10px 26px -22px rgba(96,86,170,.4);
+  --scroll:rgba(122,124,180,.22);
+  --mem-clear:#5DD6C6; --mem-normal:#FFB454; --mem-fuzzy:#FF7089; --mem-broken:#FF7089;
+  --bg0:#EEF2FF;
+  /* v10.1 补齐:主题感知的「白瓷面」体系(修复深色模式硬编码白底) */
+  --line-strong:rgba(122,124,180,.34);   /* 进度条轨道 / 强分隔线 */
+  --edge:rgba(122,124,180,.30);          /* 头像、徽章类描边 */
+  --glass-low:rgba(255,255,255,.5);       /* 弱底面板 */
+  --wash:rgba(255,255,255,.52);          /* 静态白瓷面(浅底片) */
+  --wash-2:rgba(255,255,255,.72);        /* hover 亮面 */
+  --wash-3:rgba(255,255,255,.92);        /* 近实心亮面 */
+  --wash-line:rgba(255,255,255,.62);      /* 白瓷内描边 */
+  --rvh:64px;                            /* 鱼窝立绘行高 */
+}
+
+/* 深色:同一套语言,深蓝紫 */
+html[data-theme="dark"]{
+  color-scheme: dark;
+  --ink:#F2EEFF;
+  --ink-2:#C6C0E8;
+  --muted:#928DB4;
+  --faint:#5F5A82;
+  --panel:rgba(38,32,68,.66);
+  --panel-2:rgba(48,41,84,.9);
+  --panel-solid:#2A2450;
+  --line:rgba(200,195,255,.10);
+  --line-2:rgba(200,195,255,.22);
+  --chip:rgba(255,255,255,.06);
+  --chip-hover:rgba(255,255,255,.12);
+  --accent:#8FA8FF;
+  --accent-2:#A996FF;
+  --accent-3:#FFA8CC;
+  --accent-4:#6FE3D2;
+  --accent-soft:rgba(143,168,255,.16);
+  --accent-ink:#141033;
+  --ok:#5ADFAE; --bad:#FF8DA1; --warn:#FFC46B; --warm:#FFC46B;
+  --shadow:0 24px 60px -30px rgba(0,0,0,.8), 0 2px 10px rgba(0,0,0,.3);
+  --shadow-sm:0 12px 30px -24px rgba(0,0,0,.7);
+  --scroll:rgba(200,195,255,.2);
+  --mem-clear:#6FE3D2; --mem-normal:#FFC46B; --mem-fuzzy:#FF8DA1; --mem-broken:#FF8DA1;
+  --bg0:#171331;
+  /* v10.1 深色:白瓷面换成暗面,hover 提亮而不是变白 */
+  --line-strong:rgba(200,195,255,.22);
+  --edge:rgba(200,195,255,.20);
+  --glass-low:rgba(255,255,255,.05);
+  --wash:rgba(255,255,255,.07);
+  --wash-2:rgba(255,255,255,.14);
+  --wash-3:rgba(46,40,80,.92);
+  --wash-line:rgba(200,195,255,.18);
+  --rvh:64px;
+}
+
+/* ---------------------------------------------------------------- reset */
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%}
+html{background:var(--bg0)}
+body{
+  margin:0; min-height:100%; color:var(--ink);
+  font-family:var(--sans); font-size:13.5px; line-height:1.6;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  overflow:hidden; user-select:none;
+}
+a{color:inherit; text-decoration:none}
+button{font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer}
+input,textarea,select{font:inherit; color:inherit; background:none; border:0; outline:none}
+img,svg{display:block; max-width:100%}
+h1,h2,h3,h4,p{margin:0}
+i,em{font-style:normal}
+code{font-family:var(--mono); font-size:.92em}
+::selection{background:rgba(109,139,255,.25); color:var(--ink)}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:99px;border:3px solid transparent;background-clip:padding-box}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+
+/* ---------------------------------------------------------------- 梦幻背景 */
+.dream{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+.dream-sky{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(120% 90% at 12% 0%, rgba(214,226,255,.95), transparent 55%),
+    radial-gradient(100% 80% at 88% 6%, rgba(255,226,246,.9), transparent 52%),
+    radial-gradient(90% 80% at 50% 100%, rgba(255,247,235,.85), transparent 60%),
+    linear-gradient(160deg,#E9F1FF 0%,#EFEDFF 40%,#F8EFFF 72%,#FFF6FB 100%);
+}
+html[data-theme="dark"] .dream-sky{
+  background:
+    radial-gradient(120% 90% at 12% 0%, rgba(52,58,130,.55), transparent 58%),
+    radial-gradient(100% 80% at 88% 4%, rgba(96,60,140,.5), transparent 55%),
+    radial-gradient(80% 70% at 50% 100%, rgba(40,30,70,.8), transparent 62%),
+    linear-gradient(160deg,#171331 0%,#1D1740 45%,#241B48 75%,#191332 100%);
+}
+.dream-cloud{
+  position:absolute; border-radius:50%; filter:blur(46px); opacity:.75;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.95), rgba(255,255,255,0) 70%);
+}
+html[data-theme="dark"] .dream-cloud{background:radial-gradient(circle at 50% 50%, rgba(150,150,230,.22), rgba(150,150,230,0) 70%); opacity:.8}
+.dream-cloud.c1{width:520px;height:280px;left:-6%;top:6%}
+.dream-cloud.c2{width:620px;height:320px;right:-10%;top:-4%}
+.dream-cloud.c3{width:460px;height:240px;left:22%;bottom:-8%;opacity:.55}
+.dream-cloud.c4{width:380px;height:200px;right:14%;bottom:4%;opacity:.5}
+.dream-castle{
+  position:absolute; right:16%; top:6%; width:430px; color:rgba(150,165,255,.30);
+  filter:drop-shadow(0 30px 60px rgba(140,150,255,.25));
+}
+html[data-theme="dark"] .dream-castle{color:rgba(160,150,255,.16); filter:drop-shadow(0 30px 60px rgba(120,110,255,.2))}
+.dream-glow{position:absolute; border-radius:50%; filter:blur(70px)}
+.dream-glow.g1{width:520px;height:520px;right:-8%;top:22%;background:radial-gradient(circle,rgba(255,190,230,.35),transparent 70%)}
+.dream-glow.g2{width:620px;height:620px;left:-12%;bottom:-14%;background:radial-gradient(circle,rgba(170,200,255,.35),transparent 70%)}
+html[data-theme="dark"] .dream-glow.g1{background:radial-gradient(circle,rgba(255,150,220,.16),transparent 70%)}
+html[data-theme="dark"] .dream-glow.g2{background:radial-gradient(circle,rgba(140,170,255,.18),transparent 70%)}
+.dream-petals i{
+  position:absolute; width:6px; height:6px; border-radius:50%;
+  background:var(--wash-3); box-shadow:0 0 10px rgba(180,200,255,.9);
+  animation:petalFall linear infinite;
+}
+.dream-petals i:nth-child(1){left:14%;top:-4%;animation-duration:17s;animation-delay:0s}
+.dream-petals i:nth-child(2){left:33%;top:-8%;animation-duration:22s;animation-delay:3s;width:4px;height:4px}
+.dream-petals i:nth-child(3){left:52%;top:-6%;animation-duration:19s;animation-delay:6s}
+.dream-petals i:nth-child(4){left:67%;top:-10%;animation-duration:25s;animation-delay:1s;width:5px;height:5px}
+.dream-petals i:nth-child(5){left:79%;top:-3%;animation-duration:18s;animation-delay:8s;width:4px;height:4px}
+.dream-petals i:nth-child(6){left:88%;top:-9%;animation-duration:23s;animation-delay:4s}
+.dream-petals i:nth-child(7){left:6%;top:-7%;animation-duration:21s;animation-delay:10s;width:4px;height:4px}
+.dream-petals i:nth-child(8){left:42%;top:-5%;animation-duration:26s;animation-delay:12s;width:5px;height:5px}
+@keyframes petalFall{
+  0%{transform:translate3d(0,0,0); opacity:0}
+  10%{opacity:.85}
+  100%{transform:translate3d(40px,105vh,0); opacity:0}
+}
+.mouseGlow{
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:radial-gradient(480px 480px at var(--gx,50%) var(--gy,30%), rgba(160,180,255,.16), transparent 70%);
+}
+
+/* ---------------------------------------------------------------- 主框架 */
+.app{position:fixed; inset:0; z-index:2; display:grid; grid-template-columns:var(--rail-w) minmax(0,1fr)}
+
+/* 左侧导航 */
+.side{
+  display:flex; flex-direction:column; gap:6px; min-height:0;
+  padding:22px 14px 16px;
+  background:var(--wash-2);
+  border-right:1px solid var(--line);
+  backdrop-filter:blur(26px) saturate(150%);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
+}
+html[data-theme="dark"] .side{background:rgba(30,26,58,.6)}
+.brand{display:flex; align-items:center; gap:10px; padding:2px 8px 18px}
+.brandMark{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;flex:none;
+  background:linear-gradient(150deg,#DCE6FF,#F1E6FF);border:1px solid rgba(140,150,230,.25);
+  box-shadow:0 8px 18px -12px rgba(110,120,220,.6)}
+html[data-theme="dark"] .brandMark{background:linear-gradient(150deg,#3A3866,#4A3A6E);border-color:rgba(180,180,255,.2)}
+.brandMark img{width:30px;height:30px;image-rendering:pixelated}
+.brandText{display:flex; align-items:baseline; gap:5px; font-weight:700; letter-spacing:-.01em}
+.brandText b{font-size:19px}
+.brandText i{font-style:normal; color:var(--accent); font-size:15px}
+.nav{display:flex; flex-direction:column; gap:4px; min-height:0; overflow:auto; scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{
+  display:flex; align-items:center; gap:12px; height:44px; padding:0 14px; border-radius:14px;
+  font-size:13.5px; font-weight:500; color:var(--ink-2);
+  transition:background-color 180ms var(--ease), color 160ms var(--ease), transform 180ms var(--spring);
+}
+.nav a .ni{width:22px;height:22px;display:grid;place-items:center;flex:none;color:var(--muted)}
+.nav a .ni svg{width:19px;height:19px}
+.nav a:hover{background:var(--wash-2); color:var(--ink); transform:translateX(1px)}
+html[data-theme="dark"] .nav a:hover{background:var(--wash)}
+.nav a.on{
+  color:#4B5FD6; font-weight:600;
+  background:linear-gradient(90deg,rgba(214,226,255,.95),rgba(236,228,255,.9));
+  box-shadow:0 8px 20px -16px rgba(96,110,220,.7), inset 0 1px 0 rgba(255,255,255,.9);
+}
+html[data-theme="dark"] .nav a.on{color:#DCE4FF; background:linear-gradient(90deg,rgba(84,96,190,.5),rgba(112,88,180,.42))}
+.nav a.on .ni{color:#5C74E8}
+html[data-theme="dark"] .nav a.on .ni{color:#B7C6FF}
+.sideFoot{margin-top:auto; padding-top:14px; border-top:1px solid var(--line); display:flex; flex-direction:column; align-items:center; gap:8px}
+.sideMascot{
+  width:104px; height:104px; border-radius:26px; overflow:hidden; flex:none; cursor:pointer;
+  background:linear-gradient(160deg,#E7EEFF,#F7E9FF); border:1px solid rgba(150,160,235,.22);
+  display:grid; place-items:end center;
+  transition:transform 220ms var(--spring), box-shadow 200ms;
+}
+.sideMascot img{height:110px; width:auto; object-fit:contain; filter:drop-shadow(0 8px 14px rgba(90,100,200,.25))}
+.sideMascot:hover{transform:translateY(-2px); box-shadow:0 14px 30px -22px rgba(96,110,220,.8)}
+html[data-theme="dark"] .sideMascot{background:linear-gradient(160deg,#2E2A55,#3A2F5E); border-color:rgba(170,170,255,.18)}
+.sideSlogan{font-size:10.5px; color:var(--muted); letter-spacing:.02em}
+.sideSlogan span{color:var(--accent-3)}
+.sideMeta{display:flex; align-items:center; justify-content:space-between; width:100%; padding:0 6px; font-size:10.5px; color:var(--faint)}
+.sideMeta button{color:var(--muted); font-size:10.5px}
+.sideMeta button:hover{color:var(--bad)}
+
+/* 主区 */
+.stage{min-width:0; display:flex; flex-direction:column; position:relative}
+.topbar{display:flex; align-items:center; gap:18px; padding:16px 26px 8px; flex:none}
+.topSearch{
+  display:flex; align-items:center; gap:10px; flex:1; max-width:560px; height:42px;
+  padding:0 14px; border-radius:999px;
+  background:var(--wash-2); border:1px solid rgba(140,150,225,.2);
+  box-shadow:0 10px 26px -22px rgba(96,110,220,.5), inset 0 1px 0 rgba(255,255,255,.9);
+  transition:border-color 200ms, box-shadow 200ms, background-color 200ms;
+}
+.topSearch:focus-within{border-color:rgba(109,139,255,.55); box-shadow:0 0 0 4px rgba(109,139,255,.12), 0 10px 26px -22px rgba(96,110,220,.5); background:var(--wash-3)}
+html[data-theme="dark"] .topSearch{background:rgba(48,42,86,.72); border-color:rgba(180,180,255,.18)}
+html[data-theme="dark"] .topSearch:focus-within{background:rgba(58,50,100,.9)}
+.topSearch svg{width:17px;height:17px;color:var(--muted);flex:none}
+.topSearch input{flex:1;height:100%;font-size:13px;color:var(--ink)}
+.topSearch input::placeholder{color:var(--muted)}
+.topSearch kbd{
+  font-family:var(--sans); font-size:10.5px; color:var(--muted); padding:3px 8px; border-radius:7px;
+  background:var(--wash-2); border:1px solid rgba(140,150,225,.18); flex:none;
+}
+html[data-theme="dark"] .topSearch kbd{background:var(--wash); border-color:rgba(200,200,255,.14)}
+.topRight{margin-left:auto; display:flex; align-items:center; gap:8px}
+.iconbtn{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:var(--ink-2);transition:background-color 160ms, color 160ms, transform 160ms}
+.iconbtn svg{width:17px;height:17px}
+.iconbtn:hover{background:var(--wash-2); color:var(--ink)}
+html[data-theme="dark"] .iconbtn:hover{background:var(--wash)}
+.iconbtn .ic-sun{display:none}
+html[data-theme="dark"] .iconbtn .ic-sun{display:block}
+html[data-theme="dark"] .iconbtn .ic-moon{display:none}
+.avaTop{
+  width:36px;height:36px;border-radius:50%;overflow:hidden;display:grid;place-items:center;flex:none;
+  background:linear-gradient(150deg,#D9E4FF,#EFE4FF); border:2px solid var(--wash-line);
+  box-shadow:0 8px 18px -12px rgba(96,110,220,.6); color:var(--accent);
+}
+.avaTop svg{width:22px;height:22px}
+.avaTop img{width:100%;height:100%;object-fit:cover}
+html[data-theme="dark"] .avaTop{border-color:var(--wash-line); background:linear-gradient(150deg,#3A3666,#4A3A6E)}
+.winbtns{display:flex;align-items:center;gap:2px;margin-left:6px}
+.winbtn{width:32px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--muted);transition:background-color 150ms,color 150ms}
+.winbtn svg{width:11px;height:11px}
+.winbtn:hover{background:var(--wash-3);color:var(--ink)}
+html[data-theme="dark"] .winbtn:hover{background:var(--wash)}
+.winbtn.close:hover{background:#FF7089;color:#fff}
+
+/* 内容区 */
+.view{flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:14px 26px 40px; scroll-behavior:smooth}
+.page{max-width:1240px; margin:0 auto; animation:pageIn 320ms var(--ease-out) both}
+@keyframes pageIn{from{opacity:0; transform:translateY(8px); filter:blur(2px)}to{opacity:1; transform:none; filter:none}}
+
+/* ---------------------------------------------------------------- 通用组件 */
+.card,.glass{
+  position:relative; border-radius:var(--r-lg);
+  background:var(--panel); border:1px solid var(--wash-line);
+  box-shadow:var(--shadow-sm);
+  backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+}
+html[data-theme="dark"] .card,html[data-theme="dark"] .glass{border-color:rgba(200,200,255,.1)}
+.card{padding:18px 18px 16px}
+.card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.card-h h2{font-size:14px;font-weight:600}
+.card-h p{font-size:11.5px;color:var(--muted);margin-top:2px}
+.sub-h{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;margin:16px 0 10px;color:var(--ink-2)}
+.tag{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:7px;font-size:10px;color:var(--muted);background:var(--wash-2);border:1px solid var(--line);font-family:var(--mono)}
+html[data-theme="dark"] .tag{background:var(--wash)}
+.tag.live{color:var(--accent); border-color:rgba(109,139,255,.3)}
+.hint{font-size:11.5px;color:var(--muted);line-height:1.75;margin:8px 0 14px}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono)}
+.ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px; height:34px; padding:0 16px;
+  border-radius:12px; font-size:12.5px; font-weight:600; color:var(--accent-ink);
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 10px 22px -14px rgba(109,139,255,.9);
+  transition:transform 140ms var(--spring), filter 160ms, box-shadow 160ms;
+}
+.btn svg{width:15px;height:15px}
+.btn:hover{filter:brightness(1.06); transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:default;transform:none;filter:none}
+.btn.ghost{background:var(--wash-2);color:var(--ink-2);border:1px solid var(--line-2);box-shadow:none}
+html[data-theme="dark"] .btn.ghost{background:var(--wash)}
+.btn.ghost:hover{background:var(--wash-3);color:var(--ink);filter:none}
+html[data-theme="dark"] .btn.ghost:hover{background:var(--wash)}
+.btn.sm{height:28px;padding:0 11px;font-size:11.5px;border-radius:9px}
+.btn.lg{height:42px;width:100%;border-radius:14px}
+.mini{height:24px;padding:0 9px;border-radius:8px;font-size:10.5px;color:var(--ink-2);background:var(--wash-2);border:1px solid var(--line);transition:all 160ms}
+html[data-theme="dark"] .mini{background:var(--wash)}
+.mini:hover{background:#fff;color:var(--ink)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;font-size:11.5px;color:var(--ink-2);background:var(--wash);border:1px solid var(--line);transition:all 160ms}
+html[data-theme="dark"] .chip{background:var(--wash)}
+.chip:hover{background:#fff;border-color:var(--line-2);color:var(--ink)}
+.conn-chip{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted)}
+.conn-chip i,.dot{width:6px;height:6px;border-radius:50%;background:var(--ok);flex:none}
+.conn-chip i{box-shadow:0 0 8px rgba(53,191,140,.8)}
+.dot.ok{background:var(--ok)} .dot.bad{background:var(--bad)} .dot.warn{background:var(--warn)}
+
+input,textarea,select{
+  border-radius:12px; padding:9px 12px; font-size:13px; color:var(--ink);
+  background:var(--wash-2); border:1px solid var(--line-2); box-shadow:none;
+  transition:border-color 180ms, box-shadow 180ms, background-color 180ms; user-select:text;
+}
+html[data-theme="dark"] input,html[data-theme="dark"] textarea,html[data-theme="dark"] select{background:var(--wash)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+input:focus,textarea:focus,select:focus{border-color:rgba(109,139,255,.6);background:#fff;box-shadow:0 0 0 4px rgba(109,139,255,.12)}
+html[data-theme="dark"] input:focus,html[data-theme="dark"] textarea:focus,html[data-theme="dark"] select:focus{background:var(--wash)}
+textarea{resize:vertical;line-height:1.7;min-height:80px}
+select{appearance:none;padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%238C87A8' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+label{font-size:11px;color:var(--muted)}
+label > span{display:block;margin-bottom:5px}
+.field{margin-bottom:14px}
+.field span{display:block;margin-bottom:6px;font-size:10.5px;color:var(--muted)}
+.cfgGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cfgGrid label{display:flex;flex-direction:column;gap:6px}
+.svcSwitch{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-2);cursor:pointer}
+.svcSwitch input{display:none}
+.svcSwitch span{position:relative;padding-left:38px;line-height:18px}
+.svcSwitch span::before{content:"";position:absolute;left:0;top:0;width:30px;height:18px;border-radius:99px;background:rgba(140,150,220,.25);transition:background-color 200ms}
+.svcSwitch span::after{content:"";position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left 200ms var(--spring)}
+.svcSwitch input:checked + span::before{background:var(--accent)}
+.svcSwitch input:checked + span::after{left:14px}
+.svcDot{width:7px;height:7px;border-radius:50%;flex:none;background:var(--faint);display:inline-block}
+.svcDot.on{background:var(--ok);box-shadow:0 0 8px rgba(53,191,140,.7)}
+.svcDot.warn{background:var(--warn)} .svcDot.bad{background:var(--bad)}
+.svcDot.big{width:9px;height:9px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;font-weight:600;font-size:10.5px;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line-2)}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tr:hover td{background:var(--wash)}
+.toastHost{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{padding:9px 16px;border-radius:14px;font-size:12px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-2);box-shadow:var(--shadow);animation:toastIn 260ms var(--spring) both}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+.eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:var(--mono)}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:2px 0 20px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.pagehead h1{font-size:25px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.pagehead-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.svcBody{display:grid;grid-template-columns:260px minmax(0,1fr);gap:14px;align-items:start}
+.svcMain{grid-column:2;padding:20px}
+.svcSide{padding:16px}
+.svcId{display:flex;align-items:center;gap:10px}
+.svcIdTxt{display:flex;flex-direction:column;line-height:1.25}
+.svcIdTxt b{font-size:13px;font-weight:600}
+.svcIdTxt small{font-size:10.5px;color:var(--muted)}
+.svcRole{width:38px;height:38px;flex:none;border-radius:12px;display:grid;place-items:center;background:var(--wash-2);border:1px solid var(--line);overflow:hidden}
+html[data-theme="dark"] .svcRole{background:var(--wash)}
+.svcRole .rvAva,.svcRole canvas{width:34px;height:34px}
+.biliFace{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
+.svcKv{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12px}
+.svcKv:last-child{border-bottom:0}
+.svcKv .k{color:var(--muted);flex:none}
+.svcKv .v{color:var(--ink-2);text-align:right;font-family:var(--mono);font-size:11.5px;overflow:hidden;text-overflow:ellipsis}
+.svcActs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.card-h-split{flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.qrBox img{width:140px;border-radius:12px;background:#fff;padding:6px}
+.fishTabs,.pTabs,.memChips,.provChips{background:var(--wash);border:1px solid var(--line);border-radius:12px;padding:3px}
+.fishTabs button,.pTabs button,.memChips button,.provChips button{border-radius:9px;color:var(--ink-2);font-weight:500;transition:all 180ms}
+.fishTabs button.on,.pTabs button.on,.memChips button.on,.provChips button.on{background:#fff;color:#4B5FD6;box-shadow:0 2px 6px rgba(96,110,220,.16)}
+html[data-theme="dark"] .fishTabs button.on,html[data-theme="dark"] .pTabs button.on,html[data-theme="dark"] .memChips button.on,html[data-theme="dark"] .provChips button.on{background:#3C3568;color:#DCE4FF}
+.fishChip,.wsChip,.mcPill{border-radius:8px;background:var(--wash);border:1px solid var(--line);font-family:var(--sans)}
+html[data-theme="dark"] .fishChip,html[data-theme="dark"] .wsChip,html[data-theme="dark"] .mcPill{background:var(--wash)}
+
+/* ---------------------------------------------------------------- 首页 */
+.homePage{display:grid;grid-template-columns:minmax(0,1fr) 316px;gap:20px;align-items:start}
+.homeCol{display:flex;flex-direction:column;gap:18px;min-width:0}
+.hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 46%;min-height:418px;padding:8px 0 0}
+.heroText{position:relative;z-index:2;padding:34px 0 0 6px;max-width:440px}
+.heroHi{font-size:30px;font-weight:700;color:var(--ink);letter-spacing:-.01em;line-height:1.1}
+.heroName{font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1.1;color:var(--ink);margin-top:2px}
+.heroName i{font-style:normal;color:var(--accent);font-weight:700}
+.heroName .spark{font-size:22px;color:var(--accent-3);margin-left:6px;vertical-align:super}
+.heroWarm{margin-top:14px;font-size:14px;color:var(--ink-2);letter-spacing:.01em}
+.heroWarm span{color:var(--accent-3);margin-left:4px}
+.heroChips{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+.heroChip{
+  display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 16px;border-radius:999px;
+  font-size:12.5px;font-weight:500;color:var(--ink-2);
+  background:var(--wash-2);border:1px solid rgba(150,160,230,.18);
+  box-shadow:0 10px 22px -20px rgba(96,110,220,.7);
+  transition:transform 160ms var(--spring), background-color 160ms, box-shadow 160ms, color 160ms;
+}
+.heroChip svg{width:16px;height:16px;color:var(--accent)}
+.heroChip:hover{background:#fff;transform:translateY(-1px);box-shadow:0 14px 26px -20px rgba(96,110,220,.9)}
+html[data-theme="dark"] .heroChip{background:var(--wash);border-color:rgba(200,200,255,.14)}
+html[data-theme="dark"] .heroChip:hover{background:var(--wash)}
+.heroChip.primary{
+  color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  border-color:transparent;box-shadow:0 14px 28px -16px rgba(109,139,255,.9);
+}
+.heroChip.primary svg{color:#fff}
+.heroArt{position:relative;pointer-events:none;z-index:1}
+.heroGirl{
+  position:absolute; right:-18px; bottom:-6px; height:430px; width:auto; object-fit:contain;
+  filter:drop-shadow(0 30px 46px rgba(86,96,180,.35));
+  animation:heroFloat 8s ease-in-out infinite;
+  mask-image:linear-gradient(180deg,#000 86%,transparent 100%);
+  -webkit-mask-image:linear-gradient(180deg,#000 86%,transparent 100%);
+}
+html[data-theme="light"] .heroGirl{mix-blend-mode:multiply}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.decoFish{position:absolute;left:-6%;top:6%;width:86px;color:var(--accent);opacity:.75;animation:floatY 7s ease-in-out infinite}
+.decoHeart{position:absolute;right:6%;top:2%;width:24px;color:var(--accent-3);opacity:.8;animation:floatY 8s ease-in-out infinite 1s}
+.decoStar{position:absolute;color:var(--accent-2);opacity:.7;animation:twinkle 3.6s ease-in-out infinite}
+.decoStar.s1{left:4%;top:44%;font-size:14px}
+.decoStar.s2{right:12%;top:22%;font-size:10px;animation-delay:1.2s}
+.decoStar.s3{right:2%;bottom:16%;font-size:16px;color:var(--accent-4);animation-delay:2.1s}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.92)}50%{opacity:.9;transform:scale(1.06)}}
+
+/* 四入口卡 */
+.entryCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.entryCard{
+  position:relative; text-align:left; padding:16px 16px 78px; min-height:176px;
+  border-radius:20px; overflow:hidden; isolation:isolate;
+  background:var(--wash-2); border:1px solid var(--wash-line);
+  box-shadow:0 16px 34px -26px rgba(96,110,220,.55), inset 0 1px 0 rgba(255,255,255,.9);
+  transition:transform 200ms var(--spring), box-shadow 220ms, background-color 200ms;
+  --ec:#6D8BFF; --ec-soft:rgba(109,139,255,.16);
+}
+html[data-theme="dark"] .entryCard{background:rgba(44,38,78,.72); border-color:rgba(200,200,255,.1); box-shadow:0 20px 40px -30px rgba(0,0,0,.8)}
+.entryCard:hover{transform:translateY(-3px); box-shadow:0 22px 44px -26px rgba(96,110,220,.75)}
+.entryCard .ecIcon{
+  width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex:none;
+  color:var(--ec); background:var(--ec-soft); border:1px solid color-mix(in srgb,var(--ec) 22%,transparent);
+}
+.entryCard .ecIcon svg{width:23px;height:23px}
+.entryCard b{display:block;margin-top:12px;font-size:14.5px;font-weight:600;color:var(--ink)}
+.entryCard .ecDesc{display:block;margin-top:5px;font-size:11px;line-height:1.55;color:var(--muted)}
+.entryCard .ecArt{position:absolute;right:6px;bottom:6px;width:96px;height:66px;opacity:.55;pointer-events:none}
+.ecArt::before,.ecArt::after{content:"";position:absolute;border-radius:8px;background:color-mix(in srgb,var(--ec) 24%,transparent)}
+.art-desk::before{left:0;bottom:16px;width:64px;height:34px;border-radius:5px}
+.art-desk::after{left:20px;bottom:0;width:8px;height:18px;box-shadow:24px 0 0 color-mix(in srgb,var(--ec) 18%,transparent)}
+.art-penguin::before{left:20px;top:4px;width:34px;height:44px;border-radius:18px 18px 14px 14px;background:color-mix(in srgb,var(--ec) 30%,transparent)}
+.art-penguin::after{left:31px;top:16px;width:12px;height:8px;border-radius:99px;background:#fff;opacity:.9}
+.art-tv::before{left:4px;bottom:10px;width:62px;height:38px;border-radius:7px}
+.art-tv::after{left:24px;bottom:4px;width:22px;height:6px;border-radius:3px;background:color-mix(in srgb,var(--ec) 18%,transparent)}
+.art-house::before{left:8px;bottom:12px;width:56px;height:34px;border-radius:4px 4px 2px 2px}
+.art-house::after{left:4px;bottom:40px;width:64px;height:22px;clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0;background:color-mix(in srgb,var(--ec) 30%,transparent)}
+.c-workspace{--ec:#6D8BFF;--ec-soft:rgba(109,139,255,.14)}
+.c-qq{--ec:#5AA9FF;--ec-soft:rgba(90,169,255,.14)}
+.c-bili{--ec:#FF8FB8;--ec-soft:rgba(255,143,184,.15)}
+.c-fish{--ec:#5DD6C6;--ec-soft:rgba(93,214,198,.16)}
+
+/* 底部 AI 输入 */
+.composerCard{
+  position:relative; margin-top:2px; border-radius:22px; padding:14px 16px 12px;
+  background:var(--wash-3); border:1px solid var(--wash-line);
+  box-shadow:0 22px 46px -32px rgba(96,110,220,.6), inset 0 1px 0 rgba(255,255,255,.95);
+  backdrop-filter:blur(20px);
+  transition:border-color 200ms, box-shadow 200ms;
+}
+html[data-theme="dark"] .composerCard{background:rgba(46,40,80,.78); border-color:rgba(200,200,255,.12); box-shadow:0 22px 46px -32px rgba(0,0,0,.8)}
+.composerCard:focus-within{border-color:rgba(109,139,255,.5); box-shadow:0 0 0 4px rgba(109,139,255,.1), 0 22px 46px -32px rgba(96,110,220,.6)}
+.composerCard textarea{width:100%; min-height:44px; max-height:140px; background:none; border:0; box-shadow:none; padding:4px 4px 8px; font-size:13.5px; resize:none}
+.composerCard textarea:focus{box-shadow:none;background:none}
+.composerBar{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:4px}
+.cTools{display:flex; align-items:center; gap:4px}
+.cTools button{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:var(--muted);transition:background-color 150ms,color 150ms}
+.cTools button svg{width:17px;height:17px}
+.cTools button:hover{background:var(--wash-3);color:var(--accent)}
+html[data-theme="dark"] .cTools button:hover{background:var(--wash)}
+.cRight{display:flex; align-items:center; gap:8px}
+.modelChip{
+  display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;border-radius:999px;
+  font-size:11.5px;color:var(--ink-2);background:var(--wash-2);border:1px solid var(--line);
+}
+html[data-theme="dark"] .modelChip{background:var(--wash)}
+.modelChip:hover{background:#fff;color:var(--ink)}
+.modelChip i{font-style:normal;font-size:9px;color:var(--muted)}
+.modelChip .mcDot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(53,191,140,.7)}
+.sendBtn{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 14px 26px -14px rgba(109,139,255,.9);
+  transition:transform 150ms var(--spring), filter 160ms;
+}
+.sendBtn svg{width:18px;height:18px}
+.sendBtn:hover{filter:brightness(1.07);transform:scale(1.04)}
+.sendBtn:active{transform:scale(.96)}
+.homeHint{margin-top:8px;font-size:11px;color:var(--muted)}
+
+/* 右侧信息栏 */
+.homeSide{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sideCard{
+  border-radius:20px; padding:16px;
+  background:var(--wash-2); border:1px solid var(--wash-line);
+  box-shadow:0 16px 34px -28px rgba(96,110,220,.55), inset 0 1px 0 rgba(255,255,255,.9);
+  backdrop-filter:blur(18px);
+}
+html[data-theme="dark"] .sideCard{background:rgba(44,38,78,.7); border-color:rgba(200,200,255,.1); box-shadow:0 18px 36px -28px rgba(0,0,0,.8)}
+.scHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.scHead b{font-size:12px;font-weight:600;color:var(--ink-2)}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ok)}
+.st i{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(53,191,140,.8)}
+.modelRow{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:var(--wash);border:1px solid var(--line)}
+html[data-theme="dark"] .modelRow{background:var(--wash)}
+.modelAva{width:38px;height:38px;border-radius:12px;flex:none;display:grid;place-items:center;background:linear-gradient(150deg,rgba(109,139,255,.25),rgba(142,123,255,.2));border:1px solid rgba(140,150,230,.3)}
+.modelAva img{width:26px;height:26px;image-rendering:pixelated}
+.modelTxt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.modelTxt b{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.modelTxt small{font-size:10.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.runState{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ok);margin-bottom:6px}
+.runState i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(53,191,140,.8)}
+.runState.bad{color:var(--bad)} .runState.bad i{background:var(--bad)}
+.spark{width:100%;height:58px;display:block}
+.spark polyline{fill:none;stroke:url(#sparkGrad);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.spark path.area{fill:url(#sparkArea);stroke:none;opacity:.9}
+.spark circle{fill:var(--accent)}
+.runMeta{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px}
+.quickCard .qrow{display:flex;align-items:center;gap:10px;width:100%;height:38px;padding:0 8px;border-radius:11px;font-size:12px;color:var(--ink-2);transition:background-color 150ms,color 150ms}
+.quickCard .qrow + .qrow{margin-top:2px}
+.quickCard .qrow:hover{background:var(--wash-2);color:var(--ink)}
+html[data-theme="dark"] .quickCard .qrow:hover{background:var(--wash)}
+.quickCard .qi{width:22px;height:22px;display:grid;place-items:center;color:var(--accent);flex:none}
+.quickCard .qi svg{width:17px;height:17px}
+.quickCard .qrow span:nth-child(2){flex:1;text-align:left}
+.quickCard kbd{font-family:var(--sans);font-size:10px;color:var(--faint);background:var(--wash-2);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+html[data-theme="dark"] .quickCard kbd{background:var(--wash)}
+
+/* 小窝场景卡 */
+.sceneCard{
+  position:relative; display:block; text-align:left; height:196px; border-radius:20px; overflow:hidden;
+  border:1px solid var(--wash-line);
+  background:linear-gradient(180deg,#F8EFFF,#F2F7FF 60%,#EFFBF7);
+  box-shadow:0 18px 36px -28px rgba(96,110,220,.55), inset 0 1px 0 rgba(255,255,255,.9);
+  transition:transform 200ms var(--spring), box-shadow 220ms;
+}
+html[data-theme="dark"] .sceneCard{background:linear-gradient(180deg,#2C2652,#241F45 60%,#1E2A38); border-color:rgba(200,200,255,.12)}
+.sceneCard:hover{transform:translateY(-2px); box-shadow:0 22px 40px -26px rgba(96,110,220,.7)}
+.sceneBubble{
+  position:absolute; left:12px; top:12px; z-index:3; padding:8px 12px; border-radius:14px;
+  background:var(--wash-3); border:1px solid var(--wash-line);
+  font-size:11px; line-height:1.45; color:var(--ink-2); box-shadow:0 10px 22px -18px rgba(96,110,220,.8);
+}
+.sceneBubble i{color:var(--accent-3);font-style:normal}
+.pixelRoom{position:absolute; inset:0; display:block}
+.pr-window{position:absolute;left:16px;bottom:56px;width:86px;height:70px;border-radius:10px;background:linear-gradient(180deg,#CFE4FF,#EAF4FF);border:3px solid #fff;box-shadow:0 6px 14px -10px rgba(96,110,220,.7)}
+.pr-window::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:#fff;transform:translateX(-1px)}
+.pr-window::after{content:"";position:absolute;top:50%;left:0;right:0;height:2px;background:#fff;transform:translateY(-1px)}
+.pr-curtain{position:absolute;bottom:124px;width:16px;height:56px;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,#FFD7EA,#FFC0DC)}
+.pr-curtain.l{left:10px}
+.pr-curtain.r{left:96px;width:12px;height:48px;opacity:.85}
+.pr-rug{position:absolute;left:26px;right:26px;bottom:0;height:22px;border-radius:50%;background:linear-gradient(180deg,#FFE6F2,#FFD7EA)}
+.pr-shelf{position:absolute;right:14px;bottom:64px;width:74px;height:8px;border-radius:4px;background:#D9C8F8;box-shadow:0 22px 0 #D9C8F8}
+.pr-shelf::before{content:"";position:absolute;left:8px;bottom:8px;width:12px;height:22px;border-radius:3px;background:#B9D7FF;box-shadow:16px 4px 0 #C8B9FF,32px -2px 0 #A8E6DC,48px 6px 0 #FFC7DE}
+.pr-plant{position:absolute;left:118px;bottom:34px;width:12px;height:26px;border-radius:4px;background:#7FD8C8}
+.pr-plant::before{content:"";position:absolute;left:-10px;top:-16px;width:32px;height:22px;border-radius:14px;background:radial-gradient(circle at 40% 50%,#8FE3D2,#5DD6C6);box-shadow:-10px 8px 0 -4px #8FE3D2,12px 10px 0 -6px #6FDFCF}
+.pr-plant::after{content:"";position:absolute;left:-9px;top:26px;width:30px;height:16px;border-radius:4px 4px 8px 8px;background:#E7B98F}
+.pr-desk{position:absolute;right:8px;bottom:34px;width:64px;height:8px;border-radius:4px;background:#E7C8A8;box-shadow:0 18px 0 -4px rgba(231,200,168,.55)}
+.pr-girl{position:absolute;right:4px;bottom:-2px;height:128px;width:auto;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(96,110,220,.28))}
+html[data-theme="light"] .pr-girl{mix-blend-mode:multiply}
+.pr-lamp{position:absolute;right:36px;bottom:104px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,#FFE7B8,#FFD48F);box-shadow:0 0 18px rgba(255,200,120,.9)}
+
+/* ---------------------------------------------------------------- 设置中枢 */
+.settingsGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.setEntry{
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:16px;border-radius:18px;text-align:left;
+  background:var(--wash-2);border:1px solid var(--wash-line);
+  box-shadow:0 16px 32px -28px rgba(96,110,220,.5);
+  transition:transform 180ms var(--spring), background-color 160ms, box-shadow 200ms;
+}
+html[data-theme="dark"] .setEntry{background:rgba(44,38,78,.7);border-color:rgba(200,200,255,.1)}
+.setEntry:hover{transform:translateY(-2px);background:#fff;box-shadow:0 20px 36px -26px rgba(96,110,220,.7)}
+html[data-theme="dark"] .setEntry:hover{background:rgba(56,48,96,.9)}
+.setEntry .seIcon{font-size:20px;line-height:1;margin-bottom:4px}
+.setEntry b{font-size:13.5px;font-weight:600}
+.setEntry small{font-size:10.5px;color:var(--muted)}
+.settingsHint{margin-top:16px}
+
+/* 返回设置 */
+.backChip{
+  /* v10.4 改回文档流:原先 fixed 浮在左上会压住页面 h1 */
+  position:relative; left:0; top:0; z-index:2; margin:0 0 10px;
+  display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 12px 0 8px;
+  border-radius:999px; font-size:11.5px; color:var(--ink-2);
+  background:var(--wash-3); border:1px solid var(--line-2); box-shadow:var(--shadow-sm);
+  backdrop-filter:blur(14px);
+}
+html[data-theme="dark"] .backChip{background:rgba(48,42,86,.85)}
+.backChip svg{width:14px;height:14px}
+.backChip:hover{background:#fff;color:var(--ink)}
+
+/* ---------------------------------------------------------------- 搜索面板 */
+.palette{position:fixed; inset:0; z-index:200; display:flex; align-items:flex-start; justify-content:center; padding-top:12vh;
+  background:rgba(80,80,130,.18); backdrop-filter:blur(4px); animation:pageIn 180ms var(--ease-out) both}
+.paletteBox{width:min(620px,92vw); border-radius:20px; background:var(--panel-2); border:1px solid var(--wash-line); box-shadow:0 30px 70px -30px rgba(70,70,140,.55); overflow:hidden}
+html[data-theme="dark"] .paletteBox{background:rgba(42,36,72,.96); border-color:rgba(200,200,255,.14)}
+.paletteTop{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.paletteTop svg{width:17px;height:17px;color:var(--muted);flex:none}
+.paletteTop input{flex:1;font-size:14px;background:none;border:0;box-shadow:none;padding:0}
+.paletteTop input:focus{box-shadow:none;background:none}
+.paletteTop kbd{font-family:var(--sans);font-size:10px;color:var(--muted);background:rgba(120,120,180,.12);border-radius:6px;padding:2px 7px}
+.paletteList{max-height:46vh; overflow:auto; padding:6px}
+.pRow{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:10px;text-align:left;font-size:12.5px;color:var(--ink-2)}
+.pRow:hover,.pRow.sel{background:rgba(109,139,255,.12);color:var(--ink)}
+.pRow .pi{width:22px;height:22px;display:grid;place-items:center;color:var(--accent);flex:none}
+.pRow .pi svg{width:17px;height:17px}
+.pRow small{margin-left:auto;font-size:10px;color:var(--muted)}
+.paletteFoot{padding:8px 16px;border-top:1px solid var(--line);font-size:10px;color:var(--faint)}
+.pEmpty{padding:18px 12px;font-size:12px;color:var(--muted);text-align:center}
+
+/* ---------------------------------------------------------------- 登录 */
+.auth{position:fixed; inset:0; z-index:60; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); background:transparent}
+.auth-panel{display:flex; flex-direction:column; justify-content:center; padding:44px clamp(30px,7vw,110px)}
+.auth-art{position:relative; overflow:hidden; display:flex; align-items:flex-end; justify-content:center}
+.auth-glow{position:absolute; width:560px;height:560px; border-radius:50%; left:50%;top:46%;transform:translate(-50%,-50%);filter:blur(60px);background:radial-gradient(circle,rgba(170,190,255,.5),transparent 68%)}
+.auth-girl{position:relative; height:min(78vh,700px); width:auto; object-fit:contain; filter:drop-shadow(0 30px 60px rgba(86,96,180,.3)); animation:heroFloat 8s ease-in-out infinite; mask-image:linear-gradient(180deg,#000 84%,transparent 100%); -webkit-mask-image:linear-gradient(180deg,#000 84%,transparent 100%)}
+html[data-theme="light"] .auth-girl{mix-blend-mode:multiply}
+.auth-panel .brandmark{margin-bottom:18px}
+.brandmark{display:inline-flex;align-items:center;gap:12px}
+.bm-mark{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;flex:none;background:linear-gradient(150deg,#DCE6FF,#F1E6FF);border:1px solid rgba(150,160,235,.25);box-shadow:0 10px 24px -18px rgba(96,110,220,.6)}
+html[data-theme="dark"] .bm-mark{background:linear-gradient(150deg,#3A3666,#4A3A6E)}
+.bm-mark img{width:34px;height:34px;image-rendering:pixelated}
+.brandmark .wm{display:flex;align-items:baseline;gap:6px}
+.brandmark .wm b{font-size:23px;font-weight:700;letter-spacing:-.02em}
+.brandmark .wm i{font-style:normal;font-size:16px;font-weight:700;color:var(--accent)}
+.tagline{font-size:12.5px;color:var(--muted);margin:0 0 30px}
+.auth-form{max-width:360px;width:100%}
+.auth-form .field{margin-bottom:16px}
+.auth-form input{height:42px;font-size:13.5px;border-radius:12px}
+.auth-form .err{min-height:18px;margin:10px 0 0;font-size:11.5px;color:var(--bad)}
+.auth-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:360px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.auth-foot a{color:var(--accent);cursor:pointer;margin-left:4px}
+.apiLine{font-family:var(--mono);font-size:10px;color:var(--faint)}
+
+/* ---------------------------------------------------------------- 音乐 / 挂件 */
+.bgmDock{position:fixed; right:22px; bottom:18px; z-index:70; display:flex; align-items:center; gap:8px; height:38px; padding:0 12px 0 5px; border-radius:999px; background:var(--wash-3); border:1px solid var(--wash-line); box-shadow:var(--shadow-sm); backdrop-filter:blur(18px); opacity:.85; transition:opacity 180ms, transform 180ms}
+html[data-theme="dark"] .bgmDock{background:rgba(44,38,78,.85); border-color:rgba(200,200,255,.12)}
+.bgmDock:hover{opacity:1}
+.bgmPlay{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+.bgmPlay svg{width:13px;height:13px}
+.bgmPlay .ic-pause{display:none}
+.bgmDock.playing .bgmPlay .ic-play{display:none}
+.bgmDock.playing .bgmPlay .ic-pause{display:block}
+.bgmInfo{display:flex;align-items:baseline;gap:6px}
+.bgmInfo b{font-size:10.5px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.bgmInfo span{font-size:9.5px;color:var(--faint);white-space:nowrap}
+.bgmDots{display:flex;gap:4px}
+.bgmDots i{width:4px;height:4px;border-radius:50%;background:var(--faint)}
+.bgmDots i.on{background:var(--accent)}
+.bgmMiniRow{display:flex;gap:1px}
+.bgmMini{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;color:var(--muted);font-size:12px}
+.bgmMini:hover{color:var(--ink);background:var(--wash-2)}
+.bgmVol{width:56px;height:3px;-webkit-appearance:none;appearance:none;background:var(--line-2);border-radius:99px;padding:0;border:0;box-shadow:none;cursor:pointer}
+.bgmVol::-webkit-slider-thumb{-webkit-appearance:none;width:9px;height:9px;border-radius:50%;background:var(--accent);border:0;box-shadow:0 0 8px rgba(109,139,255,.6)}
+.avatarPick{position:fixed;z-index:250;width:210px;padding:10px;border-radius:16px;background:var(--panel-2);border:1px solid var(--line-2);box-shadow:var(--shadow);display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.avatarPick .avWide{grid-column:span 6;height:30px;border-radius:8px;font-size:11.5px;color:var(--ink-2);background:rgba(120,120,180,.1)}
+.avatarPick .avBtn{width:100%;aspect-ratio:1;border-radius:8px;display:grid;place-items:center;background:rgba(120,120,180,.08);border:1px solid var(--line)}
+.avatarPick .avBtn svg{width:22px;height:22px}
+.avatarPick img{width:100%;height:100%;object-fit:cover;border-radius:7px}
+.nickEdit{width:90px;height:22px;padding:0 8px;font-size:11.5px}
+.legacy-sink{display:none !important}
+
+/* ---------------------------------------------------------------- 响应式 */
+/* v11 整体等比缩放:宽度断点会把布局重排成另一套比例(小窗两列卡、侧栏收窄),
+   与「整张图等比放大/缩小」冲突,因此移除。所有窗口尺寸都由 boot.js 的
+   zoom(窗口宽 / 1360)统一缩放,布局永远保持 1360 基准的同一套比例。
+   窗口过窄/过矮时内容用 .view 滚动兜底,不再重排。 */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  .mouseGlow{display:none}
+}
+
+
+/* ---------------------------------------------------------------- 首页弹层(模型下拉 / 工具) */
+.cmDrop,.cPop{
+  position:fixed; z-index:260; min-width:190px; padding:6px; border-radius:14px;
+  background:var(--panel-2); border:1px solid var(--line-2); box-shadow:var(--shadow);
+  backdrop-filter:blur(18px); animation:popIn 160ms var(--spring) both;
+}
+.cmItem,.cPopItem{
+  display:flex; align-items:center; gap:8px; width:100%; padding:9px 10px; border-radius:9px;
+  text-align:left; font-size:12px; color:var(--ink-2);
+}
+.cmItem:hover,.cPopItem:hover{background:rgba(109,139,255,.12); color:var(--ink)}
+.cmItem.on{background:rgba(109,139,255,.16); color:var(--accent); font-weight:600}
+.cmItem small{margin-left:auto; font-size:10px; color:var(--muted)}
+@keyframes popIn{from{opacity:0;transform:translateY(4px) scale(.97)}to{opacity:1;transform:none}}
+
+/* 首页状态小修:昵称/模型状态 */
+.heroNick{color:var(--accent);font-weight:700}
+
+
+/* ---------------------------------------------------------------- 全局窗口控制 */
+.winGlobal{position:fixed; top:10px; right:12px; z-index:120; display:flex; align-items:center; gap:2px;
+  padding:3px; border-radius:12px; background:var(--wash); border:1px solid var(--wash-line);
+  backdrop-filter:blur(12px)}
+html[data-theme="dark"] .winGlobal{background:rgba(40,34,72,.4); border-color:rgba(200,200,255,.12)}
+.winGlobal .winbtn-holder{display:none}
+.topbar{padding-right:112px}
+html[data-auth="1"] .topbar{padding-right:112px}
+
+
+/* ---------------------------------------------------------------- v10 修正:框架高度 / 角色 / 细节 */
+.app{grid-template-rows:minmax(0,100%)}
+.side{height:100%; overflow:hidden}
+.sideFoot{flex:none}
+.stage{min-height:0}
+.view{min-height:0}
+.heroName{font-weight:700; letter-spacing:-.06em}
+.heroHi{font-size:28px}
+.hero{min-height:432px}
+.heroGirl{height:500px; bottom:-12px; right:-8px}
+.heroArt{overflow:visible}
+.entryCard{min-height:168px}
+.dream-castle{opacity:.9}
+.spark .area{opacity:.5}
+/* 音乐条:默认只露一个小圆钮,悬停展开 */
+.bgmDock{width:36px; height:36px; padding:0; justify-content:center; overflow:hidden; opacity:.55}
+.bgmDock:hover{width:auto; padding:0 12px 0 5px; justify-content:flex-start; opacity:1}
+.bgmInfo,.bgmDots,.bgmMiniRow,.bgmVol{opacity:0; pointer-events:none; transition:opacity 160ms}
+.bgmDock:hover .bgmInfo,.bgmDock:hover .bgmDots,.bgmDock:hover .bgmMiniRow,.bgmDock:hover .bgmVol{opacity:1; pointer-events:auto}
+.bgmInfo{white-space:nowrap}
+/* 侧栏底部:不挤压导航 */
+.sideFoot{gap:6px; padding-top:12px}
+.sideMascot{width:92px; height:92px; border-radius:22px}
+.sideMascot img{height:98px}
+.sideMeta{font-size:10px}
+
+
+/* ---------------------------------------------------------------- v10 细节对齐概念稿 */
+/* 顶部搜索居中 */
+.topbar{position:relative; justify-content:center; padding-left:26px; padding-right:26px}
+.topSearch{margin:0 auto; max-width:600px; width:100%}
+.topRight{position:absolute; right:26px; top:16px; margin-left:0}
+/* 欢迎文字:更紧的字距 + 快捷入口一行 */
+.heroText{max-width:560px}
+.heroName{letter-spacing:-.10em}
+.heroChips{gap:8px; flex-wrap:nowrap}
+.heroChip{height:36px; padding:0 13px; font-size:12px; flex:none}
+.heroChip svg{width:15px;height:15px}
+/* 导航图标带一点蓝紫色 */
+.nav a .ni{color:#93A4DA}
+html[data-theme="dark"] .nav a .ni{color:#7E8CC8}
+.nav a.on .ni{color:#5C74E8}
+/* 角色更大气:背后加柔光 */
+.heroArt::before{content:"";position:absolute;right:26px;bottom:10px;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,rgba(170,190,255,.5),rgba(230,215,255,.22) 55%,transparent 72%);filter:blur(18px)}
+html[data-theme="dark"] .heroArt::before{background:radial-gradient(circle,rgba(120,140,255,.28),transparent 70%)}
+.heroGirl{height:520px; right:0}
+/* 入口卡:场景装饰更明显、更协调 */
+.entryCard{min-height:162px; padding-bottom:66px}
+.entryCard .ecArt{opacity:.8; width:100px; height:70px; right:8px; bottom:4px}
+.ecArt::before,.ecArt::after{background:color-mix(in srgb,var(--ec) 22%,#fff 0%)}
+.art-desk::before{background:linear-gradient(180deg,color-mix(in srgb,var(--ec) 32%,transparent),color-mix(in srgb,var(--ec) 14%,transparent));box-shadow:0 6px 14px -10px color-mix(in srgb,var(--ec) 60%,transparent)}
+.art-penguin::before{background:linear-gradient(180deg,color-mix(in srgb,var(--ec) 46%,transparent),color-mix(in srgb,var(--ec) 24%,transparent))}
+.art-tv::before{background:linear-gradient(160deg,color-mix(in srgb,var(--ec) 38%,transparent),color-mix(in srgb,var(--ec) 18%,transparent))}
+.art-house::before{background:linear-gradient(180deg,color-mix(in srgb,var(--ec) 30%,transparent),color-mix(in srgb,var(--ec) 12%,transparent))}
+.art-house::after{background:color-mix(in srgb,var(--ec) 42%,transparent)}
+/* 小窝场景:更像像素房间 */
+.sceneCard{background:linear-gradient(180deg,#F3EAFF,#EEF5FF 52%,#FFF2F6 100%)}
+html[data-theme="dark"] .sceneCard{background:linear-gradient(180deg,#2A2450,#262145 52%,#2A2140)}
+.pr-window{left:20px;bottom:64px;width:78px;height:64px;border:2px solid #EAF0FF;border-radius:8px;
+  background:linear-gradient(180deg,#BFDBFF,#E6F2FF 70%,#FFE8F2);box-shadow:0 8px 18px -12px rgba(96,110,220,.7)}
+.pr-window::before,.pr-window::after{background:#EAF0FF;width:2px;height:auto}
+.pr-window::after{height:2px;width:auto}
+.pr-curtain{bottom:126px;width:14px;height:44px;background:linear-gradient(180deg,#FFC9E0,#FFA8CC)}
+.pr-curtain.r{left:88px;width:10px}
+.pr-shelf{right:16px;bottom:70px;width:70px;height:6px;box-shadow:0 20px 0 #D9C8F8}
+.pr-shelf::before{box-shadow:16px 3px 0 #C8B9FF,32px -2px 0 #A8E6DC,48px 5px 0 #FFC7DE}
+.pr-plant{left:110px;bottom:40px;width:10px;height:22px}
+.pr-plant::before{background:radial-gradient(circle at 40% 50%,#9FE9DB,#5DD6C6)}
+.pr-rug{left:20px;right:20px;bottom:0;height:20px;background:linear-gradient(180deg,#FFE1EF,#FFC9E0)}
+.pr-girl{height:132px;right:2px}
+.pr-lamp{right:30px;bottom:110px;width:16px;height:16px}
+.pr-desk{right:10px;bottom:40px;width:58px}
+/* 背景:底部暖光更明显 */
+.dream-sky{background:
+  radial-gradient(120% 90% at 12% 0%, rgba(214,226,255,.95), transparent 55%),
+  radial-gradient(100% 80% at 88% 6%, rgba(255,226,246,.9), transparent 52%),
+  radial-gradient(90% 70% at 50% 100%, rgba(255,242,226,.95), transparent 62%),
+  linear-gradient(160deg,#E9F1FF 0%,#EFEDFF 40%,#F8EFFF 72%,#FFF6FB 100%)}
+
+
+/* 角色头部不被滚动容器裁切 */
+.hero{min-height:474px}
+.heroGirl{height:470px; bottom:0; right:2px}
+.heroArt::before{width:320px;height:320px;bottom:24px}
+/* 入口卡装饰更清楚 */
+.entryCard .ecArt{opacity:.95}
+.ecArt::before{background:color-mix(in srgb,var(--ec) 34%,transparent)}
+.art-penguin::before{background:linear-gradient(180deg,color-mix(in srgb,var(--ec) 52%,transparent),color-mix(in srgb,var(--ec) 30%,transparent))}
+.art-desk::before{background:linear-gradient(180deg,color-mix(in srgb,var(--ec) 40%,transparent),color-mix(in srgb,var(--ec) 20%,transparent))}
+.art-tv::before{background:linear-gradient(160deg,color-mix(in srgb,var(--ec) 46%,transparent),color-mix(in srgb,var(--ec) 24%,transparent))}
+.art-house::before{background:linear-gradient(180deg,color-mix(in srgb,var(--ec) 36%,transparent),color-mix(in srgb,var(--ec) 16%,transparent))}
+.art-house::after{background:color-mix(in srgb,var(--ec) 52%,transparent)}
+.art-desk::after{box-shadow:24px 0 0 color-mix(in srgb,var(--ec) 30%,transparent)}
+
+
+/* 设置图标 / 空态迷你图 */
+.setEntry .seIcon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;margin-bottom:6px;
+  color:var(--accent);background:rgba(109,139,255,.12);border:1px solid rgba(109,139,255,.18)}
+.setEntry .seIcon svg{width:20px;height:20px}
+html[data-theme="dark"] .setEntry .seIcon{background:rgba(143,168,255,.12);border-color:rgba(160,180,255,.18)}
+.spark[data-empty="1"] .area{display:none}
+.spark[data-empty="1"] polyline{stroke-dasharray:3 5;opacity:.45}
+
+
+/* ---------------------------------------------------------------- v10 收尾:一屏放下首页(composer 贴底) */
+.topbar{padding:12px 26px 4px}
+.view{padding-top:12px; padding-bottom:18px}
+.homeCol{gap:10px}
+.hero{min-height:424px}
+.heroText{padding-top:22px}
+.heroGirl{height:420px}
+.heroArt::before{width:300px;height:300px;bottom:16px}
+.entryCard{min-height:150px; padding-bottom:56px}
+.entryCard b{margin-top:10px}
+.composerCard{padding:12px 16px 10px}
+.composerCard textarea{min-height:38px}
+.spark[data-empty="1"] polyline{stroke-dasharray:4 5; opacity:.6}
+.dream-castle{opacity:.55}
+
+
+/* 入口卡:场景插画 */
+.entryCard{color:var(--ec)}
+.ecScene{position:absolute; right:8px; bottom:6px; width:112px; height:76px; color:var(--ec); opacity:.85;
+  transition:transform 260ms var(--spring), opacity 220ms; pointer-events:none}
+.entryCard:hover .ecScene{transform:translateY(-3px) scale(1.03); opacity:1}
+.ecArt{display:none !important}
+/* 像素小窝:墙面/地板更像素化 */
+.pixelRoom{background:
+  linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 32%),
+  repeating-linear-gradient(90deg,rgba(190,200,245,.18) 0 6px,rgba(255,255,255,0) 6px 12px);}
+.pixelRoom::before{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;
+  background:repeating-linear-gradient(90deg,rgba(231,200,168,.5) 0 22px,rgba(214,180,146,.45) 22px 24px)}
+.sceneCard{image-rendering:pixelated}
+
+
+/* ---------------------------------------------------------------- v10 收尾:去掉立绘旁边的背景塔楼与混合模式 */
+/* 角色是透明 PNG,直接正常叠加,不再用 multiply(会产生边缘色带) */
+.heroGirl,html[data-theme="light"] .heroGirl,
+.auth-girl,html[data-theme="light"] .auth-girl,
+.pr-girl,html[data-theme="light"] .pr-girl{mix-blend-mode:normal !important}
+/* 首页背景城堡的两座塔会从角色两侧露出来,像两道蓝边:首页隐藏城堡 */
+html[data-page="home"] .dream-castle{display:none}
+/* 其他页保留更淡的城堡 */
+.dream-castle{opacity:.38}
+/* 立绘完整显示,不做底部渐隐 */
+.heroGirl,.auth-girl{mask-image:none !important;-webkit-mask-image:none !important}
+/* 角色柔光收小,避免形成矩形感 */
+.heroArt::before{width:280px;height:280px;bottom:20px;opacity:.75}
+
+
+/* ---------------------------------------------------------------- v10 修复 QA P1/P2 */
+/* P1 窗口按钮压住主题/头像:右侧让出 130px */
+.topbar{padding-right:132px}
+.topRight{right:130px}
+/* P1 最小窗口 1120x720:压缩首页 */
+/* v11 整体等比缩放:高度断点会单独缩小元素、破坏 1:1 比例,已移除;
+   窗口变矮时由 .view 滚动,元素尺寸只跟随 zoom 统一缩放。 */
+/* P1 设置 7 卡:4+3 */
+.settingsGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1200px){.settingsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* P2 运行状态空态:占位提示,减少中段空 */
+.runCard{position:relative}
+.runCard .spark{height:46px;margin-top:2px}
+.runCard:has(.spark[data-empty="1"]) .spark{opacity:.45}
+.runCard:has(.spark[data-empty="1"])::after{
+  content:"最近 7 天还没有命令记录"; position:absolute; left:16px; right:16px; top:62%;
+  text-align:center; font-size:10.5px; color:var(--muted);
+}
+/* P2 像素房间:用像素头像替代插画,统一像素风 */
+.pr-girl{position:absolute; right:6px; bottom:2px; width:66px; height:66px; display:grid; place-items:center;
+  border-radius:50%; background:var(--wash); border:2px solid var(--wash-line);
+  box-shadow:0 8px 16px -10px rgba(96,110,220,.6); overflow:hidden}
+html[data-theme="dark"] .pr-girl{background:rgba(60,52,100,.7); border-color:rgba(200,200,255,.2)}
+.pr-girl canvas,.pr-girl .rvAva,.pr-girl svg{width:64px !important; height:64px !important; image-rendering:pixelated; border-radius:50%}
+.pr-girl img{width:100%; height:100%; object-fit:cover; image-rendering:pixelated}
+/* P3 城堡进一步淡化,不再像矩形块 */
+.dream-castle{opacity:.12; filter:blur(1.6px)}
+/* 首页角色:不再有塔楼/色带 */
+html[data-page="home"] .dream-castle{display:none}
+
+
+/* 窗口最小 1120 宽:入口卡始终一行四张(避免 2×2 把首页撑高) */
+@media (min-width:1000px){
+  .entryCards{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+/* v11 原 max-height:820 的入口卡压缩已移除(见上文说明) */
+
+
+/* ---------------------------------------------------------------- 左上角品牌头像:大肥鱼立绘裁切 */
+.brandMark{overflow:hidden}
+.brandMark img{width:100%; height:100%; object-fit:cover; object-position:50% 10%; border-radius:12px;
+  image-rendering:auto; filter:saturate(1.02)}
+/* 小窝场景:立绘放在所有家具之上,避免色块盖住眼睛 */
+.pr-girl{z-index:5}
+.sceneBubble{z-index:6}
+.pr-desk,.pr-shelf,.pr-window,.pr-curtain,.pr-plant,.pr-rug,.pr-lamp{z-index:1}
+
+
+/* ---------------------------------------------------------------- 小窝场景背景:去掉像窗帘的竖条纹 */
+.pixelRoom{
+  background:
+    radial-gradient(120% 90% at 20% 0%, rgba(255,255,255,.5), transparent 60%),
+    linear-gradient(180deg,#F7F0FF 0%,#F3F7FF 52%,#FFF6F2 100%) !important;
+}
+html[data-theme="dark"] .pixelRoom{
+  background:
+    radial-gradient(120% 90% at 20% 0%, rgba(150,160,255,.16), transparent 60%),
+    linear-gradient(180deg,#2B2452 0%,#282248 52%,#2A2140 100%) !important;
+}
+.pixelRoom::before{background:repeating-linear-gradient(90deg,rgba(231,200,168,.45) 0 22px,rgba(214,180,146,.4) 22px 24px)}
+
+
+/* ---------------------------------------------------------------- 像素小窝:补充生活细节 */
+.pr-frame{position:absolute; left:45%; top:13%; width:48px; height:36px; border-radius:5px;
+  background:linear-gradient(160deg,#CDBDFF,#A9D9FF 70%,#FFE3F2); border:2px solid #E8DFFF;
+  box-shadow:0 8px 16px -12px rgba(96,110,220,.7); z-index:1; overflow:hidden}
+.pr-frame::before{content:""; position:absolute; left:5px; bottom:3px; width:40px; height:18px;
+  background:linear-gradient(180deg,#8FE0CF,#5DD6C6); clip-path:polygon(0 100%,28% 42%,48% 70%,68% 34%,100% 100%)}
+.pr-frame::after{content:""; position:absolute; right:6px; top:6px; width:7px; height:7px; border-radius:50%;
+  background:#FFD46B; box-shadow:0 0 8px rgba(255,212,107,.8)}
+.pr-clock{position:absolute; left:63%; top:11%; width:20px; height:20px; border-radius:50%;
+  background:#FFF8EA; border:2px solid #E8DFFF; z-index:2; box-shadow:0 4px 10px -8px rgba(96,110,220,.8)}
+.pr-clock::before{content:""; position:absolute; left:50%; top:50%; width:1.5px; height:6px; background:#8A7BB8; transform-origin:bottom; transform:translate(-50%,-100%) rotate(24deg)}
+.pr-clock::after{content:""; position:absolute; left:50%; top:50%; width:1.5px; height:4px; background:#8A7BB8; transform-origin:bottom; transform:translate(-50%,-100%) rotate(-64deg)}
+.pr-garland{position:absolute; left:28%; top:5%; width:126px; height:1px; background:rgba(180,160,220,.45); z-index:1}
+.pr-garland::before{content:""; position:absolute; top:-2px; left:6px; width:5px; height:5px; border-radius:50%;
+  background:#FFD46B; box-shadow:30px 3px 0 #FFA8CC, 62px 1px 0 #9FD8FF, 96px 4px 0 #C8B9FF, 118px 2px 0 #FFD46B}
+.pr-light{position:absolute; left:14px; bottom:118px; width:96px; height:120px; z-index:0; pointer-events:none;
+  background:linear-gradient(200deg,rgba(255,238,196,.42),rgba(255,238,196,0) 72%);
+  clip-path:polygon(34% 0,100% 0,64% 100%,0 100%); opacity:.85}
+.pr-trim{position:absolute; left:0; right:0; bottom:30px; height:3px; background:rgba(190,170,220,.32); z-index:1}
+.pr-cat{position:absolute; left:44px; bottom:9px; width:22px; height:13px; border-radius:8px 8px 4px 4px;
+  background:#F4C89C; z-index:2; box-shadow:0 -8px 0 -2px #F4C89C}
+.pr-cat::before{content:""; position:absolute; left:15px; top:-11px; width:4px; height:4px; border-radius:50%; background:#5A4A6A; box-shadow:-8px 0 0 #5A4A6A}
+.pr-cat::after{content:""; position:absolute; left:-7px; bottom:3px; width:10px; height:4px; border-radius:4px;
+  background:#F4C89C; transform:rotate(-16deg)}
+.pr-table{position:absolute; left:142px; bottom:22px; width:32px; height:4px; border-radius:2px;
+  background:#E7C8A8; z-index:2; box-shadow:0 6px 0 -2px rgba(231,200,168,.55)}
+.pr-table::before{content:""; position:absolute; left:7px; top:-7px; width:7px; height:7px; border-radius:2px 2px 3px 3px;
+  background:#FFF4E2; box-shadow:0 -3px 0 -1px rgba(255,255,255,.7)}
+.pr-table::after{content:""; position:absolute; left:20px; top:-6px; width:6px; height:6px; border-radius:2px;
+  background:#BEE7D8}
+.pr-fishbowl{position:absolute; right:84px; bottom:14px; width:24px; height:20px; z-index:2;
+  border-radius:50% 50% 46% 46%; background:linear-gradient(180deg,#C7E8FF,#EAF8FF);
+  border:2px solid #E8DFFF; overflow:hidden}
+.pr-fishbowl::before{content:""; position:absolute; left:7px; top:8px; width:9px; height:5px; border-radius:50%;
+  background:#6FE3D2; box-shadow:7px 0 0 -2px rgba(111,227,210,.55)}
+.pr-fishbowl::after{content:""; position:absolute; left:5px; top:3px; width:3px; height:3px; border-radius:50%;
+  background:var(--wash-3)}
+/* 深色适配 */
+html[data-theme="dark"] .pr-frame{border-color:rgba(190,180,255,.28)}
+html[data-theme="dark"] .pr-clock{border-color:rgba(190,180,255,.28); background:#3A3163}
+html[data-theme="dark"] .pr-clock::before,html[data-theme="dark"] .pr-clock::after{background:#C8BCFF}
+html[data-theme="dark"] .pr-cat{background:#D9A878; box-shadow:0 -8px 0 -2px #D9A878}
+html[data-theme="dark"] .pr-cat::after{background:#D9A878}
+html[data-theme="dark"] .pr-cat::before{background:#F4E8FF; box-shadow:-8px 0 0 #F4E8FF}
+html[data-theme="dark"] .pr-table{background:#8A6F58; box-shadow:0 6px 0 -2px rgba(138,111,88,.5)}
+html[data-theme="dark"] .pr-fishbowl{border-color:rgba(190,180,255,.28); background:linear-gradient(180deg,#2E4A66,#1F3346)}
+html[data-theme="dark"] .pr-light{opacity:.5}
+
+
+/* 小窝细节:猫/小桌/吊藤/地毯纹理(覆盖上一版) */
+.pr-cat{
+  left:46px; bottom:10px; width:28px; height:13px; border-radius:7px 7px 4px 4px;
+  background:#F4C89C; box-shadow:inset -3px -2px 0 rgba(120,80,40,.06);
+}
+.pr-cat::before{
+  content:""; position:absolute; left:17px; top:-9px; width:14px; height:12px; border-radius:6px 6px 4px 4px;
+  background:#F4C89C;
+  background-image:
+    radial-gradient(circle at 3.5px 6px, #5A4A6A 1.2px, transparent 1.6px),
+    radial-gradient(circle at 10.5px 6px, #5A4A6A 1.2px, transparent 1.6px);
+  box-shadow:-2px -3px 0 -1px #F4C89C, 11px -3px 0 -1px #F4C89C;
+}
+.pr-cat::after{
+  content:""; position:absolute; left:-7px; bottom:3px; width:11px; height:4px; border-radius:4px;
+  background:#F4C89C; transform:rotate(-18deg);
+}
+.pr-table{
+  left:148px; bottom:20px; width:34px; height:4px; border-radius:2px;
+  background:#DDBB96; box-shadow:none;
+}
+.pr-table::before{
+  content:""; position:absolute; left:6px; top:-7px; width:7px; height:7px;
+  border-radius:2px 2px 3px 3px; background:#FFC7DE; box-shadow:0 -2px 0 -1px rgba(255,199,222,.6);
+}
+.pr-table::after{
+  content:""; position:absolute; left:3px; top:4px; width:3px; height:8px;
+  background:#C9A87F; box-shadow:22px 0 0 #C9A87F;
+}
+.pr-vine{position:absolute; right:22px; top:0; width:2px; height:44px; background:rgba(111,227,210,.55); z-index:1; transform:rotate(6deg); transform-origin:top}
+.pr-vine::before{content:""; position:absolute; left:-2px; top:8px; width:6px; height:5px; border-radius:60% 40% 60% 40%;
+  background:#7FD8C8; box-shadow:-5px 14px 0 #8FE3D2, 3px 24px 0 #6FDFCF, -4px 33px 0 #7FD8C8}
+.pr-vine::after{content:""; position:absolute; left:-1px; top:40px; width:4px; height:4px; border-radius:50%; background:#C8B9FF}
+.pr-rug{
+  background:
+    radial-gradient(circle at 20% 50%, rgba(255,255,255,.45) 1.4px, transparent 1.6px),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.35) 1.4px, transparent 1.6px),
+    radial-gradient(circle at 80% 50%, rgba(255,255,255,.45) 1.4px, transparent 1.6px),
+    linear-gradient(180deg,#FFE6F2,#FFD7EA);
+}
+html[data-theme="dark"] .pr-cat,html[data-theme="dark"] .pr-cat::before,html[data-theme="dark"] .pr-cat::after{background:#D9A878; box-shadow:none}
+html[data-theme="dark"] .pr-cat::before{box-shadow:-2px -3px 0 -1px #D9A878, 11px -3px 0 -1px #D9A878;
+  background-image:radial-gradient(circle at 3.5px 6px,#F4E8FF 1.2px,transparent 1.6px),radial-gradient(circle at 10.5px 6px,#F4E8FF 1.2px,transparent 1.6px)}
+html[data-theme="dark"] .pr-table{background:#8A6F58}
+html[data-theme="dark"] .pr-table::after{background:#6E5744; box-shadow:22px 0 0 #6E5744}
+
+
+/* ---------------------------------------------------------------- 深色模式:小窝场景文字对比 */
+html[data-theme="dark"] .sceneBubble{
+  background:rgba(52,45,92,.94);
+  border-color:rgba(200,195,255,.22);
+  color:#F4F0FF;
+  box-shadow:0 10px 22px -18px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.08);
+}
+html[data-theme="dark"] .sceneBubble i{color:#FFA8CC}
+html[data-theme="dark"] .sceneBubble b{color:#FFFFFF}
+/* 小窝场景里其它浅色小字也提亮一点 */
+html[data-theme="dark"] .sideCard .scHead b{color:#E6E0FF}
+
+
+/* ==========================================================================
+   v11 真实素材整合:官方 Logo / 成熟插画 / 像素艺术房间
+   ========================================================================== */
+/* 移除卡片毛玻璃,保证边缘和文字锐利(只保留标题栏/侧栏的轻材质) */
+.card,.glass,.sideCard,.entryCard,.composerCard,.setEntry,.topSearch,.quickCard,
+.modelCard,.runCard,.wsHero,.wsThreadWrap,.wsModel,.wsTasksCard,.setupCard,
+.fishStatus .fsMain,.fishStatus .fsAva,.fishStatus .fsCoin,.memHead,.memCard,.memStage{
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+}
+.card,.glass{background:var(--wash-3)}
+html[data-theme="dark"] .card,html[data-theme="dark"] .glass{background:rgba(38,32,68,.9)}
+.sideCard{background:var(--wash-3)}
+html[data-theme="dark"] .sideCard{background:rgba(40,34,72,.92)}
+.entryCard{background:var(--wash-3)}
+html[data-theme="dark"] .entryCard{background:rgba(44,38,78,.94)}
+.composerCard{background:var(--wash-3)}
+html[data-theme="dark"] .composerCard{background:rgba(46,40,80,.95)}
+.topSearch{background:var(--wash-3)}
+html[data-theme="dark"] .topSearch{background:rgba(48,42,86,.92)}
+
+/* 入口卡:真实素材 */
+.ecScene{display:none !important}
+.ecArtImg{position:absolute; right:10px; bottom:8px; pointer-events:none;
+  transition:transform 240ms var(--spring), opacity 200ms}
+.ec-ai{width:92px; height:92px; object-fit:contain; filter:drop-shadow(0 10px 16px rgba(96,110,220,.28))}
+.ec-room{width:122px; height:82px; object-fit:cover; object-position:52% 58%; border-radius:10px;
+  image-rendering:pixelated; box-shadow:0 8px 16px -10px rgba(96,80,60,.5)}
+.ecBrandImg{position:absolute; right:12px; bottom:10px; width:64px; height:64px; pointer-events:none;
+  transition:transform 240ms var(--spring)}
+.ec-qq{filter:drop-shadow(0 10px 16px rgba(18,183,245,.35))}
+.ec-bili{filter:drop-shadow(0 10px 16px rgba(251,114,153,.35))}
+.entryCard:hover .ecArtImg,.entryCard:hover .ecBrandImg{transform:translateY(-3px) scale(1.03)}
+
+/* 小窝场景:改用真实像素艺术房间,角色头像浮在上面 */
+.pixelRoom{
+  background:url("assets/pixel-art/cozy-room.png") center / cover no-repeat !important;
+  image-rendering:pixelated;
+}
+.pixelRoom > .pr-frame,.pixelRoom > .pr-clock,.pixelRoom > .pr-garland,.pixelRoom > .pr-light,
+.pixelRoom > .pr-trim,.pixelRoom > .pr-cat,.pixelRoom > .pr-table,.pixelRoom > .pr-fishbowl,
+.pixelRoom > .pr-vine,.pixelRoom > .pr-window,.pixelRoom > .pr-curtain,.pixelRoom > .pr-shelf,
+.pixelRoom > .pr-plant,.pixelRoom > .pr-rug,.pixelRoom > .pr-desk,.pixelRoom > .pr-lamp{display:none !important}
+.pixelRoom::before{display:none !important}
+.pr-girl{right:8px; bottom:6px; width:62px; height:62px;
+  background:var(--wash-2); border:2px solid var(--wash-line);
+  box-shadow:0 6px 14px -8px rgba(60,50,40,.6)}
+.pr-girl canvas,.pr-girl .rvAva{width:58px !important; height:58px !important}
+.sceneBubble{background:var(--wash-3)}
+
+/* 素材署名 */
+.assetCredit{margin-top:6px; font-size:10px; color:var(--faint); line-height:1.7}
+.assetCredit a{color:var(--muted)} .assetCredit a:hover{color:var(--accent)}
+
+
+/* 页面头部的平台官方标识 */
+.platLogo{width:22px;height:22px;flex:none;opacity:.95}
+.svcId{position:relative}
+
+
+/* ==========================================================================
+   v12 素材返工:抽象 AI 视觉 / 官方 QQ 图标 / 统一像素房间
+   ========================================================================== */
+/* AI 工作区:抽象 AI 视觉(轨道 + 核心 + 光点) */
+.ecAIArt{position:absolute; right:14px; bottom:10px; width:98px; height:98px; pointer-events:none}
+.ecAIArt .ring{position:absolute; inset:6px; border-radius:50%; border:1.5px solid rgba(109,139,255,.42); transform:rotate(16deg) scaleY(.62)}
+.ecAIArt .ring.r2{inset:16px; transform:rotate(-28deg) scaleY(.58); border-color:rgba(93,214,198,.5)}
+.ecAIArt .core{position:absolute; left:50%; top:50%; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:50%;
+  background:radial-gradient(circle at 34% 28%, #FFFFFF 0%, #B9C8FF 26%, #8FA8FF 52%, #6D8BFF 74%, #8E7BFF 100%);
+  box-shadow:0 0 22px rgba(109,139,255,.55), inset 0 -3px 8px rgba(90,70,180,.35)}
+.ecAIArt .node{position:absolute; width:6px; height:6px; border-radius:50%; background:#fff; box-shadow:0 0 8px rgba(143,168,255,.95)}
+.ecAIArt .n1{left:4%; top:46%}
+.ecAIArt .n2{right:0; top:20%}
+.ecAIArt .n3{right:20%; bottom:2%}
+.entryCard:hover .ecAIArt{transform:translateY(-2px) rotate(4deg)}
+.ecAIArt{transition:transform 260ms var(--spring)}
+/* 官方 QQ 图标 */
+.ec-qq-img{width:64px; height:64px; object-fit:contain; border-radius:14px;
+  filter:drop-shadow(0 10px 16px rgba(18,183,245,.35))}
+.platLogoQQ{width:24px;height:24px;object-fit:contain;border-radius:6px}
+.platLogo{width:22px;height:22px;object-fit:contain;flex:none}
+/* 像素房间:单套素材组合,轻微内阴影增强层次 */
+.sceneCard .pixelRoom{border-radius:inherit}
+.sceneCard::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  box-shadow:inset 0 0 0 1px var(--wash-line), inset 0 -26px 48px -34px rgba(96,86,170,.45)}
+html[data-theme="dark"] .sceneCard::after{box-shadow:inset 0 0 0 1px var(--wash-line), inset 0 -26px 48px -34px rgba(0,0,0,.55)}/* ==========================================================================
+   v13 卡片素材层级:素材固定在右上「媒体位」,文字独占下方,永不重叠
+   ========================================================================== */
+.entryCard{padding:14px 15px 15px}
+.entryCard .ecIcon{width:40px; height:40px; border-radius:12px}
+.entryCard .ecIcon svg{width:21px;height:21px}
+/* 媒体位统一放右上,固定尺寸,不与标题/描述竞争空间 */
+.entryCard .ecArtImg,.entryCard .ecBrandImg,.entryCard .ecAIArt{
+  top:13px; right:13px; bottom:auto; left:auto;
+}
+.ec-ai,.ec-room{position:absolute}
+.ec-ai{width:56px;height:56px}
+.ec-qq-img{width:44px;height:44px;border-radius:11px;padding:4px;
+  background:var(--wash-2); border:1px solid var(--wash-line);
+  box-shadow:0 6px 12px -10px rgba(18,183,245,.6)}
+html[data-theme="dark"] .ec-qq-img{background:var(--wash); border-color:rgba(200,200,255,.16)}
+.ec-bili{width:40px;height:40px;padding:4px;border-radius:11px;
+  background:var(--wash-2); border:1px solid var(--wash-line)}
+html[data-theme="dark"] .ec-bili{background:var(--wash); border-color:rgba(200,200,255,.16)}
+.ec-room{width:84px;height:54px;object-fit:cover;object-position:50% 56%;border-radius:10px;
+  border:1px solid var(--wash-line); box-shadow:0 8px 16px -12px rgba(80,60,40,.6)}
+html[data-theme="dark"] .ec-room{border-color:rgba(200,200,255,.14)}
+.ecAIArt{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 40% 35%, rgba(255,255,255,.9), rgba(214,226,255,.55) 60%, rgba(214,226,255,0) 72%)}
+.ecAIArt .core{width:22px;height:22px;margin:-11px 0 0 -11px}
+.ecAIArt .ring{inset:0}
+.ecAIArt .ring.r2{inset:7px}
+.ecAIArt .node{width:4px;height:4px}
+/* 标题/描述从图标下方开始,占满整行宽度,右侧媒体位之外也不会被挡 */
+.entryCard b{display:block; margin-top:10px; max-width:100%}
+.entryCard .ecDesc{display:block; margin-top:4px; max-width:100%}
+/* 卡片内文字层级:标题 > 描述,素材仅作装饰 */
+.entryCard{isolation:isolate}
+.entryCard .ecArtImg,.entryCard .ecBrandImg,.entryCard .ecAIArt{z-index:0}
+.entryCard b,.entryCard .ecDesc,.entryCard .ecIcon{position:relative; z-index:1}
+
+
+/* ==========================================================================
+   v14 素材回到右下原位(不压字):用文本宽度预留 + 底部留白,而不是挪走素材
+   ========================================================================== */
+/* 恢复右下布局 */
+.entryCard .ecArtImg,.entryCard .ecBrandImg,.entryCard .ecAIArt{
+  top:auto; left:auto; bottom:8px; right:10px;
+}
+.ec-ai{width:92px;height:92px;right:8px;bottom:6px}
+.ec-qq-img{width:58px;height:58px;right:12px;bottom:10px;border-radius:14px;padding:5px}
+.ec-bili{width:52px;height:52px;right:14px;bottom:12px;padding:5px;border-radius:13px}
+.ec-room{width:108px;height:72px;right:10px;bottom:8px}
+.ecAIArt{width:92px;height:92px;right:8px;bottom:6px}
+.ecAIArt .core{width:30px;height:30px;margin:-15px 0 0 -15px}
+.ecAIArt .ring{inset:4px}
+.ecAIArt .ring.r2{inset:14px}
+.ecAIArt .node{width:5px;height:5px}
+/* 关键:文字给素材让出右下角,不与素材相交 */
+.entryCard{padding:14px 14px 15px}
+.entryCard .ecDesc{
+  max-width:calc(100% - 112px);
+  padding-bottom:8px;
+}
+/* 小窝卡素材更宽,多让一点 */
+.entryCard.c-fish .ecDesc{max-width:calc(100% - 122px)}
+/* 标题不进入右下区 */
+.entryCard b{max-width:calc(100% - 8px)}
+/* 素材垫在文字之下 */
+.entryCard .ecArtImg,.entryCard .ecBrandImg,.entryCard .ecAIArt{z-index:0}
+.entryCard b,.entryCard .ecDesc,.entryCard .ecIcon{position:relative; z-index:1}
+/* 素材与卡片融合:柔光 + 圆角,不硬贴 */
+.entryCard .ecArtImg,.entryCard .ecBrandImg{filter:drop-shadow(0 8px 14px rgba(96,110,220,.2))}
+.entryCard .ecAIArt::after{content:"";position:absolute;inset:6px;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.35), transparent 70%);pointer-events:none}
+
+
+/* v15 微调:素材留在右下原位,尺寸收到刚好,描述保持 2 行可读 */
+.ec-ai{width:72px;height:72px;right:8px;bottom:8px}
+.ecAIArt{width:72px;height:72px;right:8px;bottom:8px}
+.ecAIArt .core{width:24px;height:24px;margin:-12px 0 0 -12px}
+.ecAIArt .ring{inset:2px}.ecAIArt .ring.r2{inset:11px}
+.ec-qq-img{width:56px;height:56px;right:12px;bottom:10px;padding:4px}
+.ec-bili{width:50px;height:50px;right:14px;bottom:12px;padding:4px}
+.ec-room{width:86px;height:58px;right:10px;bottom:10px}
+.entryCard .ecDesc{max-width:calc(100% - 82px)}
+.entryCard.c-fish .ecDesc{max-width:calc(100% - 98px)}
+.entryCard .ecDesc{font-size:10.5px;line-height:1.55}
+
+
+/* ==========================================================================
+   v16 回到原始几何:尺寸/位置/卡片高度全部复原;只做层级与融合
+   素材永远在文字下层,文字用柔和底色光晕与卡片融合
+   ========================================================================== */
+.entryCard{padding:16px 16px 14px; min-height:150px}
+.entryCard b{max-width:none; margin-top:10px; font-size:14px}
+.entryCard .ecDesc{max-width:none; padding:0; font-size:11px; line-height:1.6; margin-top:4px}
+/* 素材恢复原始尺寸与右下位置 */
+.ec-ai,.ecAIArt{width:92px;height:92px;right:8px;bottom:6px}
+.ecAIArt .core{width:30px;height:30px;margin:-15px 0 0 -15px}
+.ecAIArt .ring{inset:4px}.ecAIArt .ring.r2{inset:14px}
+.ecAIArt .node{width:5px;height:5px}
+.ec-qq-img{width:64px;height:64px;right:12px;bottom:10px;padding:5px}
+.ec-bili{width:58px;height:58px;right:14px;bottom:12px;padding:5px}
+.ec-room{width:122px;height:82px;right:10px;bottom:8px}
+/* 层级:素材 0,文字 2;文字带柔光,与素材自然融合 */
+.entryCard .ecArtImg,.entryCard .ecBrandImg,.entryCard .ecAIArt{z-index:0; opacity:.96}
+.entryCard b,.entryCard .ecDesc{position:relative; z-index:2}
+.entryCard b{text-shadow:0 1px 0 rgba(255,255,255,.95), 0 0 10px rgba(255,255,255,.9)}
+.entryCard .ecDesc{
+  text-shadow:0 1px 0 rgba(255,255,255,.98), 0 0 8px rgba(255,255,255,.95), 0 0 16px rgba(255,255,255,.9);
+}
+html[data-theme="dark"] .entryCard b,
+html[data-theme="dark"] .entryCard .ecDesc{
+  text-shadow:0 1px 0 rgba(24,20,48,.95), 0 0 8px rgba(24,20,48,.9), 0 0 16px rgba(24,20,48,.85);
+}
+
+
+/* ==========================================================================
+   v17 最终:卡片几何完全不动(150px),素材原位右下;用透明度+蒙版融合,文字在上层
+   ========================================================================== */
+.entryCard{height:150px; min-height:150px; max-height:150px; padding:16px 16px 14px}
+.entryCard b{max-width:none; margin-top:10px}
+.entryCard .ecDesc,.entryCard.c-fish .ecDesc{max-width:none; width:auto; padding:0; font-size:11px; line-height:1.6; margin-top:4px}
+/* 素材:位置/尺寸保持,作为背景装饰层,边缘柔化融入卡片 */
+.ec-ai,.ecAIArt{width:92px;height:92px;right:8px;bottom:6px}
+.ec-qq-img{width:64px;height:64px;right:12px;bottom:10px}
+.ec-bili{width:58px;height:58px;right:14px;bottom:12px}
+.ec-room{width:122px;height:82px;right:10px;bottom:8px}
+.entryCard .ecArtImg,.entryCard .ecBrandImg,.entryCard .ecAIArt{
+  z-index:0; opacity:.5;
+  -webkit-mask-image:radial-gradient(ellipse at 72% 68%, #000 38%, rgba(0,0,0,.55) 68%, transparent 100%);
+  mask-image:radial-gradient(ellipse at 72% 68%, #000 38%, rgba(0,0,0,.55) 68%, transparent 100%);
+}
+html[data-theme="dark"] .entryCard .ecArtImg,
+html[data-theme="dark"] .entryCard .ecBrandImg,
+html[data-theme="dark"] .entryCard .ecAIArt{opacity:.42}
+/* 文字层在上,轻轻压住融合后的底图 */
+.entryCard b,.entryCard .ecDesc{position:relative; z-index:2}
+.entryCard b{text-shadow:0 1px 0 rgba(255,255,255,.8)}
+.entryCard .ecDesc{text-shadow:0 1px 0 rgba(255,255,255,.75)}
+html[data-theme="dark"] .entryCard b,html[data-theme="dark"] .entryCard .ecDesc{text-shadow:0 1px 0 rgba(24,20,48,.8)}
+
+
+/* v17b 融合强度:品牌图标更清楚,文字仍有柔光托底 */
+.entryCard .ecBrandImg{opacity:.82}
+.entryCard .ecAIArt{opacity:.72}
+.entryCard .ec-room{opacity:.62}
+.entryCard .ecBrandImg{
+  -webkit-mask-image:linear-gradient(105deg, transparent 0%, rgba(0,0,0,.45) 22%, #000 46%);
+  mask-image:linear-gradient(105deg, transparent 0%, rgba(0,0,0,.45) 22%, #000 46%);
+}
+.entryCard .ec-room{
+  -webkit-mask-image:linear-gradient(100deg, transparent 0%, rgba(0,0,0,.5) 26%, #000 55%);
+  mask-image:linear-gradient(100deg, transparent 0%, rgba(0,0,0,.5) 26%, #000 55%);
+}
+
+
+/* v17c 文字托底:不改尺寸,只用柔和光晕把描述与底图融合,保证字清楚 */
+.entryCard .ecDesc{
+  border-radius:8px;
+  box-shadow:0 0 12px 9px rgba(255,255,255,.82), 0 0 26px 16px rgba(255,255,255,.45);
+  background:linear-gradient(90deg, rgba(255,255,255,.55), rgba(255,255,255,.28) 70%, rgba(255,255,255,0));
+}
+.entryCard b{
+  border-radius:6px;
+  box-shadow:0 0 10px 7px rgba(255,255,255,.7);
+}
+html[data-theme="dark"] .entryCard .ecDesc{
+  box-shadow:0 0 12px 9px rgba(36,30,62,.85), 0 0 26px 16px rgba(36,30,62,.5);
+  background:linear-gradient(90deg, rgba(36,30,62,.55), rgba(36,30,62,.25) 70%, rgba(36,30,62,0));
+}
+html[data-theme="dark"] .entryCard b{box-shadow:0 0 10px 7px rgba(36,30,62,.7)}
+
+
+/* ==========================================================================
+   v18 按参考图重做融合:卡片=淡色底 + 大尺寸低对比插画 + 文字在渐变遮罩上
+   几何保持 150px 不变,素材仍在右下但变成环境层
+   ========================================================================== */
+.entryCard{overflow:hidden; isolation:isolate; position:relative}
+/* 每张卡的淡色氛围底 */
+.c-workspace{background:linear-gradient(140deg, rgba(109,139,255,.14) 0%, rgba(255,255,255,.88) 46%, rgba(142,123,255,.10) 100%)}
+.c-qq{background:linear-gradient(140deg, rgba(90,169,255,.16) 0%, rgba(255,255,255,.9) 48%, rgba(90,169,255,.10) 100%)}
+.c-bili{background:linear-gradient(140deg, rgba(255,143,184,.16) 0%, rgba(255,255,255,.9) 48%, rgba(255,143,184,.10) 100%)}
+.c-fish{background:linear-gradient(140deg, rgba(93,214,198,.16) 0%, rgba(255,255,255,.9) 48%, rgba(93,214,198,.10) 100%)}
+html[data-theme="dark"] .c-workspace{background:linear-gradient(140deg, rgba(109,139,255,.22), rgba(44,38,78,.94) 46%, rgba(142,123,255,.16))}
+html[data-theme="dark"] .c-qq{background:linear-gradient(140deg, rgba(90,169,255,.22), rgba(44,38,78,.94) 46%, rgba(90,169,255,.14))}
+html[data-theme="dark"] .c-bili{background:linear-gradient(140deg, rgba(255,143,184,.20), rgba(44,38,78,.94) 46%, rgba(255,143,184,.13))}
+html[data-theme="dark"] .c-fish{background:linear-gradient(140deg, rgba(93,214,198,.20), rgba(44,38,78,.94) 46%, rgba(93,214,198,.13))}
+/* 文字遮罩层:左实右透,保证字清楚、右下插画透出 */
+.entryCard::before{
+  content:""; position:absolute; inset:0; z-index:1; pointer-events:none; border-radius:inherit;
+  background:linear-gradient(100deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.78) 38%, rgba(255,255,255,.30) 62%, rgba(255,255,255,0) 82%);
+}
+html[data-theme="dark"] .entryCard::before{
+  background:linear-gradient(100deg, rgba(40,34,72,.95) 0%, rgba(40,34,72,.82) 38%, rgba(40,34,72,.34) 62%, rgba(40,34,72,0) 82%);
+}
+/* 插画环境层:放大、降低对比、右下出血 */
+.entryCard .ecArtImg,.entryCard .ecBrandImg,.entryCard .ecAIArt{
+  z-index:0; opacity:.9;
+  -webkit-mask-image:none; mask-image:none;
+}
+.entryCard .ec-room,.entryCard .ec-ai,.entryCard .ecAIArt{
+  width:172px; height:132px; right:-22px; bottom:-18px; object-fit:cover; border-radius:0; border:0;
+  opacity:.34; filter:saturate(.85);
+}
+.entryCard .ec-room{object-position:60% 60%}
+.entryCard .ecAIArt{background:none; width:150px; height:150px; right:-34px; bottom:-34px; opacity:.45}
+.entryCard .ecAIArt .core{width:44px;height:44px;margin:-22px 0 0 -22px}
+.entryCard .ecAIArt .ring{inset:8px}.entryCard .ecAIArt .ring.r2{inset:24px}
+.entryCard .ecAIArt .node{width:6px;height:6px}
+.entryCard .ecBrandImg{
+  width:150px; height:150px; right:-26px; bottom:-28px; opacity:.16; padding:0; border:0; background:none;
+  filter:drop-shadow(0 0 0 transparent);
+}
+.entryCard .ec-qq-img{opacity:.14}
+/* 左上品牌角标 */
+.ecIconBrand{padding:0; overflow:hidden; background:var(--wash-2); border:1px solid var(--wash-line)}
+html[data-theme="dark"] .ecIconBrand{background:var(--wash); border-color:rgba(200,200,255,.16)}
+.ecIconBrand img{width:26px;height:26px;object-fit:contain}
+/* 文字:去掉原来的白色光晕,交给遮罩层 */
+.entryCard b,.entryCard .ecDesc{text-shadow:none; box-shadow:none; background:none; position:relative; z-index:2}
+.entryCard .ecDesc{max-width:none}
+.entryCard b{z-index:2}
+/* 描述末尾的品牌小圆点 */
+.entryCard .ecDesc::after{content:""; display:inline-block; width:5px; height:5px; border-radius:50%;
+  margin-left:5px; vertical-align:1px; background:var(--ec)}
+
+
+/* ==========================================================================
+   v19 对齐参考图:文字左栏 / 插画右下角低对比出血 / 无描边无光晕 / 高度 150 不变
+   ========================================================================== */
+.entryCard{padding:13px 14px 12px; height:150px}
+.entryCard::before{display:none}
+.entryCard .ecIcon{width:36px;height:36px;border-radius:11px}
+.entryCard .ecIcon svg{width:19px;height:19px}
+.entryCard b{font-size:13.5px; margin-top:8px; line-height:1.2; text-shadow:none}
+.entryCard .ecDesc{
+  margin-top:4px; font-size:10.5px; line-height:1.5; color:var(--muted);
+  max-width:calc(100% - 86px); text-shadow:none; box-shadow:none; background:none;
+}
+.entryCard.c-fish .ecDesc{max-width:calc(100% - 92px)}
+/* 插画:右下角,低对比、边缘自然化,不与文字相交 */
+.entryCard .ecArtImg,.entryCard .ecBrandImg,.entryCard .ecAIArt{
+  right:6px; bottom:6px; top:auto; left:auto; z-index:0;
+  opacity:.38; filter:saturate(.9);
+  -webkit-mask-image:radial-gradient(ellipse at 72% 72%, #000 46%, rgba(0,0,0,.5) 74%, transparent 100%);
+  mask-image:radial-gradient(ellipse at 72% 72%, #000 46%, rgba(0,0,0,.5) 74%, transparent 100%);
+}
+.entryCard .ec-ai,.entryCard .ecAIArt{width:84px;height:84px;opacity:.5;right:2px;bottom:0}
+.entryCard .ecAIArt .core{width:26px;height:26px;margin:-13px 0 0 -13px}
+.entryCard .ecAIArt .ring{inset:3px}.entryCard .ecAIArt .ring.r2{inset:14px}
+.entryCard .ec-qq-img,.entryCard .ecBrandImg{width:74px;height:74px;opacity:.42;right:4px;bottom:2px;padding:0;border:0;background:none;border-radius:0}
+.entryCard .ec-room{width:92px;height:62px;opacity:.5;right:2px;bottom:4px;border:0;box-shadow:none}
+.entryCard .ecBrandImg{z-index:0}
+.entryCard .ecDesc::after{background:var(--ec);opacity:.9}
+/* 文字层确保在插画之上 */
+.entryCard b,.entryCard .ecDesc,.entryCard .ecIcon{position:relative;z-index:2}
+
+
+/* 鱼的小窝:像素房子图标 */
+.ecIconPixel{padding:0; overflow:hidden; background:var(--wash-2); border:1px solid var(--wash-line)}
+html[data-theme="dark"] .ecIconPixel{background:var(--wash); border-color:rgba(200,200,255,.16)}
+.ecIconPixel img{width:30px;height:30px;object-fit:contain;image-rendering:pixelated}
+
+
+/* 鱼的小窝卡右下:与 QQ Agent 同尺寸的像素房子图标,融合处理 */
+.entryCard .ec-house{
+  width:74px; height:74px; right:4px; bottom:2px; opacity:.46;
+  object-fit:contain; image-rendering:pixelated;
+  border:0; box-shadow:none; border-radius:0;
+  filter:drop-shadow(0 6px 12px rgba(93,214,198,.25));
+  -webkit-mask-image:radial-gradient(ellipse at 62% 62%, #000 52%, rgba(0,0,0,.55) 78%, transparent 100%);
+  mask-image:radial-gradient(ellipse at 62% 62%, #000 52%, rgba(0,0,0,.55) 78%, transparent 100%);
+}
+html[data-theme="dark"] .entryCard .ec-house{opacity:.5}
+
+
+/* 小窝右下房子图标:提亮到与 QQ 图标同一存在感 */
+.entryCard .ec-house{
+  opacity:.62;
+  -webkit-mask-image:radial-gradient(ellipse at 62% 60%, #000 64%, rgba(0,0,0,.7) 84%, transparent 100%);
+  mask-image:radial-gradient(ellipse at 62% 60%, #000 64%, rgba(0,0,0,.7) 84%, transparent 100%);
+}
+html[data-theme="dark"] .entryCard .ec-house{opacity:.66}
+
+
+/* 首页 / 登录立绘同样去掉 drop-shadow,避免矩形边 */
+.heroGirl,.auth-girl{filter:none !important}
+
+
+/* 首页/登录立绘同样做四周渐隐,避免浅色底上的矩形边 */
+.heroGirl,.auth-girl{
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%),
+    linear-gradient(180deg, transparent 0, #000 12px, #000 calc(100% - 10px), transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%),
+    linear-gradient(180deg, transparent 0, #000 12px, #000 calc(100% - 10px), transparent 100%);
+  mask-composite: intersect;
+}
+
+
+/* ==========================================================================
+   v22 组件层级修复:去掉输入框套框 / 图标底板 / 卡片内重复卡片
+   ========================================================================== */
+/* 顶部搜索:输入框融进搜索胶囊,不再内嵌一层 */
+.topSearch input,html[data-theme="dark"] .topSearch input{
+  background:transparent !important; border:0 !important; box-shadow:none !important;
+  padding:0 !important; border-radius:0 !important; height:100% !important;
+}
+.topSearch input:focus,html[data-theme="dark"] .topSearch input:focus{
+  background:transparent !important; box-shadow:none !important;
+}
+/* 首页四卡:图标和素材直接放在卡片里,去掉白色小方框和贴图底座 */
+.entryCard .ecIcon{
+  width:34px; height:34px; padding:0; border:0; border-radius:0;
+  background:transparent !important; box-shadow:none !important;
+}
+.entryCard .ecIcon svg{width:26px;height:26px}
+.ecIconBrand{background:none !important;border:0 !important}
+.ecIconBrand img{width:32px;height:32px;object-fit:contain}
+.ecIconPixel{background:none !important;border:0 !important}
+.ecIconPixel img{width:32px;height:32px;object-fit:contain}
+.entryCard .ec-qq-img,.entryCard .ec-bili,.entryCard .ec-house,.entryCard .ec-room{
+  background:none !important; border:0 !important; box-shadow:none !important;
+  padding:0 !important; border-radius:0 !important;
+}
+/* 首页右栏的数据行:去掉卡片里的再一层卡片 */
+.modelRow{background:transparent !important;border:0 !important;padding:2px 0 !important}
+/* 设置页图标:去掉图标底板 */
+.setEntry .seIcon{background:none !important;border:0 !important;width:28px;height:28px;margin-bottom:4px}
+.setEntry .seIcon svg{width:22px;height:22px}
+
+
+/* ==========================================================================
+   v23 继续去多余矩形:卡片装饰图/白底贴图、空卡片、页头胶囊
+   ========================================================================== */
+/* QQ 卡的大企鹅图自带白底矩形:去掉这张装饰图(小图标保留) */
+.entryCard .ec-qq-img{display:none !important}
+/* QQ 小图标:裁成圆形,不出现白色方框 */
+.ecIconBrand .qqRound,
+.ecIconBrand img[src*="qq-"]{
+  border-radius:50% !important; overflow:hidden; object-fit:cover;
+}
+.ecIconPixel img,.ecIconBrand img{border-radius:50%}
+.platLogoQQ{border-radius:50% !important; object-fit:cover}
+/* 空的服务侧卡(数据未回来时)不要留一个白矩形 */
+.svcSide:empty{display:none !important}
+#qqStats:empty{display:none !important}
+/* 页面头部身份条:去掉外面的白色胶囊卡片,只留内容 _inline */
+.svcId{background:none !important;border:0 !important;box-shadow:none !important;padding:0 !important}
+/* 顶部搜索/输入再次确保只有一层 */
+.topSearch input{background:transparent !important;border:0 !important;box-shadow:none !important;padding:0 !important}
+
+
+/* ==========================================================================
+   v24 去掉输入类控件的蓝色焦点小边框 / 蓝色外圈
+   ========================================================================== */
+.topSearch input:focus,
+.topSearch input:focus-visible{
+  outline:none !important; box-shadow:none !important; border:0 !important;
+}
+.topSearch:focus-within{
+  border-color:rgba(140,150,225,.2) !important;
+  box-shadow:0 10px 26px -22px rgba(96,110,220,.5), inset 0 1px 0 rgba(255,255,255,.9) !important;
+  background-color:rgba(255,255,255,.72) !important;
+}
+html[data-theme="dark"] .topSearch:focus-within{
+  background-color:rgba(48,42,86,.72) !important;
+  border-color:rgba(180,180,255,.18) !important;
+}
+/* 所有输入框:点击时不出现蓝色描边 */
+input:focus,input:focus-visible,
+textarea:focus,textarea:focus-visible{
+  outline:none !important;
+}
+.wsComposer:focus-within{
+  border-color:var(--wash-line) !important;
+  box-shadow:0 22px 40px -34px rgba(80,90,170,.7), inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+html[data-theme="dark"] .wsComposer:focus-within{
+  border-color:rgba(200,200,255,.14) !important;
+}
+
+
+/* ==========================================================================
+   v25 首页底部输入框:深色/浅色下 textarea 不再出现内层小矩形
+   ========================================================================== */
+.composerCard textarea,
+html[data-theme="dark"] .composerCard textarea,
+.composerCard input,
+html[data-theme="dark"] .composerCard input{
+  background:transparent !important; border:0 !important; box-shadow:none !important;
+  border-radius:0 !important; outline:none !important;
+}
+.composerCard textarea:focus,
+.composerCard textarea:focus-visible,
+html[data-theme="dark"] .composerCard textarea:focus{
+  background:transparent !important; border:0 !important; box-shadow:none !important; outline:none !important;
+}
+
+
+/* ==========================================================================
+   v26 首页卡片文字区:清掉历史遗留的底色光晕(深色下会看成内层小矩形)
+   ========================================================================== */
+.entryCard b,
+.entryCard .ecDesc,
+.entryCard .ecDesc::after{
+  background:none !important; box-shadow:none !important; text-shadow:none !important;
+}
+.entryCard::before{display:none !important}
+.entryCard *{text-shadow:none}
+
+
+/* ==========================================================================
+   v27 图标形状:只有 QQ 用圆形,其余保持原比例/原形状
+   ========================================================================== */
+.ecIconBrand img,.ecIconPixel img{border-radius:0 !important;object-fit:contain}
+.ecIconBrand img[src*="qq-"]{border-radius:50% !important;object-fit:cover}
+.ecIconPixel img[src*="house-"]{border-radius:4px}
+.platLogo{border-radius:0 !important}
+.platLogo.platLogoQQ{border-radius:50% !important;object-fit:cover}
+
+/* ==========================================================================
+   v10.2 深色模式补丁:修复所有「白底交互态」在夜里刺眼/看不清的问题
+   (浅色模式完全不动,只在 data-theme=dark 时生效)
+   ========================================================================== */
+html[data-theme="dark"] .wsCrumbHome:hover,
+html[data-theme="dark"] .wsCrumbTile:hover,
+html[data-theme="dark"] .wsChips button:hover,
+html[data-theme="dark"] .wsModelChip:hover,
+html[data-theme="dark"] .mini:hover,
+html[data-theme="dark"] .chip:hover,
+html[data-theme="dark"] .heroChip:hover,
+html[data-theme="dark"] .modelChip:hover,
+html[data-theme="dark"] .setEntry:hover,
+html[data-theme="dark"] .backChip:hover{background:var(--wash-2); color:var(--ink)}
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] textarea:focus,
+html[data-theme="dark"] select:focus{background:var(--wash-2)}
+html[data-theme="dark"] .fishTabs button.on,
+html[data-theme="dark"] .pTabs button.on,
+html[data-theme="dark"] .memChips button.on,
+html[data-theme="dark"] .provChips button.on{background:var(--wash-2); color:var(--ink); box-shadow:none}
+html[data-theme="dark"] .provChips button:hover{background:var(--wash-2); border-color:var(--line-2)}
+html[data-theme="dark"] #memTree .memTrunkHi{stroke:rgba(190,190,255,.38)}
+/* 快捷键小标签:深色下用可读的 muted 而不是几乎看不见的 faint */
+.wsQuickRow kbd{color:var(--muted)}
+.qrow kbd{color:var(--muted)}
+
+/* ==========================================================================
+   v10.3 浅色模式「玻璃三件套」:大容器 / 内层凹槽 / 选中态
+   原则:大容器=带色淡玻璃;内层=比大容器稍深一档的半透明凹槽(不是白块);
+        选中态=淡蓝紫着色,而不是实心白。
+   只作用于 data-theme=light,深色模式完全不动。
+   ========================================================================== */
+
+/* 1) 大容器:淡紫/淡粉玻璃(与 QQ 页 Hero 同一材质) */
+html[data-theme="light"] .card,
+html[data-theme="light"] .glass,
+html[data-theme="light"] .sideCard,
+html[data-theme="light"] .moodBody > .glass,
+html[data-theme="light"] .personaBody > .glass,
+html[data-theme="light"] .acctGrid > .glass{
+  background:
+    linear-gradient(120deg, rgba(124,147,255,.11), rgba(154,130,255,.065) 48%, rgba(255,158,196,.075)),
+    rgba(255,255,255,.40);
+  border-color:rgba(255,255,255,.80);
+  box-shadow:0 20px 44px -34px rgba(96,86,170,.32), inset 0 1px 0 rgba(255,255,255,.70);
+}
+
+/* 2) 内层凹槽:表单控件用「淡蓝紫薄层」,比大容器略深,因此看得见但不发白 */
+html[data-theme="light"] .page input,
+html[data-theme="light"] .page textarea,
+html[data-theme="light"] .page select{
+  background:rgba(122,124,180,.075);
+  border-color:rgba(122,124,180,.17);
+  box-shadow:inset 0 1px 2px rgba(96,86,170,.05);
+}
+html[data-theme="light"] .page input:focus,
+html[data-theme="light"] .page textarea:focus,
+html[data-theme="light"] .page select:focus{
+  background:rgba(255,255,255,.62);
+  border-color:rgba(109,139,255,.55);
+}
+
+/* 3) 选中态:淡蓝紫着色 + 细描边,取代实心白 */
+html[data-theme="light"] .fishTabs button.on,
+html[data-theme="light"] .pTabs button.on,
+html[data-theme="light"] .memChips button.on,
+html[data-theme="light"] .provChips button.on,
+html[data-theme="light"] .qqWlTabs button.on{
+  background:rgba(109,139,255,.14);
+  color:#5B6FE0;
+  box-shadow:inset 0 0 0 1px rgba(109,139,255,.26);
+}
+html[data-theme="light"] .chip:hover,
+html[data-theme="light"] .mini:hover,
+html[data-theme="light"] .heroChip:hover,
+html[data-theme="light"] .modelChip:hover,
+html[data-theme="light"] .setEntry:hover,
+html[data-theme="light"] .backChip:hover,
+html[data-theme="light"] .wsCrumbHome:hover,
+html[data-theme="light"] .wsCrumbTile:hover,
+html[data-theme="light"] .wsChips button:hover{
+  background:rgba(255,255,255,.55);
+}
+
+/* 4) QQ 对话气泡:浅色下改成半透明玻璃,不再是白块 */
+html[data-theme="light"] #p-qq .wsMsgs .convMsg.in .cb{
+  background:rgba(255,255,255,.42);
+  border-color:rgba(255,255,255,.72);
+  box-shadow:0 12px 24px -22px rgba(96,86,170,.5);
+}
+
+/* ==========================================================================
+   v10.5 内层控件玻璃化加强 + 下拉框文字被裁修复
+   ========================================================================== */
+/* 1) 表单控件:再深一档的淡蓝紫玻璃,边界清楚但绝不是白块 */
+html[data-theme="light"] .page input,
+html[data-theme="light"] .page textarea,
+html[data-theme="light"] .page select{
+  background:rgba(124,147,255,.10);
+  border-color:rgba(109,139,255,.22);
+  box-shadow:inset 0 1px 2px rgba(96,86,170,.06);
+}
+html[data-theme="light"] .page input:focus,
+html[data-theme="light"] .page textarea:focus,
+html[data-theme="light"] .page select:focus{
+  background:rgba(255,255,255,.60);
+  border-color:rgba(109,139,255,.55);
+}
+
+/* 2) select 文字被裁:固定高度下把上下 padding 归零,用 line-height 居中 */
+.page select{
+  padding-top:0; padding-bottom:0;
+  line-height:calc(1em + 14px);
+  overflow:hidden;
+}
+.page .wlAdd select,
+.page .qqRow select,
+.page .svcBody select{height:30px; line-height:28px}
+
+/* 3) ghost 按钮 / 标签 / 小胶囊:同样换成淡蓝紫玻璃 */
+html[data-theme="light"] .btn.ghost,
+html[data-theme="light"] .mini,
+html[data-theme="light"] .mini.ghost{
+  background:rgba(124,147,255,.09);
+  border-color:rgba(109,139,255,.20);
+  color:var(--ink-2);
+  box-shadow:none;
+}
+html[data-theme="light"] .btn.ghost:hover,
+html[data-theme="light"] .mini:hover{
+  background:rgba(124,147,255,.17);
+  border-color:rgba(109,139,255,.30);
+  color:var(--ink);
+}
+html[data-theme="light"] .tag{
+  background:rgba(124,147,255,.10);
+  border-color:rgba(109,139,255,.20);
+}
+html[data-theme="light"] .wsQuickRow kbd,
+html[data-theme="light"] .qrow kbd{
+  background:rgba(124,147,255,.10);
+  border-color:rgba(109,139,255,.18);
+}
+html[data-theme="light"] .qqWlTabs,
+html[data-theme="light"] .pTabs,
+html[data-theme="light"] .fishTabs,
+html[data-theme="light"] .memChips{
+  background:rgba(124,147,255,.07);
+  border-color:rgba(109,139,255,.16);
+}
+
+/* 4) 扫码登录块:容器改玻璃,二维码图片本身保持白底(扫描识别率) */
+html[data-theme="light"] .qrBox{
+  background:rgba(124,147,255,.08);
+  border-color:rgba(109,139,255,.18);
+}
+html[data-theme="light"] .qrBox img{background:#fff}
+
+/* ==========================================================================
+   v10.6 下拉框:聚焦态不再变白 + 选项列表(auto popup)染色
+   ========================================================================== */
+html[data-theme="light"] .page input:focus,
+html[data-theme="light"] .page textarea:focus,
+html[data-theme="light"] .page select:focus{
+  background:rgba(124,147,255,.17);
+  border-color:rgba(109,139,255,.55);
+  box-shadow:0 0 0 4px rgba(109,139,255,.12);
+}
+/* 原生下拉列表:Chrome/WebView2 会读取 option 的颜色,借此让弹层不发白 */
+html[data-theme="light"] select option{
+  background:#F3F1FF;
+  color:#2A2442;
+}
+html[data-theme="light"] select option:checked,
+html[data-theme="light"] select option:hover{
+  background:#E2E1FF;
+  color:#4B5FD6;
+}
+html[data-theme="dark"] select option{
+  background:#2A2450;
+  color:#F2EEFF;
+}
+html[data-theme="dark"] select option:checked{
+  background:#3C3568;
+  color:#DCE4FF;
+}
+
+/* ==========================================================================
+   v11 布局契约:页面永不滚动,一屏看完
+   规则:.view 不再滚动;每个 .page 吃满可视高度并 flex 分配;
+        头部(hero/页签)固定,页容器区吃剩余高度;超出部分在卡片内部滚动。
+   ========================================================================== */
+.view{overflow:hidden !important; display:flex; flex-direction:column; padding:0 !important}
+.page{
+  flex:1; min-height:0; overflow:hidden;
+  display:flex !important; flex-direction:column !important;
+  padding:12px 26px 14px; max-width:1240px; width:100%; margin:0 auto;
+}
+.page > .pgHero,.page > .qqHero,.page > .qqTabs,.page > .pgTabs,
+.page > .pagehead,.page > .pScope{flex:none}
+/* 页容器区吃满剩余高度 */
+.page > .qqPanes,.page > .pgPanes{flex:1; min-height:0}
+.qqPanes > .qqPane.on,.pgPanes > .pgPane.on{height:100%}
+/* 卡片默认吃满 pane 高度;内容过多时在卡内滚动 */
+.qqPanes > .qqPane.on > .qqCard,.pgPanes > .pgPane.on > .qqCard{height:100%; overflow:auto}
+
+/* ---- v11.3 页容器用 flex 而非百分比高度,彻底避免「页内容撑破窗口」 ---- */
+/* 首页有自己的一套 grid(等比缩放基准),不能套 flex 契约 */
+#p-home:not([hidden]){display:grid !important; grid-template-columns:minmax(0,1fr) 316px; gap:20px;
+  align-items:start; overflow-y:auto; overflow-x:hidden}
+#p-home .homeCol{min-height:0}
+/* !important 的 display:flex 会盖掉浏览器默认的 [hidden]{display:none},
+   必须显式恢复,否则隐藏页各占一行把可见页压扁 */
+.page[hidden]{display:none !important}
+.page > .qqPanes,.page > .pgPanes{display:flex; flex-direction:column; min-height:0}
+.qqPanes > .qqPane.on,.pgPanes > .pgPane.on{flex:1; min-height:0; height:auto}
+
+/* ---- 首页收掉最后 52px(768 视口下),不改变等比缩放基准的宽高比 ---- */
+#p-home:not([hidden]) .hero{min-height:392px}
+#p-home:not([hidden]) .heroGirl{height:392px}
+#p-home:not([hidden]) .homeCol{gap:14px}
+#p-home:not([hidden]) .entryCard{min-height:142px}
+
+/* 右下角夜景卡片：仅在小窝场景内换图与配色 */
+#p-home:not([hidden]) .sceneCard{border:1px solid rgba(176,171,255,.34);border-radius:18px;background:#262345;box-shadow:0 12px 28px -20px rgba(18,14,43,.8),inset 0 1px 0 rgba(225,221,255,.18);overflow:hidden}
+#p-home:not([hidden]) .sceneCard .pixelRoom{position:absolute;inset:0;display:block;overflow:hidden;background:#262345}
+#p-home:not([hidden]) .sceneCard .sceneArtwork{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 54%;image-rendering:pixelated;filter:brightness(.82) saturate(.76) hue-rotate(7deg)}
+#p-home:not([hidden]) .sceneCard .pixelRoom::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(135deg,rgba(75,66,133,.32),rgba(38,37,83,.24)),linear-gradient(0deg,rgba(28,25,62,.48),transparent 58%)}
+#p-home:not([hidden]) .sceneCard .sceneBubble{z-index:3;background:rgba(45,39,83,.94);border:1px solid rgba(218,213,255,.35);color:#f7f5ff;box-shadow:0 8px 18px -12px rgba(10,8,31,.9),inset 0 1px 0 rgba(255,255,255,.12)}
+#p-home:not([hidden]) .sceneCard .sceneBubble i{color:#ffaed1}
+#p-home:not([hidden]) .sceneCard .pr-girl{z-index:3;border-color:rgba(208,205,255,.52);background:rgba(47,43,86,.72);box-shadow:0 5px 14px -9px rgba(10,8,31,.9)}
+#p-home:not([hidden]) .sceneCard::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(230,227,255,.16)}
+
