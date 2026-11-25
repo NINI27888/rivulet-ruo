@@ -108,3 +108,26 @@ github-release/
 4. 描述里写明：Windows 64 位、解压双击即用、首次运行会被 SmartScreen 拦
 5. 附件：把 `Rivulet若-v0.10.1-win64.zip` 拖进 "Attach binaries"
 6. 点 **Publish release**
+
+---
+
+## 九、改为单文件 exe（v0.10.1 最终方案）
+
+用户要求「一个 exe 下载就能用」，因此在 `lib.rs` 增加单文件模式：
+
+- `src-tauri/assets/bundle.zip`（13.0 MB）打包 `runtime/` + `core/` + `services/` + `fatfish/` + 使用说明
+- `static BUNDLE: &[u8] = include_bytes!("../assets/bundle.zip");`
+- `ensure_bundle()`：启动时若 exe 同级没有 `runtime\python.exe`，把内嵌 zip 写到临时文件，
+  用 Windows 自带 `tar -xf` 解压到 exe 同级（失败退回系统解压命令），再删临时文件
+- 解压后 `ensure_services()` 正常拉起 core(8088) + 5 个功能服务
+
+**产物对比**
+
+| 文件 | 大小 | 说明 |
+|---|---|---|
+| `Rivulet若-v0.10.1-win64.exe` | **25.6 MB** | **推荐**：单文件，下载双击即用，首次自动解压 |
+| `Rivulet若-v0.10.1-win64.zip` | 22.8 MB | 文件夹版，解压后双击 exe |
+
+**实测**：空目录放置单文件 exe → 运行 → 自动解出 1035 个 runtime 文件（40 MB），
+`data/home.json` 生成，`ensure_services` 被执行；用解压出的 runtime 启动 core
+→ 9 张表 / 0 用户，自动拉起 5 个服务，全部正常。
