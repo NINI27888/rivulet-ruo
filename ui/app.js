@@ -66,7 +66,17 @@
         }
         return data;
       });
-    }, function () { throw new Error("连不上账号服务,检查网络后重试"); });
+    }, function () {
+      // 桌面版连不上,几乎都是本机 core 没起来(缺文件 / 首次解压没完成),
+      // 不是网络问题 —— 别再让用户去查网络。
+      var tip = tauri
+        ? ("本机账号服务没启动。" +
+           "请确认你下载的是「单文件版」exe(25 MB 左右);" +
+           "如果是第一次打开,等十几秒(它在解压运行环境)再试;" +
+           "还不行就看程序目录下的 core\\core.log。")
+        : "连不上账号服务,检查网络后重试";
+      throw new Error(tip);
+    });
   }
 
   function call(cmd, args) {
@@ -230,7 +240,12 @@
     if (/401|用户名或密码/.test(msg)) return "用户名或密码不对,再试一次";
     if (/403|停用/.test(msg)) return "这个账号已停用";
     if (/409|已存在/.test(msg)) return "这个用户名已经有人用了";
-    if (/连不上|Failed to fetch|network/.test(msg)) return "连不上账号服务,检查网络后重试";
+    if (/本机账号服务没启动/.test(msg)) return msg;
+    if (/连不上|Failed to fetch|network/.test(msg)) {
+      return tauri
+        ? "本机账号服务没启动:确认下载的是「单文件版」exe(25 MB 左右),首次打开要等十几秒解压。"
+        : "连不上账号服务,检查网络后重试";
+    }
     return msg;
   }
 
