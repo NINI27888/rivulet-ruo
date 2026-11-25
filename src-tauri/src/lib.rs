@@ -360,6 +360,7 @@ fn win_close(window: tauri::Window) {
 fn open_model_site(provider: String) -> Result<(), String> {
     let url = match provider.as_str() {
         "deepseek" => "https://platform.deepseek.com/api_keys",
+        "opencode-go" => "https://opencode.ai/console",
         "qwen" => "https://help.aliyun.com/zh/model-studio/get-api-key",
         "openai" => "https://platform.openai.com/api-keys",
         _ => return Err("这个服务商没有预置的密钥页面".to_string()),

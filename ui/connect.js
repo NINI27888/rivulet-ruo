@@ -7,16 +7,27 @@
   var presets = [
     { id: "deepseek", name: "DeepSeek 官方", provider: "deepseek",
       base: "https://api.deepseek.com/v1", model: "deepseek-flash",
+      aliases: ["https://api.deepseek.com"], displayModel: "DeepSeek V4.1 Flash",
       url: "https://platform.deepseek.com/api_keys",
-      hint: "适用于从 DeepSeek 开放平台获取的密钥。" },
+      keyPage: "打开 DeepSeek 密钥页面",
+      hint: "登录 DeepSeek 开放平台，在密钥页面创建 API 密钥并复制。首次使用请在平台确认 API 余额。" },
+    { id: "opencode-go", name: "OpenCode Go", provider: "custom",
+      base: "https://opencode.ai/inference/go/openai/v1", model: "deepseek-v4.1-flash",
+      aliases: ["https://opencode.ai/inference/go/v1", "https://opencode.ai/zen/go/v1"],
+      displayModel: "DeepSeek V4.1 Flash",
+      url: "https://opencode.ai/console",
+      keyPage: "打开 OpenCode Console",
+      hint: "登录 OpenCode Console 并开通 Go。在右上角账号菜单打开 Account → Personal API keys → Add API key，选择已订阅 Go 的工作区，创建并复制密钥。" },
     { id: "qwen", name: "通义千问（阿里云百炼）", provider: "custom",
       base: "https://dashscope.aliyuncs.com/compatible-mode/v1", model: "qwen-plus",
       url: "https://help.aliyun.com/zh/model-studio/get-api-key",
-      hint: "预填中国内地地址。其它地域或工作空间的地址可在下方修改。" },
+      keyPage: "查看百炼密钥获取步骤",
+      hint: "在百炼控制台的 API Key 管理页面创建并复制密钥。其他地域可在高级设置里更换接口地址。" },
     { id: "openai", name: "OpenAI 官方", provider: "openai",
       base: "https://api.openai.com/v1", model: "gpt-5.4-mini",
       url: "https://platform.openai.com/api-keys",
-      hint: "适用于 OpenAI 平台创建的 API 密钥。请在平台开通 API 用量。" },
+      keyPage: "打开 OpenAI 密钥页面",
+      hint: "登录 OpenAI API 平台，在 API Keys 页面创建并复制密钥。首次使用请在平台设置 API 计费。" },
     { id: "ollama", name: "Ollama（本机）", provider: "ollama",
       base: "http://127.0.0.1:11434/v1", model: "",
       hint: "先启动电脑上的 Ollama，再输入已经下载的模型名。" },
@@ -49,35 +60,73 @@
   }
 
   function canonAddress(value) {
-    return String(value || "").trim().replace(/\/+$/, "").replace(/\/chat\/completions$/, "");
+    return String(value || "").trim().replace(/\/+$/, "").replace(/\/chat\/completions$/, "").replace(/\/+$/, "");
+  }
+
+  function savedPreset(current) {
+    var address = canonAddress(current.base_url);
+    return presets.find(function (item) {
+      return address && (item.base === address || (item.aliases || []).includes(address));
+    }) || presetFor("custom");
+  }
+
+  function isLocalAddress(address) {
+    try { return ["127.0.0.1", "localhost", "[::1]"].includes(new URL(address).hostname); }
+    catch (e) { return false; }
+  }
+
+  function canReuseKey(address) {
+    var current = modelState && modelState.current;
+    return current && current.has_key && canonAddress(current.base_url) === address;
   }
 
   function refreshKeyHint() {
-    var current = modelState && modelState.current;
     var address = canonAddress($("modelAddress").value);
-    var canReuse = current && current.has_key && canonAddress(current.base_url) === address;
-    var local = false;
-    try { local = ["127.0.0.1", "localhost", "[::1]"].includes(new URL(address).hostname); } catch (e) {}
-    $("modelKeyHelp").textContent = canReuse ? "此地址已有密钥。留空即可沿用。" :
-      (local ? "本机服务未设置密钥时可以留空。" : "在服务商的 API 密钥页面创建并完整复制。");
-    key.placeholder = canReuse ? "已保存，可留空" : "粘贴服务商提供的密钥";
+    var canReuse = canReuseKey(address);
+    var local = isLocalAddress(address);
+    $("modelKeyLabel").textContent = "2. 粘贴 API 密钥" + (canReuse || local ? "（可留空）" : "");
+    feedback($("modelKeyHelp"), canReuse ? "留空会继续使用已保存的密钥。" :
+      (local ? "如果本机服务未设置密钥，这一项可以留空。" : ""));
+    key.placeholder = canReuse ? "已保存，可留空" : "从服务商复制的完整密钥";
+  }
+
+  function refreshModelSummary() {
+    var item = presetFor(provider.value);
+    var model = $("modelId").value.trim();
+    var current = modelState.current;
+    var summary = $("modelSummary");
+    summary.hidden = !item || !item.model || !model ||
+      !!(current && savedPreset(current) === item && current.model === model);
+    summary.textContent = model ? "将测试 " + modelLabel(item, model) : "";
+  }
+
+  function modelLabel(item, model) {
+    return item && item.model === model && item.displayModel ? item.displayModel : model;
   }
 
   function usePreset(id, current) {
-    var item = presetFor(id) || presetFor("custom");
-    provider.value = item.id;
-    $("modelAddress").value = (current && current.base_url) || item.base;
-    $("modelId").value = (current && current.model) || item.model;
+    var item = presetFor(id);
+    provider.value = id;
+    $("modelProviderFields").hidden = !item;
+    $("modelProviderHint").textContent = item ? item.hint :
+      "有 API 密钥或模型服务订阅，就选对应的平台。第一次使用，可以按提示开通。DeepSeek 官方按用量计费，OpenCode Go 提供订阅。";
+    $("modelAddress").value = (current && current.base_url) || (item && item.base) || "";
+    $("modelId").value = (current && current.model) || (item && item.model) || "";
+    if (!item) return;
+
     $("modelAdvanced").open = !item.base || !item.model;
-    $("modelProviderHint").textContent = item.hint;
-    $("modelKeyPage").hidden = !item.url;
+    $("modelAdvancedLabel").textContent = item.model ? "高级设置 · 接口地址和模型名" : "接口地址和模型名";
+    var keyPage = $("modelKeyPage");
+    keyPage.hidden = !item.url;
+    keyPage.textContent = item.keyPage || "";
+    refreshModelSummary();
     refreshKeyHint();
   }
 
   function setModelBusy(busy) {
     modelState.busy = busy;
     fields.disabled = busy || modelState.finished;
-    apply.disabled = busy;
+    apply.disabled = busy || (!modelState.finished && !provider.value);
     $("modelDialogClose").disabled = busy;
   }
 
@@ -88,11 +137,12 @@
     var forQq = target === "workspace-for-qq";
     var ticket = ++modelLoad;
     $("modelDialogTitle").textContent = own ? "给 QQ 单独配置模型" : "配置聊天模型";
-    $("modelDialogIntro").textContent = forQq ? "设置成功后，工作区和 QQ 都会使用这个模型。" :
-      (own ? "QQ 用这份配置回复消息。" : "通过测试后，就能在工作区和若聊天。");
+    $("modelDialogIntro").textContent = forQq ? "为若选一个模型，工作区和 QQ 会共用这份配置。" :
+      (own ? "为若选一个模型，用于回复 QQ 消息。" : "为若选一个模型，用于生成聊天回复。");
     apply.textContent = "测试并启用";
     key.value = "";
-    usePreset("deepseek");
+    feedback($("modelSaved"), "");
+    usePreset("");
     setModelBusy(false);
     fields.disabled = true;
     apply.disabled = true;
@@ -101,7 +151,7 @@
 
     var read = own ? app.svcGet("qq", "/api/config").then(function (r) {
       var cfg = r && r.config;
-      if (cfg && cfg.model && (cfg.has_key || /^http:\/\/(127\.0\.0\.1|localhost)/.test(cfg.api_base || ""))) {
+      if (cfg && cfg.model && (cfg.has_key || isLocalAddress(cfg.api_base))) {
         return { base_url: cfg.api_base, model: cfg.model, has_key: cfg.has_key };
       }
       return null;
@@ -111,11 +161,9 @@
       if (ticket !== modelLoad || !modelDialog.open) return;
       if (current && current.model) {
         modelState.current = current;
-        var same = presets.find(function (item) {
-          return item.base && canonAddress(current.base_url) === item.base;
-        });
-        usePreset(same ? same.id : "custom", current);
-        if (same && current.model !== same.model) $("modelAdvanced").open = true;
+        var same = savedPreset(current);
+        feedback($("modelSaved"), "已保存 · " + same.name + " · " + modelLabel(same, current.model));
+        usePreset(same.id, current);
       }
       feedback($("modelResult"), "");
     }).catch(function () {
@@ -131,10 +179,13 @@
 
   provider.addEventListener("change", function () {
     key.value = "";
-    usePreset(provider.value);
+    var current = modelState.current;
+    usePreset(provider.value, current && savedPreset(current).id === provider.value ? current : null);
+    setModelBusy(false);
     feedback($("modelResult"), "");
   });
   $("modelAddress").addEventListener("input", refreshKeyHint);
+  $("modelId").addEventListener("input", refreshModelSummary);
   $("modelKeyPage").addEventListener("click", function () {
     var item = presetFor(provider.value);
     if (!item || !item.url) return;
@@ -167,9 +218,11 @@
       return;
     }
 
+    var item = presetFor(provider.value);
+    if (!item) return;
     var own = target === "qq";
     var payload = {
-      provider: presetFor(provider.value).provider,
+      provider: item.provider,
       model: $("modelId").value.trim(),
       base_url: $("modelAddress").value.trim(),
       api_key: key.value.trim()
@@ -179,6 +232,12 @@
       var missing = !payload.base_url ? $("modelAddress") : $("modelId");
       feedback($("modelResult"), "请先填写接口地址和模型名。", "error");
       missing.focus();
+      return;
+    }
+    var address = canonAddress(payload.base_url);
+    if (!payload.api_key && !canReuseKey(address) && !isLocalAddress(address)) {
+      feedback($("modelResult"), "请按上方步骤获取 API 密钥，再粘贴到若。", "error");
+      key.focus();
       return;
     }
     if (!own && modelState.current && modelState.current.id) payload.existing_id = modelState.current.id;
@@ -194,6 +253,8 @@
       }).catch(function () { return false; });
     }).then(function (shared) {
       modelState.finished = true;
+      feedback($("modelSaved"), "已保存 · " + item.name + " · " + modelLabel(item, payload.model));
+      $("modelSummary").hidden = true;
       if (!shared) {
         feedback($("modelResult"), "工作区模型已启用。回到 QQ 页，再点「使用工作区模型」。", "warn");
       } else if (target === "workspace-for-qq") {

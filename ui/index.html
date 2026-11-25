@@ -1058,22 +1058,29 @@
       <div><h2 id="modelDialogTitle">配置聊天模型</h2><p id="modelDialogIntro"></p></div>
       <button type="button" class="btn ghost sm" id="modelDialogClose">关闭</button>
     </header>
+    <p class="connectSavedModel" id="modelSaved" hidden></p>
     <form id="modelForm" novalidate>
       <fieldset id="modelFields" class="connectFields">
-        <label>1. 选服务商<select id="modelProvider"></select></label>
-        <p class="connectFieldHint" id="modelProviderHint"></p>
-        <button type="button" class="btn ghost sm connectKeyPage" id="modelKeyPage" hidden>打开获取密钥页面</button>
-        <label><span id="modelKeyLabel">2. 粘贴 API 密钥</span>
-          <input id="modelSecret" type="password" autocomplete="off" spellcheck="false" aria-describedby="modelKeyHelp">
+        <p class="connectFieldHint">API 密钥是平台发给你的一串字符，若用它获得调用模型的权限。</p>
+        <label>1. 选择提供模型服务的平台
+          <select id="modelProvider" aria-describedby="modelProviderHint"><option value="">请选择平台</option></select>
         </label>
-        <small class="connectFieldHint" id="modelKeyHelp"></small>
-        <details class="connectDetails" id="modelAdvanced">
-          <summary>接口地址和模型名</summary>
-          <div class="connectFields connectAdvancedFields">
-            <label>接口地址<input id="modelAddress" inputmode="url" autocomplete="off" spellcheck="false"></label>
-            <label>模型名<input id="modelId" autocomplete="off" spellcheck="false"></label>
-          </div>
-        </details>
+        <p class="connectFieldHint" id="modelProviderHint"></p>
+        <div class="connectFields" id="modelProviderFields" hidden>
+          <button type="button" class="btn ghost sm connectKeyPage" id="modelKeyPage" hidden></button>
+          <p class="connectFieldHint" id="modelSummary" hidden></p>
+          <details class="connectDetails" id="modelAdvanced">
+            <summary id="modelAdvancedLabel">高级设置 · 接口地址和模型名</summary>
+            <div class="connectFields connectAdvancedFields">
+              <label>接口地址<input id="modelAddress" inputmode="url" autocomplete="off" spellcheck="false"></label>
+              <label>模型名<input id="modelId" autocomplete="off" spellcheck="false"></label>
+            </div>
+          </details>
+          <label><span id="modelKeyLabel">2. 粘贴 API 密钥</span>
+            <input id="modelSecret" type="password" autocomplete="off" spellcheck="false" aria-describedby="modelKeyHelp">
+          </label>
+          <small class="connectFieldHint" id="modelKeyHelp" hidden></small>
+        </div>
       </fieldset>
       <p class="connectFeedback" id="modelResult" role="status" hidden></p>
       <footer class="connectActions connectDialogFoot"><button type="submit" class="btn" id="modelApply">测试并启用</button></footer>

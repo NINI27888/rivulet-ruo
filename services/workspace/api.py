@@ -162,7 +162,9 @@ class Handler(BaseHTTPRequestHandler):
             tokens = min(2048, max(32, int(body.get("max_tokens") or 220)))
             temperature = min(2, max(0, float(body.get("temperature", 0.8))))
             model = self.chat.provider.require_model()
-            text = complete_message(model, messages, max_tokens=tokens, temperature=temperature)["content"]
+            session_id = body.get("session_id")
+            text = complete_message(model, messages, max_tokens=tokens, temperature=temperature,
+                                    session_id=session_id if isinstance(session_id, str) else None)["content"]
             return self._send(200, {"ok": True, "text": text})
         except (ModelError, ValueError, TypeError) as e:
             return self._send(200, {"ok": False, "error": str(e)})

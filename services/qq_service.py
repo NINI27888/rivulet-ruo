@@ -42,6 +42,7 @@ import urllib.parse
 import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from uuid import uuid4
 
 import napcat as nc_mod
 import qzone
@@ -216,14 +217,16 @@ def use_workspace_model() -> dict:
 
 
 def qq_model_reply(messages: list[dict], max_tokens: int, temperature: float,
-                   timeout: float = 40) -> str:
+                   timeout: float = 40, *, session_id: str | None = None) -> str:
     if not CFG.get("use_workspace_model"):
         return complete_message(model_settings(qq_model_input()), messages,
-                                max_tokens=max_tokens, temperature=temperature, timeout=timeout)["content"]
+                                max_tokens=max_tokens, temperature=temperature, timeout=timeout,
+                                session_id=session_id)["content"]
     req = urllib.request.Request(
         WORKSPACE_API + "/api/models/respond",
         data=json.dumps({"messages": messages, "max_tokens": max_tokens,
-                         "temperature": temperature}, ensure_ascii=False).encode("utf-8"),
+                         "temperature": temperature, "session_id": session_id},
+                        ensure_ascii=False).encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
     try:
@@ -306,6 +309,14 @@ class ChatLog:
     def __init__(self):
         self.lock = threading.Lock()
         self.hist: dict[str, list[dict]] = {}
+        self.sessions: dict[str, str] = {}
+
+    def session_id(self, chat: str) -> str:
+        with self.lock:
+            session = self.sessions.get(chat)
+            if session is None:
+                session = self.sessions[chat] = uuid4().hex
+            return session
 
     def push(self, chat: str, role: str, text: str):
         with self.lock:
@@ -422,7 +433,8 @@ def dsh_reply(chat: str, sender: str, text: str) -> tuple[str, str]:
     msgs.append({"role": "user", "content": text[:800]})
     try:
         out = qq_model_reply(msgs, int(dsh.get("max_tokens") or 220),
-                             float(dsh.get("temperature") or 0.8), float(dsh.get("timeout") or 40))
+                             float(dsh.get("temperature") or 0.8), float(dsh.get("timeout") or 40),
+                             session_id=CHAT.session_id(chat))
         return out[:600], ""
     except ModelError as e:
         return "", str(e)

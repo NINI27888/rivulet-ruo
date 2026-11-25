@@ -2498,7 +2498,7 @@ dependencies = [
 
 [[package]]
 name = "rivulet-ruo"
-version = "0.10.2-preview.3"
+version = "0.10.2-preview.4"
 dependencies = [
  "serde",
  "serde_json",

@@ -6,6 +6,7 @@ import os
 import urllib.error
 import urllib.request
 from urllib.parse import urlsplit
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from workspace.models import PROVIDERS
 
@@ -16,6 +17,7 @@ DEFAULT_BASES = {
     "ollama": "http://127.0.0.1:11434/v1",
 }
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
+GO_PATHS = {"/inference/go/openai/v1", "/inference/go/v1", "/zen/go/v1"}
 
 
 class ModelError(Exception):
@@ -65,21 +67,31 @@ def model_settings(body: dict, existing: dict | None = None) -> dict:
 
 
 def complete_message(settings: dict, messages: list[dict], *, max_tokens: int = 900,
-                     temperature: float = 0.7, timeout: float = 45, tools=None) -> dict:
+                     temperature: float = 0.7, timeout: float = 45, tools=None,
+                     session_id: str | None = None) -> dict:
     base, model, key = (settings[k] for k in ("base_url", "model", "api_key"))
-    host = urlsplit(base).hostname
+    url = urlsplit(base)
+    host = url.hostname
+    go = (url.scheme == "https" and host == "opencode.ai" and url.port in (None, 443)
+          and url.path in GO_PATHS)
     payload = {"model": model, "messages": messages, "max_tokens": max_tokens,
                "temperature": temperature}
     if host == "api.openai.com" and model.startswith(("gpt-5", "gpt-6", "o1", "o3", "o4")):
         payload.pop("temperature")
         payload["max_completion_tokens"] = payload.pop("max_tokens")
-    if host == "api.deepseek.com" and model.startswith(("deepseek-flash", "deepseek-v4")):
+    if (host == "api.deepseek.com" or go) and model.startswith(("deepseek-flash", "deepseek-v4")):
         payload["thinking"] = {"type": "disabled"}
     if tools:
         payload["tools"] = tools
         payload["tool_choice"] = "auto"
 
     headers = {"Content-Type": "application/json"}
+    if go:
+        session = uuid5(NAMESPACE_URL, "rivulet:" + session_id) if session_id else uuid4()
+        headers.update({
+            "User-Agent": "Rivulet/0.10.2",
+            "X-OpenCode-Session": "ses_" + session.hex,
+        })
     if key:
         headers["Authorization"] = "Bearer " + key
     req = urllib.request.Request(base + "/chat/completions",
@@ -91,12 +103,15 @@ def complete_message(settings: dict, messages: list[dict], *, max_tokens: int = 
     except urllib.error.HTTPError as e:
         tips = {
             400: "服务商拒绝了请求，请确认这个模型支持聊天接口。",
-            401: "API 密钥无效，请从同一个服务商重新复制。",
+            401: "这个平台没有接受这份密钥。请打开所选平台的密钥页，重新复制完整密钥。",
             402: "模型账户余额不足，请到服务商控制台查看。",
             403: "API 密钥没有该模型的使用权限，请检查服务商控制台。",
             404: "没找到接口或模型。请核对接口地址和模型名。",
             429: "请求过于频繁或额度已用完，请稍后再试或检查账户额度。",
         }
+        if go:
+            tips[401] = "OpenCode Go 没有接受这份密钥。请在开通 Go 的 OpenCode 工作区复制完整密钥。"
+            tips[403] = "OpenCode Go 暂时无法使用这个模型。请检查 Go 订阅，并在工作区隐私设置中确认已允许 Global（全球）区域。"
         if 300 <= e.code < 400:
             tip = "接口要求跳转，请填写服务商提供的最终接口地址。"
         else:
@@ -162,7 +177,7 @@ class LLMProvider:
             result.update(enabled=False, hint=str(e))
         return {"ok": True, "has_key": bool(active["api_key"]), **result}
 
-    def respond(self, messages: list[dict], tools: list[dict]) -> dict:
+    def respond(self, messages: list[dict], tools: list[dict], *, session_id: str | None = None) -> dict:
         model = self.require_model()
         if not messages or messages[0].get("role") != "system":
             persona = self.persona_brief()
@@ -178,7 +193,7 @@ class LLMProvider:
                 "name": name, "description": tool["description"],
                 "parameters": {"type": "object", "properties": props},
             }})
-        message = complete_message(model, messages, tools=definitions)
+        message = complete_message(model, messages, tools=definitions, session_id=session_id)
         calls = message.get("tool_calls") or []
         if calls:
             call = calls[0]

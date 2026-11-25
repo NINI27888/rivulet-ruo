@@ -25,7 +25,7 @@ class EchoProvider:
 
     INTENTS = ("记忆", "做了什么", "做过", "在家", "昨天", "今天", "田里", "小窝")
 
-    def respond(self, messages: list[dict], tools: list[dict]) -> dict:
+    def respond(self, messages: list[dict], tools: list[dict], *, session_id: str | None = None) -> dict:
         last = messages[-1] if messages else {}
         if last.get("role") == "tool":
             return {"type": "text", "text": self._summarize(last.get("content") or "{}")}
@@ -90,7 +90,7 @@ class ChatService:
         reply = ""
         try:
             for _ in range(MAX_TOOL_ROUNDS + 1):
-                out = self.provider.respond(msgs, self.registry.specs())
+                out = self.provider.respond(msgs, self.registry.specs(), session_id=cid)
                 if out.get("type") == "tool":
                     name = out.get("name") or ""
                     args = out.get("args") or {}
