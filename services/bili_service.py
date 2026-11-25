@@ -93,6 +93,13 @@ def cached(key: str, ttl: float, fn):
     return val
 
 
+def invalidate_cache(prefix: str):
+    with LOCK:
+        for key in tuple(_CACHE):
+            if key.startswith(prefix):
+                del _CACHE[key]
+
+
 def _account_status(b) -> dict:
     from client import BiliError
 
@@ -299,8 +306,11 @@ def api_reply(bvid: str, text: str) -> dict:
         return {"ok": False, "error": "bvid / text 都要有"}
     try:
         b = bili()
-        r = b.reply(bvid, text.strip())
-        return {"ok": True, "result": r}
+        sent, message = b.reply(bvid, text.strip())
+        if not sent:
+            return {"ok": False, "error": message or "B 站未接受这条回复。"}
+        invalidate_cache(f"cmt:{bvid}:")
+        return {"ok": True, "result": (sent, message)}
     except Exception as e:
         return {"ok": False, "error": str(e)[:300]}
 
@@ -368,19 +378,20 @@ def _pub_log(line: str):
             PUB["pct"] = max(PUB["pct"], int(m.group(1)))
 
 
-def _run_publish(video: str, meta: dict, dry: bool):
+def _run_publish(video: str, meta: dict, dry: bool, cookie_file: str):
     try:
         ts = time.strftime("%Y%m%d-%H%M%S")
         meta_path = os.path.join(PUB_DATA, "meta-%s.json" % ts)
         with io.open(meta_path, "w", encoding="utf-8") as f:
             f.write(json.dumps(meta, ensure_ascii=False, indent=2))
-        cmd = [sys.executable, os.path.join(BILI_DIR, "publish.py"), video, meta_path]
+        cmd = [sys.executable, "-X", "utf8", os.path.join(BILI_DIR, "publish.py"), video, meta_path]
         if dry:
             cmd.append("--dry")
         _pub_log("$ " + " ".join(cmd))
         proc = subprocess.Popen(cmd, cwd=BILI_DIR, stdin=subprocess.DEVNULL,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                creationflags=0x08000000)
+                                env=dict(os.environ, RIVULET_BILI_COOKIE_FILE=os.fspath(cookie_file)),
+                                creationflags=0x08000000 if os.name == "nt" else 0)
         for raw in iter(proc.stdout.readline, b""):
             try:
                 line = raw.decode("utf-8", "replace").rstrip()
@@ -403,13 +414,11 @@ def _run_publish(video: str, meta: dict, dry: bool):
 
 
 def api_publish(body: dict) -> dict:
-    if not body.get("dry") and not CFG.get("allow_write"):
+    dry = bool(body.get("dry"))
+    if not dry and not CFG.get("allow_write"):
         return {"ok": False, "error": "请先在「B 站 Agent → 账号」打开「允许投稿和回复」。"}
-    with PUB_LOCK:
-        if PUB["running"]:
-            return {"ok": False, "error": "上一次投稿还在跑,等它结束"}
     video = str(body.get("file") or "").strip()
-    if not video or not os.path.exists(video):
+    if not video or not os.path.isfile(video):
         return {"ok": False, "error": "视频文件不存在:" + (video or "(空)")}
     title = str(body.get("title") or "").strip()
     if not title:
@@ -424,11 +433,21 @@ def api_publish(body: dict) -> dict:
         "no_reprint": int(body.get("no_reprint") or 1),
         "is_only_self": 1 if body.get("is_only_self") else 0,
     }
-    dry = bool(body.get("dry"))
+    account = bili()
+    if not account.logged_in:
+        return {"ok": False, "error": "请先扫码登录 B 站。"}
+    worker = threading.Thread(target=_run_publish, args=(video, meta, dry, account.cookie_file), daemon=True)
     with PUB_LOCK:
+        if PUB["running"]:
+            return {"ok": False, "error": "上一条视频还在上传，请稍等。"}
         PUB.update({"running": True, "pct": 0, "log": [], "ok": None, "error": "",
                     "started": now(), "file": video, "title": title, "dry": dry})
-    threading.Thread(target=_run_publish, args=(video, meta, dry), daemon=True).start()
+        try:
+            worker.start()
+        except RuntimeError:
+            message = "暂时无法启动投稿，请重试。"
+            PUB.update(running=False, ok=False, error=message)
+            return {"ok": False, "error": message}
     return {"ok": True, "dry": dry}
 
 
@@ -459,23 +478,40 @@ def api_edit(body: dict) -> dict:
         sys.path.insert(0, BILI_DIR)
         import manage as bili_manage  # noqa: E402
         b = bili()
-        res = bili_manage.edit(b, bvid, changes, dry=bool(body.get("dry")))
+        dry = bool(body.get("dry"))
+        res = bili_manage.edit(b, bvid, changes, dry=dry)
+        if not isinstance(res, dict):
+            return {"ok": False, "error": "B 站没有返回稿件修改结果。"}
+        if not dry:
+            if res.get("code") != 0:
+                return {"ok": False, "error": str(res.get("message") or "B 站未接受稿件修改。")[:400]}
+            invalidate_cache("videos:")
         return {"ok": True, "result": res}
     except Exception as e:
         return {"ok": False, "error": str(e)[:400]}
 
 
 def api_cover(path: str) -> dict:
-    """把本地封面图返回成 base64,给面板预览。"""
+    """有界读取桌面选择的图片，供投稿页预览。"""
+    limit = 6 * 1024 * 1024
     try:
-        if not path or not os.path.exists(path):
+        if not path or not os.path.isfile(path):
             return {"ok": False, "error": "图片不存在"}
-        data = open(path, "rb").read()
-        if len(data) > 6 * 1024 * 1024:
+        ext = os.path.splitext(path)[1].lower()
+        mime = {".jpg": "jpeg", ".jpeg": "jpeg", ".png": "png", ".webp": "webp", ".bmp": "bmp"}.get(ext)
+        if mime is None:
+            return {"ok": False, "error": "封面请选择 PNG、JPEG、WebP 或 BMP 图片。"}
+        with open(path, "rb") as stream:
+            data = stream.read(limit + 1)
+        if len(data) > limit:
             return {"ok": False, "error": "图片太大(>6MB)"}
-        import base64
-        ext = os.path.splitext(path)[1].lower().lstrip(".") or "png"
-        mime = {"jpg": "jpeg", "jpeg": "jpeg", "png": "png", "webp": "webp", "bmp": "bmp"}.get(ext, "png")
+        if not {
+            "jpeg": data.startswith(b"\xff\xd8\xff"),
+            "png": data.startswith(b"\x89PNG\r\n\x1a\n"),
+            "webp": data.startswith(b"RIFF") and data[8:12] == b"WEBP",
+            "bmp": data.startswith(b"BM"),
+        }[mime]:
+            return {"ok": False, "error": "封面内容与图片格式不符。"}
         return {"ok": True, "b64": base64.b64encode(data).decode(), "mime": mime}
     except Exception as e:
         return {"ok": False, "error": str(e)[:200]}
@@ -588,9 +624,10 @@ def _run_daily(count: int, auto_like: bool, auto_comment: bool, notify: bool, dr
                 pass
             if auto_like and not dry:
                 try:
-                    b.like(bvid, True)
-                    item["liked"] = True
-                    _dlog("· 点赞 %s《%s》" % (bvid, title[:24]))
+                    item["liked"], message = b.like(bvid, True)
+                    _dlog("· 点赞 %s《%s》" % (bvid, title[:24]) if item["liked"] else message)
+                    if not item["liked"]:
+                        item["error"] = message
                 except Exception as e:
                     item["error"] = "点赞失败:%s" % str(e)[:80]
                     _dlog(item["error"])
@@ -602,9 +639,10 @@ def _run_daily(count: int, auto_like: bool, auto_comment: bool, notify: bool, dr
                     item["comment"] = text
                     if not dry:
                         try:
-                            b.reply(bvid, text)
-                            item["commented"] = True
-                            _dlog("· 评论 %s:%s" % (bvid, text[:40]))
+                            item["commented"], message = b.reply(bvid, text)
+                            _dlog("· 评论 %s:%s" % (bvid, text[:40]) if item["commented"] else message)
+                            if not item["commented"]:
+                                item["error"] = message
                         except Exception as e:
                             item["error"] = "评论失败:%s" % str(e)[:80]
                             _dlog(item["error"])
@@ -638,15 +676,23 @@ def _run_daily(count: int, auto_like: bool, auto_comment: bool, notify: bool, dr
 
 
 def api_daily_watch(body: dict) -> dict:
+    try:
+        count = int(body.get("count") or 5)
+    except (TypeError, ValueError):
+        return {"ok": False, "error": "推荐条数无效。"}
+    worker = threading.Thread(target=_run_daily, args=(
+        count, bool(body.get("auto_like")), bool(body.get("auto_comment")),
+        bool(body.get("notify")), bool(body.get("dry", False))), daemon=True)
     with DAILY_LOCK:
         if DAILY["running"]:
             return {"ok": False, "error": "上一轮还在跑"}
         DAILY.update({"running": True, "log": [], "results": [], "ok": None,
                       "started": now(), "finished": ""})
-    count = int(body.get("count") or 5)
-    threading.Thread(target=_run_daily, args=(
-        count, bool(body.get("auto_like")), bool(body.get("auto_comment")),
-        bool(body.get("notify")), bool(body.get("dry", False))), daemon=True).start()
+        try:
+            worker.start()
+        except RuntimeError:
+            DAILY.update(running=False, ok=False, finished=now())
+            return {"ok": False, "error": "暂时无法启动推荐任务，请重试。"}
     return {"ok": True}
 
 
@@ -727,8 +773,10 @@ def _daily_loop():
             with DAILY_LOCK:
                 if DAILY["running"]:
                     continue
-            api_daily_watch({"count": cfg["count"], "auto_like": cfg["auto_like"],
-                             "auto_comment": cfg["auto_comment"], "notify": cfg["notify"]})
+            result = api_daily_watch({"count": cfg["count"], "auto_like": cfg["auto_like"],
+                                      "auto_comment": cfg["auto_comment"], "notify": cfg["notify"]})
+            if not result["ok"]:
+                continue
             st["count"] = int(st.get("count") or 0) + 1
             st["last_at"] = now()
             _ds_save(st)
@@ -785,7 +833,7 @@ class Handler(BaseHTTPRequestHandler):
         if u.path == "/api/publish_status":
             return self._send(200, api_publish_status())
         if u.path == "/api/cover":
-            return self._send(200, api_cover((q.get("path") or [""])[0]))
+            return self._send(200, api_cover((q.get("path") or [""])[0]), cors=False)
         if u.path == "/api/daily/config":
             return self._send(200, daily_state())
         if u.path == "/api/daily/status":

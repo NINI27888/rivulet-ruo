@@ -2498,13 +2498,15 @@ dependencies = [
 
 [[package]]
 name = "rivulet-ruo"
-version = "0.1.0"
+version = "0.10.2-preview.3"
 dependencies = [
  "serde",
  "serde_json",
+ "sha2",
  "tauri",
  "tauri-build",
  "ureq",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

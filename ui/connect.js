@@ -243,27 +243,47 @@
     return ticket === scanTicket && scanDialog.open;
   }
 
+  function canReadScan(result) {
+    if (!result || result.ok !== true) {
+      renderScan((result && result.hint) || "暂时连不上 B 站扫码服务，请重试。", "error");
+      return false;
+    }
+    if (typeof result.retry_verify !== "boolean" || !Object.prototype.hasOwnProperty.call(result, "account")) {
+      scanCanVerify = false;
+      renderScan("当前窗口连到了旧版 B 站后台，完成升级后才能扫码。", "error");
+      return false;
+    }
+    return true;
+  }
+
+  function showScanStatus(ticket, result) {
+    if (result.state === "error") {
+      scanCanVerify = result.retry_verify;
+      renderScan(result.hint || "无法完成登录，请重试。", "error");
+    } else if (result.state === "ok") {
+      var account = result.account;
+      if (!account || account.logged_in !== true) {
+        scanCanVerify = false;
+        renderScan("B 站后台未能确认账号，请重新生成二维码。", "error");
+        return;
+      }
+      renderScan("已登录 " + (account.uname || "B 站账号") + "。", "ok", "", true);
+      window.dispatchEvent(new CustomEvent("ruo:bili-connected", { detail: account }));
+      $("biliScanDone").focus();
+    } else if (["gen", "qrcode", "scanned", "verifying"].includes(result.state)) {
+      scanCanVerify = result.state === "verifying";
+      renderScan(result.hint || "正在生成二维码…", "info", result.qr_b64);
+      scanTimer = setTimeout(function () { pollScan(ticket); }, 1700);
+    } else {
+      scanCanVerify = false;
+      renderScan("扫码状态已失效，请重新生成二维码。", "error");
+    }
+  }
+
   function pollScan(ticket) {
     if (!scanActive(ticket)) return;
     app.svcGet("setup", "/api/setup/bili/status").then(function (result) {
-      if (!scanActive(ticket)) return;
-      if (result.state === "error") {
-        scanCanVerify = !!result.retry_verify;
-        renderScan(result.hint || "无法完成登录，请重试。", "error");
-      } else if (result.state === "ok") {
-        var account = result.account;
-        if (!account || !account.logged_in) {
-          renderScan("扫码服务没有返回已登录的账号，请完全退出若后再试。", "error");
-          return;
-        }
-        renderScan("已登录 " + (account.uname || "B 站账号") + "。", "ok", "", true);
-        window.dispatchEvent(new CustomEvent("ruo:bili-connected", { detail: account }));
-        $("biliScanDone").focus();
-      } else {
-        scanCanVerify = result.state === "verifying";
-        renderScan(result.hint || "正在生成二维码…", "info", result.qr_b64);
-        scanTimer = setTimeout(function () { pollScan(ticket); }, 1700);
-      }
+      if (scanActive(ticket) && canReadScan(result)) showScanStatus(ticket, result);
     }).catch(function () {
       if (scanActive(ticket)) renderScan("暂时连不上扫码服务，请重试。", "error");
     });
@@ -273,14 +293,23 @@
     clearTimeout(scanTimer);
     scanCanVerify = !!verify;
     var ticket = ++scanTicket;
-    renderScan(verify ? "正在验证 B 站账号…" : "正在生成二维码…");
-    app.svcPost("setup", verify ? "/api/setup/bili/verify" : "/api/setup/bili/gen", {}).then(function (result) {
-      if (!scanActive(ticket)) return;
-      if (result && result.ok) pollScan(ticket);
-      else {
-        scanCanVerify = !!(result && result.retry_verify);
-        renderScan((result && result.error) || "暂时无法完成扫码登录，请重试。", "error");
+    renderScan("正在连接 B 站扫码服务…");
+    app.svcGet("setup", "/api/setup/bili/status").then(function (status) {
+      if (!scanActive(ticket) || !canReadScan(status)) return;
+      if (verify === undefined && status.retry_verify) {
+        showScanStatus(ticket, status);
+        return;
       }
+      renderScan(verify ? "正在验证 B 站账号…" : "正在生成二维码…");
+      return app.svcPost("setup", verify ? "/api/setup/bili/verify" : "/api/setup/bili/gen", {}).then(function (result) {
+        if (!scanActive(ticket)) return;
+        if (result && result.ok) {
+          pollScan(ticket);
+        } else {
+          scanCanVerify = !!(result && result.retry_verify);
+          renderScan((result && result.error) || "暂时无法完成扫码登录，请重试。", "error");
+        }
+      });
     }).catch(function () {
       if (scanActive(ticket)) renderScan("暂时连不上扫码服务，请重试。", "error");
     });

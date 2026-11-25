@@ -354,6 +354,7 @@ PERSONA_DEFAULT = (
 
 
 PERSONA_API = os.environ.get("RIVULET_PERSONA") or "http://127.0.0.1:18098"
+MEMORY_API = os.environ.get("RIVULET_MEMORY")
 
 
 def persona() -> str:
@@ -380,7 +381,7 @@ def persona() -> str:
 def memory_hints(text: str, limit: int = 5) -> list[str]:
     try:
         q = urllib.parse.quote((text or "")[:40])
-        url = CFG["memory_api"].rstrip("/") + f"/api/memory/search?limit={limit}&q={q}"
+        url = (MEMORY_API or CFG["memory_api"]).rstrip("/") + f"/api/memory/search?limit={limit}&q={q}"
         with urllib.request.urlopen(url, timeout=4) as r:
             data = json.loads(r.read().decode("utf-8"))
         return [f"- {it.get('content', '')}" for it in (data.get("items") or [])][:limit]
@@ -394,7 +395,7 @@ def write_memory(text: str, chat: str, sender: str):
             "content": text[:400], "source": "qq", "kind": "fact", "occurred_at": now(),
             "context": {"chat": chat, "sender": sender, "via": "rivulet-qq-dsh"},
         }, ensure_ascii=False).encode("utf-8")
-        req = urllib.request.Request(CFG["memory_api"].rstrip("/") + "/api/memory",
+        req = urllib.request.Request((MEMORY_API or CFG["memory_api"]).rstrip("/") + "/api/memory",
                                      data=body, headers={"Content-Type": "application/json"})
         urllib.request.urlopen(req, timeout=4).read()
     except Exception:
@@ -473,8 +474,8 @@ class OneBot:
         echo = f"r{self._echo}"
         fut = self.loop.create_future()
         self._pending[echo] = fut
-        await self.ws.send(json.dumps({"action": name, "params": params or {}, "echo": echo}))
         try:
+            await self.ws.send(json.dumps({"action": name, "params": params or {}, "echo": echo}))
             return await asyncio.wait_for(fut, timeout)
         finally:
             self._pending.pop(echo, None)
@@ -503,12 +504,17 @@ class OneBot:
                 async with websockets.connect(ws_url, additional_headers=headers, **proxy_options,
                                               ping_interval=20, max_size=8 * 1024 * 1024) as ws:
                     self.ws = ws
-                    self.connected = True
                     self.error = ""
-                    print("[qq] 已连接协议端", flush=True)
                     reader = asyncio.create_task(self._reader(ws))
-                    await self._hello()
-                    await reader
+                    try:
+                        if await self._hello():
+                            await reader
+                        else:
+                            self.error = "QQ 尚未返回已确认的登录账号。"
+                            await ws.close()
+                    finally:
+                        reader.cancel()
+                        await asyncio.gather(reader, return_exceptions=True)
             except Exception as e:
                 self.error = "暂未连接到 QQ 协议端。"
                 print(f"[qq] 协议端未连接（{type(e).__name__}），3 秒后重试", flush=True)
@@ -526,21 +532,27 @@ class OneBot:
                 msg = json.loads(raw)
             except Exception:
                 continue
+            if not isinstance(msg, dict):
+                continue
             if "echo" in msg and msg["echo"] in self._pending:
                 fut = self._pending.get(msg["echo"])
                 if fut and not fut.done():
                     fut.set_result(msg)
                 continue
-            if msg.get("post_type") == "message":
+            if self.connected and msg.get("post_type") == "message":
                 asyncio.create_task(self.on_message(msg))
 
-    async def _hello(self):
-        try:
-            r = await self.action("get_login_info", {})
-            d = (r or {}).get("data") or {}
-            self.account = {"uin": str(d.get("user_id", "")), "nickname": d.get("nickname", "")}
-        except Exception:
-            pass
+    async def _hello(self) -> bool:
+        response = await self.action("get_login_info", {})
+        if not response or response.get("retcode") != 0 or response.get("status", "ok") != "ok":
+            return False
+        data = response.get("data")
+        uin = str(data.get("user_id", "")) if isinstance(data, dict) else ""
+        if not uin.isdecimal() or int(uin) == 0:
+            return False
+        self.account = {"uin": uin, "nickname": data.get("nickname", "")}
+        self.connected = True
+        print("[qq] 已验证 QQ 登录账号和 OneBot 连接", flush=True)
         try:
             r = await self.action("get_group_list", {})
             self.groups = (r or {}).get("data") or []
@@ -551,6 +563,7 @@ class OneBot:
             self.friends = (r or {}).get("data") or []
         except Exception:
             pass
+        return True
 
     async def on_message(self, msg: dict):
         mt = msg.get("message_type")
@@ -609,23 +622,36 @@ class OneBot:
                        "text": reply[:160], "decision": "error", "reason": err})
 
     async def send(self, kind: str, target: str, text: str):
+        if not self.connected:
+            return False, "QQ 账号尚未连接"
         action = "send_group_msg" if kind == "group" else "send_private_msg"
         key = "group_id" if kind == "group" else "user_id"
         try:
             r = await self.action(action, {key: int(target), "message": text})
-        except Exception as e:
-            self.last_send_error = "发送异常:%s" % str(e)[:160]
+        except Exception:
+            self.last_send_error = "未收到 QQ 协议端的发送响应"
             return False, self.last_send_error
         ret = (r or {}).get("retcode")
-        if ret not in (0, None):
+        if ret != 0 or (r or {}).get("status", "ok") != "ok":
             raw = json.dumps(r, ensure_ascii=False)[:220]
-            reason = "发送被拒 retcode=%s" % ret
+            reason = (f"QQ 拒绝发送（{ret}）" if isinstance(ret, int) and ret not in (0, 1)
+                      else "QQ 协议端没有确认发送成功")
             if "Ban state" in raw or "-10203" in raw:
                 reason = "这个 QQ 号还在封禁/限制状态,收得到但发不出去(Ban state)"
             self.last_send_error = reason
             return False, reason
         self.last_send_error = ""
         return True, ""
+
+    def send_sync(self, kind: str, target: str, text: str):
+        if not self.loop or not self.connected:
+            return False, "QQ 账号尚未连接"
+        future = asyncio.run_coroutine_threadsafe(self.send(kind, target, text), self.loop)
+        try:
+            return future.result(12)
+        except TimeoutError:
+            future.cancel()
+            return False, "等待 QQ 确认发送超时"
 
 
 OB = OneBot()
@@ -715,7 +741,7 @@ def napcat_state() -> dict:
             if OB.connected:
                 _auto_claim_owner(str(OB.account.get("uin") or ""))
             else:
-                hint = "QQ 已登录，正在连接若。如未连接成功，可点「重连 QQ」。"
+                st, hint = "connecting", OB.error or "正在核实 QQ 账号和连接。"
         b64 = base64.b64encode(image).decode("ascii")
         return {"running": running, "state": st, "hint": hint,
                 "qr": bool(b64), "qr_b64": b64, "dir": nc.d}
@@ -777,6 +803,7 @@ def stop_napcat() -> dict:
 # ================================================================ 心情 / 主动消息 / 说说
 IDLE_STATE = os.path.join(DATA, "idle_state.json")
 QZONE_STATE = os.path.join(DATA, "qzone_state.json")
+QZONE_LOCK = threading.Lock()
 
 
 def _st_load(path: str) -> dict:
@@ -894,10 +921,9 @@ def idle_fire(manual: bool = False) -> dict:
     text, err = dsh_generate(instruction, max_tokens=120)
     if err or not text:
         return {"ok": False, "error": err or "模型没返回"}
-    try:
-        OB.call("send_private_msg", {"user_id": int(owner), "message": text})
-    except Exception as e:
-        return {"ok": False, "error": str(e)[:160]}
+    sent, error = OB.send_sync("private", owner, text)
+    if not sent:
+        return {"ok": False, "error": error}
     st["last_at"] = time.time()
     st["last_at_text"] = now()
     st["today_count"] = int(st.get("today_count") or 0) + 1
@@ -910,6 +936,17 @@ def idle_fire(manual: bool = False) -> dict:
 
 def qzone_fire(manual: bool = False) -> dict:
     """发一条 QQ 空间说说。"""
+    if not OB.connected or not OB.loop:
+        return {"ok": False, "error": "请先连接 QQ"}
+    if not QZONE_LOCK.acquire(blocking=False):
+        return {"ok": False, "error": "正在发布说说，请等当前操作结束。"}
+    try:
+        return _qzone_fire(manual)
+    finally:
+        QZONE_LOCK.release()
+
+
+def _qzone_fire(manual: bool) -> dict:
     cfg = qzone_cfg()
     st = _st_load(QZONE_STATE)
     today = time.strftime("%Y-%m-%d")
@@ -924,16 +961,23 @@ def qzone_fire(manual: bool = False) -> dict:
             return {"ok": False, "error": "不在发说说的时段"}
         if int(st.get("count") or 0) >= cfg["per_day"]:
             return {"ok": False, "error": "今天已经发过了"}
+        if time.time() < float(st.get("last_attempt_ts") or st.get("last_ts") or 0) + cfg["min_gap_min"] * 60:
+            return {"ok": False, "error": "还没到说说发布间隔"}
     instruction = ("写一条 QQ 空间说说,发给你自己看也给别人看:一到两句,口语,别用表情符号堆砌,"
                    "写你此刻的心情或者今天在温室里做的一件小事,不要提「AI」「模型」「系统」。")
     text, err = dsh_generate(instruction, max_tokens=120)
     if err or not text:
         return {"ok": False, "error": err or "模型没返回"}
+    st["last_attempt_ts"] = time.time()
+    _st_save(QZONE_STATE, st)
+    future = asyncio.run_coroutine_threadsafe(qzone.publish(text, OB.action), OB.loop)
     try:
-        loop = OB.loop or asyncio.new_event_loop()
-        ok, msg = asyncio.run_coroutine_threadsafe(qzone.publish(text), loop).result(40)
-    except Exception as e:
-        return {"ok": False, "error": "发说说失败:%s" % str(e)[:160], "text": text}
+        ok, msg = future.result(40)
+    except TimeoutError:
+        future.cancel()
+        return {"ok": False, "error": "等待发布确认超时，请先在 QQ 空间查看。", "text": text}
+    except Exception:
+        return {"ok": False, "error": "暂时无法发布说说，请检查 QQ 连接。", "text": text}
     if ok:
         st["count"] = int(st.get("count") or 0) + 1
         st["last_at"] = now()
@@ -1122,7 +1166,7 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/model/use-workspace":
                 return self._send(200, use_workspace_model())
             if u.path == "/api/napcat/start":
-                return self._send(200, start_napcat())
+                return self._send(200, start_napcat(force_qr=True))
             if u.path == "/api/napcat/stop":
                 return self._send(200, stop_napcat())
             if u.path == "/api/napcat/restart":
@@ -1167,14 +1211,14 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/test_send":
                 chat = str(body.get("chat") or "").strip()
                 text = str(body.get("text") or "").strip()
-                if not chat or not text:
-                    return self._send(422, {"ok": False, "error": "chat / text 都要有"})
+                kind, _, target = chat.partition(":")
+                if kind not in ("private", "group") or not target.isdecimal() or not text:
+                    return self._send(422, {"ok": False, "error": "请填写有效的 QQ 会话和消息"})
                 if not OB.connected:
                     return self._send(503, {"ok": False, "error": "协议端还没连上"})
-                kind = "group" if chat.startswith("group:") else "private"
-                target = chat.split(":", 1)[1]
-                OB.call("send_group_msg" if kind == "group" else "send_private_msg",
-                        ({"group_id": int(target)} if kind == "group" else {"user_id": int(target)}) | {"message": text})
+                sent, error = OB.send_sync(kind, target, text)
+                if not sent:
+                    return self._send(502, {"ok": False, "error": error})
                 AUDIT.add({"time": now(), "chat": chat, "sender": "panel", "sender_name": "面板测试",
                            "text": text[:300], "decision": "reply", "reason": "面板测试发送"})
                 return self._send(200, {"ok": True})

@@ -319,10 +319,22 @@
       state.nodes = (r[1] && r[1].nodes) || [];
       state.cmds = (r[2] && r[2].commands) || [];
       state.stats = r[3] || null;
-      state.overview = (r[4] && !r[4].__err) ? r[4] : null;
+      var overview = (r[4] && !r[4].__err) ? r[4] : {};
+      var localModules = [
+        { name: "core", label: "本机账号", ok: !!(r[0] && r[0].user) },
+        { name: "memory", label: "记忆树", ok: !!(r[6] && r[6].ok) },
+        { name: "workspace", label: "工作区", ok: !!(r[11] && r[11].ok) },
+        { name: "home", label: "鱼的小窝", ok: !!(r[5] && r[5].ok !== false) }
+      ];
+      var extras = Array.isArray(overview.modules) ? overview.modules : [];
+      state.overview = Object.assign({}, overview, {
+        modules: localModules.concat(extras.filter(function (item) {
+          return !localModules.some(function (local) { return local.name === item.name; });
+        }))
+      });
       state.overviewErr = (r[4] && r[4].__err) || "";
       state.homeLocal = (r[5] && r[5].ok !== false) ? r[5] : null;
-      if (r[6] && !r[6].__err) applyMemory(r[6].items || [], false);
+      if (r[6] && r[6].ok) applyMemory(r[6].items || [], false);
       else if (r[6] && r[6].__err) memFailed(r[6].__err);
       state.qq = (r[7] && !r[7].__err) ? r[7] : null;
       state.qqErr = (r[7] && r[7].__err) || "";
@@ -339,6 +351,7 @@
       if (state.view === "qq") renderQqStatus();
       if (state.view === "mood") renderMoodPage();
       if (state.view === "bili") renderBiliStatus();
+      if (state.view === "workspace") renderWsPanel();
     });
   }
   $("btnRefresh").addEventListener("click", loadAll);
@@ -543,7 +556,7 @@
     var pend = (state.cmds || []).filter(function (c) { return c.status === "pending"; })[0];
     $("tTask").textContent = pend ? ("#" + pend.id + " " + pend.kind) : "空闲";
     var core = moduleOf("core");
-    $("tCore").textContent = core ? (core.ok ? "在线 " + (core.latency_ms || 0) + " ms" : "离线") : "—";
+    $("tCore").textContent = core ? (core.ok ? "在线" : "离线") : "—";
     $("tNodes").textContent = nodes.length ? (online + " / " + nodes.length + " 台在线") : "还没有节点";
     $("tRun").textContent = "命令 " + total + " 条 · 待执行 " + pending;
   }
@@ -591,10 +604,12 @@
       } else if (q.k === "qq") {
         // QQ / B站 走本地功能服务,状态直接看服务,不看状态聚合器
         var qq = state.qq;
-        if (qq && qq.ws && qq.ws.connected) {
+        if (qqConnected(qq)) {
           st = "在线 · " + ((qq.account && qq.account.nickname) || "") + " · 群 " + (qq.groups || 0);
           cls = "ok";
-        } else if (qq && qq.napcat && qq.napcat.running) { st = "协议端已启动,等待登录"; cls = "warn"; }
+        } else if (qqConnecting(qq)) { st = "正在确认账号"; cls = "warn"; }
+        else if (qq && qq.napcat && qq.napcat.state === "error") { st = "登录组件需要处理"; cls = "bad"; }
+        else if (qq && qq.napcat && qq.napcat.running) { st = "协议端已启动，等待登录"; cls = "warn"; }
         else { st = "未连接"; cls = "off"; }
       } else if (q.k === "bili") {
         var bl = state.bili;
@@ -602,7 +617,7 @@
         else { st = bl ? "未登录" : "服务未启动"; cls = "off"; }
       } else {
         var m = q.mod ? moduleOf(q.mod) : null;
-        if (q.mod) { st = m ? (m.ok ? "在线 · " + (m.latency_ms || 0) + "ms" : "离线") : "未接入";
+        if (q.mod) { st = m ? (m.ok ? "在线" : "离线") : "状态暂不可读";
           cls = m ? (m.ok ? "ok" : "bad") : "off"; }
         else { st = "未接入"; cls = "off"; }
       }
@@ -651,7 +666,7 @@
     } else if (!m.ok) {
       html += '<p class="bad">离线</p><p class="muted">本地服务没响应;起服务后点「刷新」。</p>';
     } else {
-      html += '<p class="ok">在线 · ' + (m.latency_ms || 0) + " ms</p>";
+      html += '<p class="ok">在线</p>';
       var ov = state.overview || {};
       if (k === "memory" && ov.memory) {
         html += '<p class="mono" style="margin:6px 0">共 ' + ov.memory.total + " 条</p>";
@@ -1338,6 +1353,16 @@
   var QQ = { recent: [], target: "", timer: null, sending: false };
   var BILI = { videos: [], sel: "", comments: [], loading: false };
 
+  function qqConnected(status) {
+    return !!(status && status.ws && status.ws.connected && status.account && status.account.uin);
+  }
+
+  function qqConnecting(status) {
+    var napcat = status && status.napcat;
+    return !!(napcat && napcat.running && (napcat.state === "connecting" || napcat.state === "ok") &&
+      !qqConnected(status));
+  }
+
   function svcGet(service, path) { return call("svc_get", { service: service, path: path }); }
   function svcPost(service, path, body) {
     return call("svc_post", { service: service, path: path, body: body || {} });
@@ -1348,20 +1373,22 @@
     var q = state.qq, b = state.bili;
     var qDot = $("lrQqDot"), qTxt = $("lrQqTxt"), bDot = $("lrBiliDot"), bTxt = $("lrBiliTxt");
     if (qDot) {
-      var qOn = !!(q && q.ws && q.ws.connected);
-      var qPort = !!(q && q.napcat && q.napcat.running);
+      var qOn = qqConnected(q);
+      var np = q && q.napcat || {};
+      var qPort = !!np.running;
       qDot.className = "svcDot" + (qOn ? " on" : (qPort ? " warn" : (q ? " bad" : "")));
       if (qTxt) qTxt.textContent = qOn
         ? ((q.account && q.account.nickname) || "在线")
-        : (qPort ? "等扫码" : (state.qqErr ? "服务未启动" : "未连接"));
+        : (qqConnecting(q) ? "确认账号" : (np.state === "error" ? "需处理" :
+          (qPort ? "等扫码" : (state.qqErr ? "服务未启动" : "未连接"))));
     }
     var pTxt = $("lrPersonaTxt"), wTxt = $("lrWsTxt");
     var pDot = $("lrPersonaDot"), wDot = $("lrWsDot");
-    if (pTxt) pTxt.textContent = (state.persona && state.persona.name) || "—";
-    if (pDot) pDot.className = "svcDot on";
+    if (pTxt) pTxt.textContent = state.persona ? (state.persona.name || "已启用") : "暂不可用";
+    if (pDot) pDot.className = state.persona ? "svcDot on" : "svcDot bad";
     var wsOn = !!(state.ws && state.ws.enabled);
-    if (wTxt) wTxt.textContent = wsOn ? (state.ws.model || "已接模型") : "未接模型";
-    if (wDot) wDot.className = "svcDot" + (wsOn ? " on" : " warn");
+    if (wTxt) wTxt.textContent = wsOn ? (state.ws.model || "已接模型") : (state.ws ? "未接模型" : "暂不可用");
+    if (wDot) wDot.className = "svcDot" + (wsOn ? " on" : (state.ws ? " warn" : " bad"));
     var chipP = $("homePersona");
     if (chipP) chipP.textContent = "人格 " + ((state.persona && state.persona.name) || "—");
     if (bDot) {
@@ -1424,10 +1451,10 @@
     if (scope) {
       scope.innerHTML = '<div class="svcKv"><span class="k">QQ</span><span class="v">说话影响心情;回复语气跟着变</span></div>' +
         '<div class="svcKv"><span class="k">B站</span><span class="v">刷推荐/写评论时带当前心情</span></div>' +
-        '<div class="svcKv"><span class="k">工作区</span><span class="v">对话同样读这份心情</span></div>';
+        '<div class="svcKv"><span class="k">工作区</span><span class="v">文字对话使用工作区人格设定</span></div>';
     }
     var sub = $("moodSub");
-    if (sub) sub.textContent = "全局一份 —— QQ / B站 / 工作区共用同一份心情 · 更新 " + (m.ts ? "" : "");
+    if (sub) sub.textContent = "QQ 回复和 B 站推荐评论使用这份心情。";
   }
   (function bindMood() {
     var r = $("moodRefresh");
@@ -1717,9 +1744,9 @@
   function renderQqStatus() {
     var q = state.qq;
     var np = q && q.napcat || {};
-    var on = !!(q && q.ws && q.ws.connected);
+    var on = qqConnected(q);
     var account = q && q.account || {};
-    var connecting = !!(np.running && np.state === "ok" && !on);
+    var connecting = qqConnecting(q);
     $("qqDot").className = "svcDot big " + (on ? "on" : (np.running ? "warn" : "bad"));
     if ($("qqName")) $("qqName").textContent = on && account.nickname ? account.nickname : "QQ 机器人";
     var login = $("qqStart"), restart = $("qqRestart");
@@ -1737,7 +1764,7 @@
     else if (QQ.loginError) loginText = QQ.loginError;
     else if (!q) loginText = "暂时连不上 QQ 服务，请稍后刷新或重新打开若。";
     else if (on) loginText = "已登录 " + (account.nickname || "QQ") + "。";
-    else if (connecting) loginText = np.hint || "QQ 已登录，正在连接若。";
+    else if (connecting) loginText = (np.state === "connecting" && np.hint) || "正在核实 QQ 账号和连接。";
     else if (np.state === "qrcode" && np.qr_b64) loginText = "在右侧扫码，然后在手机上确认登录。";
     else if (np.state === "scanned") loginText = "已扫码，请在手机上确认。";
     else if (np.state === "error") loginText = "QQ 登录失败，请查看右侧提示并重试。";
@@ -1766,10 +1793,11 @@
     var st = q.stats || {};
     var acc = q.account || {};
     var wl = q.whitelist || {};
+    var connected = qqConnected(q);
     var rows = [
-      ["机器人", acc.nickname ? (acc.nickname + " · " + acc.uin) : "—"],
-      ["QQ 连接", (q.ws && q.ws.connected) ? "在线" : "离线"],
-      ["扫码登录", (q.ws && q.ws.connected) ? "已确认" : "未完成"],
+      ["机器人", connected ? ((acc.nickname || "QQ") + " · " + acc.uin) : "—"],
+      ["QQ 连接", connected ? "在线" : "离线"],
+      ["登录账号", connected ? "已确认" : "未确认"],
       ["群 / 好友", (q.groups || 0) + " / " + (q.friends || 0)],
       ["回复模型", q.model_ready ? (q.model || "已配置") : "未配置"],
       ["放行 / 拦截 / 回复", (st.allowed || 0) + " / " + (st.blocked || 0) + " / " + (st.replied || 0)],
@@ -1784,10 +1812,9 @@
     // 扫码 / 协议端提示
     var np = q.napcat || {};
     var qr = "";
-    var connected = !!(q.ws && q.ws.connected);
     if (!connected && np.state === "qrcode" && np.qr_b64) {
       qr = '<div class="qrBox"><div class="qrT">手机 QQ 扫码登录</div>' +
-        '<img alt="QQ 登录二维码" src="data:image/png;base64,' + np.qr_b64 + '">' +
+        '<img alt="QQ 登录二维码" src="data:image/png;base64,' + esc(np.qr_b64) + '">' +
         '<div class="qrHint">' + "打开手机 QQ 扫一扫，随后在手机上确认。</div></div>";
     } else if (!connected && np.state === "scanned") {
       qr = '<div class="qrBox"><div class="qrT">已扫码</div><div class="qrHint">' +
@@ -1989,8 +2016,9 @@
     QQ.loginError = "";
     renderQqStatus();
     var q = state.qq || {}, np = q.napcat || {};
-    var reconnect = restart && np.state === "ok" && !(q.ws && q.ws.connected);
-    var retry = restart || (np.running && (np.state === "error" || np.state === "ok"));
+    var connecting = qqConnecting(q);
+    var reconnect = restart && connecting;
+    var retry = restart || (np.running && (np.state === "error" || connecting));
     var path = retry ? "/api/napcat/restart" : "/api/napcat/start";
     svcPost("qq", path, retry ? { rescan: !reconnect } : {}).then(function (result) {
       if (!result || !result.ok) {
@@ -2678,7 +2706,7 @@
       cn.textContent = cur && cur.title ? cur.title : "新对话";
     }
     // 运行状态
-    var ov = WS.ov || {}, mods = ov.modules || [];
+    var ov = state.overview || WS.ov || {}, mods = ov.modules || [];
     var coreOk = true, online = 0;
     mods.forEach(function (m) {
       if (m.ok) online++;
@@ -2857,18 +2885,18 @@
       $(id).addEventListener("click", function () { window.RuoConnect.openModel("workspace"); });
     });
     var qlogs = $("wsQLogs"); if (qlogs) qlogs.addEventListener("click", function () { switchView("cmds"); });
-    var tAttach = $("wsTAttach"); if (tAttach) tAttach.addEventListener("click", function () {
-      call("pick_file", { kind: "any" }).then(function (p) { if (p) { var inp = $("wsInput"); if (inp) { inp.value = "文件：" + p; inp.focus(); } } }).catch(function () {});
-    });
-    var tImage = $("wsTImage"); if (tImage) tImage.addEventListener("click", function () {
-      call("pick_file", { kind: "image" }).then(function (p) { if (p) { var inp = $("wsInput"); if (inp) { inp.value = "图片：" + p; inp.focus(); } } }).catch(function () {});
+    ["wsTAttach", "wsTImage"].forEach(function (id) {
+      var button = $(id);
+      if (button) button.addEventListener("click", function () {
+        toast("工作区目前支持文字对话，暂不能读取附件或图片。");
+      });
     });
     var tCode = $("wsTCode"); if (tCode) tCode.addEventListener("click", function () {
       var inp = $("wsInput"); if (!inp) return;
       inp.value = (inp.value ? inp.value + "\n" : "") + "```\n\n```";
       inp.focus(); inp.setSelectionRange(inp.value.length - 4, inp.value.length - 4);
     });
-    var tWeb = $("wsTWeb"); if (tWeb) tWeb.addEventListener("click", function () { toast("联网检索会在对话里按需触发"); });
+    var tWeb = $("wsTWeb"); if (tWeb) tWeb.addEventListener("click", function () { toast("当前版本暂不支持联网检索。"); });
     var msgs = $("wsMsgs");
     if (msgs) msgs.addEventListener("click", function (e) {
       var b = e.target.closest ? e.target.closest("button[data-suggest]") : null;

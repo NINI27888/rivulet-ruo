@@ -66,6 +66,11 @@ def _load_meta(path):
         return json.load(f)
 
 
+def _account():
+    cookie_file = os.environ.get("RIVULET_BILI_COOKIE_FILE")
+    return Bili(cookie_file) if cookie_file else Bili()
+
+
 def main(argv):
     args = [a for a in argv if not a.startswith("--")]
     dry = "--dry" in argv
@@ -86,7 +91,7 @@ def main(argv):
             return 2
         key, meta_path = args[0], args[1]
         rec = uploads.find(key)
-        b = Bili()
+        b = _account()
         if not b.logged_in:
             print("没登录,先跑 qr_login.py")
             return 2
@@ -128,7 +133,7 @@ def main(argv):
         print("meta 里没有 title")
         return 2
 
-    b = Bili()
+    b = _account()
     if not b.logged_in:
         print("没登录,先跑 qr_login.py")
         return 2

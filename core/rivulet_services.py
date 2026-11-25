@@ -57,6 +57,8 @@ def _env() -> dict:
 
 def ensure() -> int:
     """把没起来的服务拉起来,返回本次启动的个数。"""
+    if os.environ.get("RIVULET_DESKTOP_MANAGED") == "1":
+        return 0
     if not os.path.isdir(SERVICES):
         return 0
     started = 0

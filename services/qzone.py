@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
-r"""发 QQ 空间说说:借 NapCat 的 get_cookies 拿登录态,走空间网页版发布接口。
-
-用法(在 bot 里):
-    import qzone
-    ok, msg = await qzone.publish("今天也很忙")
-"""
+r"""通过已连接的 OneBot 会话发布 QQ 空间说说。"""
+import asyncio
 import json
-import time
+import urllib.error
+import urllib.parse
+import urllib.request
 
-import httpx
-import websockets
+from workspace.provider_llm import NoRedirect
 
-WS = "ws://127.0.0.1:3001"
+OPENER = urllib.request.build_opener(NoRedirect())
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 
@@ -35,37 +32,25 @@ def _parse(c):
     return d
 
 
-async def _call(action, params, echo, timeout=15):
-    async with websockets.connect(WS, max_size=8 * 1024 * 1024) as ws:
-        await ws.send(json.dumps({"action": action, "params": params, "echo": echo},
-                                 ensure_ascii=False))
-        end = time.time() + timeout
-        while time.time() < end:
-            try:
-                raw = await ws.recv()
-            except Exception:
-                return {}
-            try:
-                d = json.loads(raw)
-            except Exception:
-                continue
-            if d.get("echo") == echo:
-                return d
-    return {}
-
-
-async def _session():
-    r = await _call("get_cookies", {"domain": "qzone.qq.com"}, "qz-ck")
-    data = r.get("data")
+async def _session(onebot_action):
+    result = await onebot_action("get_cookies", {"domain": "qzone.qq.com"})
+    data = result.get("data") if result and result.get("retcode") == 0 else None
     ck = _parse(data.get("cookies") if isinstance(data, dict) else data)
     key = ck.get("p_skey") or ck.get("skey") or ""
     uin = (ck.get("uin") or ck.get("p_uin") or "").lstrip("o")
-    if not key or not uin:
-        raise RuntimeError("拿不到空间登录态(p_skey/uin 为空)")
+    if not key or not uin.isdecimal():
+        raise RuntimeError("QQ 空间登录状态不可用")
     return ck, uin, _bkn(key)
 
 
-async def publish(text):
+def _request_body(url, form, headers):
+    data = urllib.parse.urlencode(form).encode("ascii")
+    request = urllib.request.Request(url, data=data, headers=headers)
+    with OPENER.open(request, timeout=25) as response:
+        return response.read(128 * 1024).decode("utf-8", "replace").strip()
+
+
+async def publish(text, onebot_action):
     """发一条说说,返回 (成功?, 说明)。"""
     text = (text or "").strip()
     if not text:
@@ -73,9 +58,9 @@ async def publish(text):
     if len(text) > 900:
         text = text[:900]
     try:
-        ck, uin, gtk = await _session()
-    except Exception as e:
-        return False, "登录态失败: %r" % (e,)
+        ck, uin, gtk = await _session(onebot_action)
+    except (RuntimeError, OSError, ValueError, TypeError):
+        return False, "暂时无法确认 QQ 空间登录，请重连 QQ 后重试。"
     cookie_hdr = "; ".join("%s=%s" % (k, v) for k, v in ck.items())
     url = ("https://user.qzone.qq.com/proxy/domain/taotao.qzone.qq.com/"
            "cgi-bin/emotion_cgi_publish_v6?g_tk=%d" % gtk)
@@ -93,11 +78,11 @@ async def publish(text):
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
     }
     try:
-        async with httpx.AsyncClient(timeout=25, follow_redirects=True) as cli:
-            resp = await cli.post(url, data=form, headers=headers)
-    except Exception as e:
-        return False, "请求失败: %r" % (e,)
-    body = (resp.text or "").strip()
+        body = await asyncio.to_thread(_request_body, url, form, headers)
+    except urllib.error.HTTPError as error:
+        return False, f"QQ 空间接口暂时不可用（HTTP {error.code}）。"
+    except (OSError, ValueError):
+        return False, "无法确认 QQ 空间是否发布，请先在空间查看。"
     # 返回是 JSONP:frameElement.callback({...})
     payload = body
     i, j = payload.find("{"), payload.rfind("}")
@@ -105,18 +90,12 @@ async def publish(text):
         payload = payload[i:j + 1]
     try:
         d = json.loads(payload)
-    except Exception:
-        # 10-26 23:32:真发出去了,但返回的 JSONP 有时不是合法 JSON(带控制字符),
-        # json.loads 挂掉会被当成失败,下一次到点又发一遍。里面有 createTime/tid 就算成。
-        if '"createTime"' in body or '"tid"' in body:
-            return True, "发出去了(返回不是合法 JSON,但里面有 createTime/tid)"
-        try:  # 10-27 晚:留下来看原文,别再瞎猜
-            Path(r"D:\qqbot\qzone_last_error.txt").write_text(body[:4000], encoding="utf-8", errors="replace")
-        except Exception:
-            pass
-        return False, "返回不是 json(%d 字节): %s" % (len(body), body[:200])
-    if d.get("createTime") or d.get("tid") or d.get("feedid"):
-        return True, "发出去了 feedid=%s" % (d.get("tid") or d.get("feedid") or "?")
-    if d.get("code") == 0:
-        return True, "发出了(接口 code=0)"
-    return False, "接口拒绝: %s" % json.dumps(d, ensure_ascii=False)[:300]
+    except ValueError:
+        return False, "QQ 空间没有确认发布结果，请先在空间查看。"
+    if isinstance(d, dict):
+        code = d.get("code")
+        if code == 0 or (code is None and (d.get("createTime") or d.get("tid") or d.get("feedid"))):
+            return True, "说说已发布。"
+        if isinstance(code, int):
+            return False, f"QQ 空间拒绝发布（{code}）。"
+    return False, "QQ 空间没有确认发布结果，请先在空间查看。"
