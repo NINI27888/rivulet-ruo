@@ -10,20 +10,20 @@
     面板只做管理台(状态/白名单/配置/审计/启停),不做聊天窗口。
 
 跑法:
-    set PYTHONPATH=<依赖目录>
+    set PYTHONPATH=D:\\qqbot\\libs
     python qq_service.py          # 127.0.0.1:18096
 
 HTTP:
     GET  /api/status
     GET  /api/whitelist
-    POST /api/whitelist/add      {kind:"user"|"group", id:"2801046701", note:"主人"}
+    POST /api/whitelist/add      {kind:"user"|"group", id:"<你的QQ>", note:"主人"}
     POST /api/whitelist/remove   {kind, id}
     POST /api/whitelist/enabled  {on:true|false}
     GET  /api/audit?limit=100
     GET  /api/config
     POST /api/config             {ws_url, account, model, api_key, group_at_only, reply_enabled}
     POST /api/napcat/start | /api/napcat/stop | /api/reload
-    POST /api/test_send          {chat:"private:2801046701", text:"..."}
+    POST /api/test_send          {chat:"private:<你的QQ>", text:"..."}
 """
 from __future__ import annotations
 
@@ -88,8 +88,8 @@ CHAT_LOG = os.path.join(DATA, "qq_chat.jsonl")
 DEFAULT_CFG = {
     "ws_url": "ws://127.0.0.1:3001",
     "ws_token": "",
-    "account": "3877202138",
-    "owner": "2801046701",
+    "account": "",
+    "owner": "",
     "napcat_dir": os.environ.get("RIVULET_NAPCAT_DIR", "napcat"),
     "napcat_launcher": os.environ.get("RIVULET_NAPCAT_LAUNCHER", "napcat/launcher.bat"),
     "napcat_headless_dir": os.environ.get("RIVULET_NAPCAT_HEADLESS", "fatfish/NapCat"),

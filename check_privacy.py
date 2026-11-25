@@ -25,7 +25,15 @@ BAD_CONTENT = [
     ("绝对路径_C盘用户", re.compile(re.escape(_C) + "|(?:C:/)Users/")),
     ("OpenAI风格真实密钥", re.compile("sk-" + "[A-Za-z0-9]{20,}")),
     ("硬编码长密钥串", re.compile(r'"(api_key|token|secret|password)"\s*:\s*"[A-Za-z0-9_\-]{24,}"', re.I)),
+    # QQ号 / 手机号:只认 9-11 位(真实号段),样式文件跳过(颜色/尺寸会误报)
+    ("疑似QQ号或手机号", re.compile(r'(?<![\w.\-#])[1-9]\d{8,10}(?![\w.\-])')),
 ]
+
+# 号码规则只对这些后缀生效;CSS/SVG 里的数字是尺寸和颜色
+NUM_RULE = "疑似QQ号或手机号"
+NUM_EXT = {".py", ".js", ".json", ".md", ".html", ".txt", ".toml", ".sql", ".yml", ".yaml"}
+# 已知的算法常量,不是号码
+NUM_ALLOW = {"2166136261", "16777619", "4294967295", "2147483647", "100000000"}
 
 TEXT_EXT = {".py", ".js", ".rs", ".json", ".md", ".html", ".css", ".toml", ".sql", ".txt", ".yml", ".yaml"}
 
@@ -48,7 +56,10 @@ def main():
             except Exception:
                 continue
             for label, pat in BAD_CONTENT:
-                if pat.search(txt):
+                if label == NUM_RULE and os.path.splitext(fn)[1].lower() not in NUM_EXT:
+                    continue
+                m = pat.search(txt)
+                if m and not (label == NUM_RULE and m.group(0) in NUM_ALLOW):
                     problems.append((rel, label))
 
     print(f"扫描文本文件 {scanned} 个")

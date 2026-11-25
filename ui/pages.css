@@ -2890,6 +2890,7 @@ html[data-theme="dark"] .moodBrief{background:rgba(255,255,255,.05); border-colo
 /* ---------------------------------------------------------------- 新用户首启引导条 */
 .setupGuideBar{
   display:flex; align-items:center; gap:12px; margin:0 0 14px;
+  flex:0 0 auto;  /* 别被 flex 容器压缩 */
   padding:12px 18px; border-radius:14px;
   background:linear-gradient(135deg,rgba(235,240,255,.96),rgba(244,235,252,.94));
   border:1px solid rgba(140,160,235,.55);

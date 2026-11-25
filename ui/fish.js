@@ -7,7 +7,9 @@
 
   var W = 860, H = 720;
   var COLS = 12, ROWS = 8;
-  var POLL_MS = 250, MAX_DT = 0.1;
+  // 250ms 会每秒序列化 4 次完整场景(家具/角色/事件),低配机器明显发卡。
+  // 500ms 视觉上一样顺,CPU 减半。
+  var POLL_MS = 500, MAX_DT = 0.1;
 
   var CROPS = {
     tomato: ['番茄', '#D95F4E'], bokchoy: ['小白菜', '#7FB069'], carrot: ['胡萝卜', '#E2914A'],

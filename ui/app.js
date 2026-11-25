@@ -156,17 +156,20 @@
     try { localStorage.setItem(SETUP_GUIDE_KEY, "1"); } catch (e) { }
   }
   function showSetupGuide() {
-    // 顶部一条轻引导条,说明「先做完这三步再用」,可关闭(关闭=跳过,不再强制)
+    // 注意:绝对不能插进 #appView —— 它是 grid(侧栏 + 内容区),
+    // 多一个子元素会把内容区挤成侧栏宽度,整个布局崩掉。
+    // 只能插到 #p-setup 这个页面内部(flex column),作为页面顶部的一条。
     var bar = $("setupGuideBar");
     if (!bar) {
+      var host = $("p-setup");
+      if (!host) return;
       bar = document.createElement("div");
       bar.id = "setupGuideBar";
       bar.className = "setupGuideBar";
       bar.innerHTML = '<span class="setupGuideIcon">✦</span>' +
         '<span class="setupGuideText"><b>第一次使用,先做三步</b> —— 扫码 / 填模型 Key,完成后就能正常用若了。</span>' +
         '<button type="button" id="setupGuideSkip" class="setupGuideSkip">跳过引导</button>';
-      var host = document.querySelector(".appMain") || document.getElementById("appView");
-      if (host) host.insertBefore(bar, host.firstChild);
+      host.insertBefore(bar, host.firstChild);
       var sk = document.getElementById("setupGuideSkip");
       if (sk) sk.addEventListener("click", function () { markGuideDone(); bar.remove(); });
     }

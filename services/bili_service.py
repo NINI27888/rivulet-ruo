@@ -408,7 +408,7 @@ def _notify_owner(text: str) -> bool:
     """把「这条看点在哪」发给主人(白名单里的 QQ)。"""
     try:
         r = _post(QQ_API.rstrip("/") + "/api/test_send",
-                  {"chat": "private:" + str(CFG.get("owner") or os.environ.get("RIVULET_OWNER") or "2801046701"),
+                  {"chat": "private:" + str(CFG.get("owner") or os.environ.get("RIVULET_OWNER") or ""),
                    "text": text}, 15)
         return bool(r.get("ok"))
     except Exception as e:
