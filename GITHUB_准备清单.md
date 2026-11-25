@@ -131,3 +131,29 @@ github-release/
 **实测**：空目录放置单文件 exe → 运行 → 自动解出 1035 个 runtime 文件（40 MB），
 `data/home.json` 生成，`ensure_services` 被执行；用解压出的 runtime 启动 core
 → 9 张表 / 0 用户，自动拉起 5 个服务，全部正常。
+
+---
+
+## 十、单文件版的升级机制（重要,每次发版都依赖它）
+
+`ensure_bundle()` 的规则:
+
+1. **版本戳** = 内嵌 bundle 的字节长度,解压成功后写入 `.bundle-stamp`
+2. **关键文件校验** —— 每次启动都查这 8 个文件是否都在:
+   `runtime/python.exe`、`runtime/Lib/site-packages/segno/__init__.py`、
+   `core/main.py`、`services/qq_service.py`、`services/setup_service.py`、
+   `fatfish/NapCat/node.exe`、`fatfish/NapCat/index.js`、`fatfish/bili/qr_login.py`
+3. **需要解压的条件**: 戳不一致 **或** 任一关键文件缺失
+4. **解压前清理**: 清空 `runtime/`、`core/`、`services/`、`fatfish/` 下的所有内容,
+   **但保留每一层里的 `data` 目录**(账号库、聊天记录、记忆、登录态都在里面)
+5. **校验通过才写戳**,失败不写,下次启动自动重试
+
+这条机制保证:以后每发一版,老用户覆盖 exe 后会自动换成全新的运行时,
+不会出现"旧文件残留导致新功能缺失"。
+
+**诊断**: 程序目录下的 `startup.log` 记录每次启动的解压过程
+(版本号、bundle 大小、是否解压、清理了什么、tar 是否成功、缺哪些文件)。
+用户报"QQ 用不了 / B站 出不了码"时,先要这个文件。
+
+**已知前提**: 升级时程序不能正在运行,否则文件被占用删不掉。
+删不掉的项会写进 `startup.log`。
