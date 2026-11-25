@@ -2927,3 +2927,15 @@ html[data-theme="dark"] .setupGuideSkip{background:rgba(60,56,100,.9);color:#C9C
   animation:none;
 }
 .toast.on{opacity:1; transform:none}
+
+/* ---------------------------------------------------------------- 窗口控制
+   decorations=false,系统按钮不存在,这三个是唯一能关窗的入口 */
+.winCtl{display:flex;align-items:center;gap:2px;margin-left:6px;flex:none}
+.winBtn{
+  width:30px;height:26px;display:grid;place-items:center;
+  border:0;border-radius:8px;background:transparent;color:var(--muted);
+  cursor:pointer;transition:background .15s,color .15s;
+}
+.winBtn svg{width:12px;height:12px;display:block}
+.winBtn:hover{background:var(--wash-2, rgba(140,150,200,.14));color:var(--ink)}
+.winBtnClose:hover{background:#e5484d;color:#fff}

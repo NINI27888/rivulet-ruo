@@ -627,6 +627,26 @@ def start_napcat() -> dict:
         return {"ok": False, "error": str(e)}
 
 
+
+def restart_napcat() -> dict:
+    """重新扫码:停掉协议端、删掉旧二维码、再起一次。
+    用于「登录失败 / 账号存在安全风险 / 二维码过期」之后重新来一遍。
+    注意:QQ 判定安全风险时,需要在手机 QQ 上完成验证,这里只能让它重新出码。"""
+    nc = _nc()
+    try:
+        nc.stop()
+    except Exception:
+        pass
+    # 删旧二维码,否则前端还是显示上一张
+    try:
+        qr = os.path.join(nc.d, "napcat", "cache", "qrcode.png")
+        if os.path.exists(qr):
+            os.remove(qr)
+    except Exception:
+        pass
+    time.sleep(1)
+    return start_napcat()
+
 def stop_napcat() -> dict:
     try:
         _nc().stop()
@@ -996,6 +1016,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, start_napcat())
             if u.path == "/api/napcat/stop":
                 return self._send(200, stop_napcat())
+            if u.path == "/api/napcat/restart":
+                return self._send(200, restart_napcat())
             if u.path == "/api/idle/trigger":
                 return self._send(200, idle_fire(manual=True))
             if u.path == "/api/idle/config":

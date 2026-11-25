@@ -182,14 +182,21 @@ def _bili_worker():
         b64 = base64.b64encode(open(png, "rb").read()).decode()
         with LOCK:
             BILI.update(state="qrcode", hint="用手机 B站 扫这个码", qr_b64=b64, at=time.strftime("%H:%M:%S"))
-        # 轮询登录结果(最多 150 秒)
-        for _ in range(75):
-            time.sleep(2)
-            rr = subprocess.run([sys.executable, os.path.join(FATFISH_BILI, "qr_login.py"), "poll"],
-                                cwd=FATFISH_BILI, capture_output=True, text=True,
-                                timeout=60, env=env, creationflags=0x08000000)
+        # 轮询登录结果。
+        # 注意:poll 默认要跑 180 秒,而下面 subprocess 的超时是 60 秒 ——
+        # 手机点确认稍慢一点,poll 就被杀掉抛 TimeoutExpired,整个 worker 直接崩,
+        # 表现就是「点了确认没反应」。所以每次只让它跑 25 秒,超时也继续下一轮。
+        for _ in range(10):
+            try:
+                rr = subprocess.run([sys.executable, os.path.join(FATFISH_BILI, "qr_login.py"), "poll", "25"],
+                                    cwd=FATFISH_BILI, capture_output=True, text=True,
+                                    timeout=45, env=env, creationflags=0x08000000)
+            except subprocess.TimeoutExpired:
+                continue
+            except Exception:
+                continue
             out = (rr.stdout or "") + (rr.stderr or "")
-            if rr.returncode == 0 and ("登录成功" in out or "cookie" in out.lower()):
+            if "登录成功" in out:
                 with LOCK:
                     BILI.update(state="ok", hint="B站 已登录", at=time.strftime("%H:%M:%S"))
                 return

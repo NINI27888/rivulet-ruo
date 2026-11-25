@@ -373,6 +373,21 @@
     });
   }
   $("btnRefresh").addEventListener("click", loadAll);
+
+  // 窗口控制(decorations=false,系统按钮不存在,全靠这三个)
+  (function bindWinCtl() {
+    function send(cmd) {
+      try {
+        var p = call(cmd);
+        if (p && p.catch) p.catch(function () { });
+      } catch (e) { /* 浏览器预览下没有这些命令,忽略 */ }
+    }
+    var a = $("winMin"), b = $("winMax"), c = $("winClose");
+    if (a) a.addEventListener("click", function (e) { e.stopPropagation(); send("win_min"); });
+    if (b) b.addEventListener("click", function (e) { e.stopPropagation(); send("win_max"); });
+    if (c) c.addEventListener("click", function (e) { e.stopPropagation(); send("win_close"); });
+  })();
+
   setInterval(function () { if (state.user && !$("appView").hidden) loadAll(); }, 30000);
 
   // ---------------- 渲染 ----------------
@@ -1984,6 +1999,15 @@
     if ($("wlAddBtn")) $("wlAddBtn").addEventListener("click", wlAdd);
     if ($("wlId")) $("wlId").addEventListener("keydown", function (e) { if (e.key === "Enter") wlAdd(); });
     if ($("qqStart")) $("qqStart").addEventListener("click", qqStart);
+    if ($("qqRestart")) $("qqRestart").addEventListener("click", function () {
+      toast("正在重置协议端,等新二维码…");
+      svcPost("qq", "/api/napcat/restart", {}).then(function (res) {
+        if (res && res.ok) toast("已重新启动,二维码马上出来");
+        else toast((res && res.error) || "重启失败");
+        var n = 0;
+        var t = setInterval(function () { n++; refreshQqStatus(); if (n > 20) clearInterval(t); }, 3000);
+      }).catch(function (e) { toast("重启失败:" + (e.message || e)); });
+    });
     if ($("cfgSave")) $("cfgSave").addEventListener("click", saveQqConfig);
     if ($("qqReload")) $("qqReload").addEventListener("click", function () {
       svcPost("qq", "/api/reload", {}).then(function () { refreshQqStatus(); toast("已重连"); })

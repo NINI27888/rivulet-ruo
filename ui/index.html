@@ -108,6 +108,17 @@
           <svg class="ic-sun" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </button>
         <button class="avaTop" id="meAva" type="button" title="换头像"></button>
+        <div class="winCtl" aria-label="窗口控制">
+          <button class="winBtn" id="winMin" type="button" title="最小化" aria-label="最小化">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+          <button class="winBtn" id="winMax" type="button" title="最大化 / 还原" aria-label="最大化">
+            <svg viewBox="0 0 12 12" fill="none"><rect x="2.6" y="2.6" width="6.8" height="6.8" rx="1.2" stroke="currentColor" stroke-width="1.4"/></svg>
+          </button>
+          <button class="winBtn winBtnClose" id="winClose" type="button" title="关闭" aria-label="关闭">
+            <svg viewBox="0 0 12 12" fill="none"><path d="m3.2 3.2 5.6 5.6M8.8 3.2 3.2 8.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -403,6 +414,7 @@
           <span class="qqLabel">运行状态</span>
           <div class="qqVal"><i class="svcDot" id="qqRunDot"></i><b id="qqRunText">读取中…</b></div>
           <button type="button" class="btn ghost xs" id="qqStart">启动</button>
+          <button type="button" class="btn ghost xs" id="qqRestart" title="登录失败或二维码过期后点这个">重新扫码</button>
         </div>
         <label class="qqRow"><span class="qqLabel">协议端地址</span><input id="cfgWs" placeholder="ws://127.0.0.1:3001"></label>
         <label class="qqRow"><span class="qqLabel">机器人 QQ</span><input id="cfgAccount" placeholder="填你的机器人 QQ"></label>
