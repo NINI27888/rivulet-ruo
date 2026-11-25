@@ -1303,12 +1303,21 @@
   var toastTimer = null;
   function toast(msg) {
     if (!msg) return;
+    // .toast 本身没有定位,靠 .toastHost(fixed) 承载。
+    // 以前直接 appendChild 到 body,toast 就变成文档流里的一块,
+    // 把页面顶部整个顶开 —— 必须放进 host。
+    var host = document.querySelector(".toastHost");
+    if (!host) {
+      host = document.createElement("div");
+      host.className = "toastHost";
+      document.body.appendChild(host);
+    }
     var el = document.getElementById("toast");
     if (!el) {
       el = document.createElement("div");
       el.id = "toast"; el.className = "toast";
-      document.body.appendChild(el);
     }
+    if (el.parentElement !== host) host.appendChild(el);
     el.textContent = msg;
     el.classList.add("on");
     clearTimeout(toastTimer);

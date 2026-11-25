@@ -2916,3 +2916,14 @@ html[data-theme="dark"] .setupGuideBar{
   border-color:rgba(140,160,235,.35); color:#D9DCF5;
 }
 html[data-theme="dark"] .setupGuideSkip{background:rgba(60,56,100,.9);color:#C9CDF0}
+
+/* ---------------------------------------------------------------- toast 显隐
+   原来 .toast 只有 padding/圆角,既没定位也没显隐:
+   挂到 body 上会顶开页面,而且 .on 没有对应样式 -> 提示条不消失。
+   定位交给 .toastHost(fixed),这里只管淡入淡出。 */
+.toast{
+  opacity:0; transform:translateY(10px); pointer-events:none;
+  transition:opacity .2s var(--ease-out), transform .2s var(--ease-out);
+  animation:none;
+}
+.toast.on{opacity:1; transform:none}
