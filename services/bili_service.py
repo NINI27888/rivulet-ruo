@@ -30,7 +30,15 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-WS = os.path.abspath(os.path.join(HERE, "..", ".."))          # ...\workspace
+def _find_fatfish():
+    """fatfish 目录自适应:包内是 services 的同级,开发环境在上一级。"""
+    for rel in (("..", "fatfish"), ("..", "..", "fatfish")):
+        c = os.path.abspath(os.path.join(HERE, *rel))
+        if os.path.isdir(c):
+            return c
+    return os.path.abspath(os.path.join(HERE, "..", "fatfish"))
+_FF = _find_fatfish()
+WS = os.path.dirname(_FF)
 FATFISH = os.path.join(WS, "fatfish")
 sys.path.insert(0, os.path.join(FATFISH, "bili"))
 

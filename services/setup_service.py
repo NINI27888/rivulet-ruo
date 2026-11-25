@@ -40,7 +40,14 @@ QQ_API = os.environ.get("RIVULET_QQ") or "http://127.0.0.1:18096"
 BILI_API = os.environ.get("RIVULET_BILI") or "http://127.0.0.1:18097"
 WS_API = os.environ.get("RIVULET_WORKSPACE") or "http://127.0.0.1:18095"
 WS_ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "项目-AI平台", "workspace"))
-FATFISH_BILI = os.path.abspath(os.path.join(HERE, "..", "..", "fatfish", "bili"))
+def _find_fatfish():
+    """fatfish 目录自适应:包内是 services 的同级,开发环境在上一级。"""
+    for rel in (("..", "fatfish"), ("..", "..", "fatfish")):
+        c = os.path.abspath(os.path.join(HERE, *rel))
+        if os.path.isdir(c):
+            return c
+    return os.path.abspath(os.path.join(HERE, "..", "fatfish"))
+FATFISH_BILI = os.path.join(_find_fatfish(), "bili")
 
 LOCK = threading.RLock()
 BILI = {"state": "idle", "hint": "", "qr_b64": "", "at": ""}

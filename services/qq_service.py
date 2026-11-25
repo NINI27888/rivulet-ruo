@@ -601,7 +601,11 @@ def napcat_state() -> dict:
 def start_napcat() -> dict:
     nc = _nc()
     if not nc_mod.is_headless(nc.d):
-        return {"ok": False, "error": "找不到无头版协议端(需要 node.exe + index.js):" + (nc.d or "(未配置)")}
+        return {"ok": False,
+                "error": ("QQ 需要 NapCat 协议端(第三方组件,体积大、需单独下载,") 
+                         + ("不在本安装包内)。下载 NapCat 后解压到程序目录的 "
+                            "fatfish\\NapCat\\ 下(该目录内应有 node.exe 和 index.js)," 
+                            "再点一次「启动协议端」。当前查找位置:" + (nc.d or "(未配置)"))}
     if nc.running():
         return {"ok": True, "already": True, "hint": "协议端已经在跑"}
     try:

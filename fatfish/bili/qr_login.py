@@ -50,7 +50,11 @@ def w(*a):
 
 
 def flush():
-    io.open(LOG, "w", encoding="utf-8").write("\n".join(L) + "\n")
+    try:
+        os.makedirs(os.path.dirname(LOG), exist_ok=True)
+        io.open(LOG, "w", encoding="utf-8").write(chr(10).join(L) + chr(10))
+    except Exception:
+        pass   # 日志写不了不影响主流程
 
 
 def get_json(url):
@@ -72,15 +76,24 @@ def gen():
     io.open(STATE, "w", encoding="utf-8").write(json.dumps({"qrcode_key": key, "url": url}, ensure_ascii=False))
     w("url =", url)
     w("key =", key)
-    env = dict(os.environ)
-    if os.path.isdir(QRLIB):
-        old = env.get("NODE_PATH", "")
-        env["NODE_PATH"] = QRLIB + (os.pathsep + old if old else "")
-    w("node =", NODE)
-    r = subprocess.run([NODE, MAKE_QR, url, PNG], capture_output=True, text=True,
-                       env=env)
-    w("node rc =", r.returncode, r.stdout.strip()[:200], r.stderr.strip()[:200])
-    w("png exists =", os.path.exists(PNG), os.path.getsize(PNG) if os.path.exists(PNG) else 0)
+    # 生成二维码:优先纯 Python(segno),不再依赖 node + npm 包
+    _ok = False
+    try:
+        import segno
+        segno.make(url, error="m").save(PNG, scale=10, border=2)
+        _ok = os.path.exists(PNG) and os.path.getsize(PNG) > 0
+        w("segno ok =", _ok)
+    except Exception as _e:
+        w("segno 不可用:", _e)
+    if not _ok:
+        env = dict(os.environ)
+        if os.path.isdir(QRLIB):
+            old = env.get("NODE_PATH", "")
+            env["NODE_PATH"] = QRLIB + (os.pathsep + old if old else "")
+        w("node =", NODE)
+        r = subprocess.run([NODE, MAKE_QR, url, PNG], capture_output=True, text=True, env=env)
+        w("node rc =", r.returncode, r.stdout.strip()[:200], r.stderr.strip()[:200])
+        w("png exists =", os.path.exists(PNG), os.path.getsize(PNG) if os.path.exists(PNG) else 0)
     flush()
 
 
