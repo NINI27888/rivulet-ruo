@@ -44,8 +44,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import napcat as nc_mod
 import qzone
+from workspace.provider_llm import ModelError, complete_message, model_settings, probe_model
 
 MOOD_API = os.environ.get("RIVULET_MOOD") or "http://127.0.0.1:18099"
+WORKSPACE_API = (os.environ.get("RIVULET_WORKSPACE") or "http://127.0.0.1:18095").rstrip("/")
 
 
 def mood_call(path: str, body: dict | None = None, timeout: float = 6.0) -> dict:
@@ -81,7 +83,8 @@ def mood_after(text: str):
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
 os.makedirs(DATA, exist_ok=True)
-CFG_PATH = os.path.join(HERE, "qq.json")
+CFG_PATH = os.path.join(DATA, "qq.json")
+LEGACY_CFG = os.path.join(HERE, "qq.json")
 WL_PATH = os.path.join(DATA, "qq_whitelist.json")
 AUDIT_LOG = os.path.join(DATA, "qq_audit.jsonl")
 CHAT_LOG = os.path.join(DATA, "qq_chat.jsonl")
@@ -96,6 +99,7 @@ DEFAULT_CFG = {
     "napcat_headless_dir": os.environ.get("RIVULET_NAPCAT_HEADLESS", "fatfish/NapCat"),
     "memory_api": "http://127.0.0.1:18091",
     "reply_enabled": True,
+    "use_workspace_model": False,
     "group_at_only": True,
     "reply_cooldown_sec": 1.5,
     "reply_max_per_min": 8,
@@ -104,7 +108,7 @@ DEFAULT_CFG = {
     "dsh": {
         "api_base": "https://api.deepseek.com/v1",
         "api_key": "",
-        "model": "deepseek-chat",
+        "model": "deepseek-flash",
         "max_tokens": 220,
         "temperature": 0.8,
         "timeout": 40,
@@ -139,12 +143,94 @@ def _save_json(path: str, obj) -> None:
         pass
 
 
-CFG = _load_json(CFG_PATH, DEFAULT_CFG)
+CFG = _load_json(CFG_PATH if os.path.isfile(CFG_PATH) else LEGACY_CFG, DEFAULT_CFG)
+CFG_LOCK = threading.RLock()
 WL = _load_json(WL_PATH, DEFAULT_WL)
 
 
-def save_cfg():
-    _save_json(CFG_PATH, CFG)
+def save_cfg(changes: dict | None = None):
+    with CFG_LOCK:
+        saved = {**CFG, **(changes or {})}
+        candidate = CFG_PATH + ".tmp"
+        with open(candidate, "w", encoding="utf-8") as f:
+            json.dump(saved, f, ensure_ascii=False, indent=2)
+        os.replace(candidate, CFG_PATH)
+        if changes:
+            CFG.update(changes)
+
+
+def workspace_model_status() -> dict:
+    try:
+        with urllib.request.urlopen(WORKSPACE_API + "/api/models/status", timeout=2) as response:
+            return json.load(response) or {}
+    except (OSError, ValueError):
+        return {}
+
+
+def qq_model_input() -> dict:
+    dsh = CFG.get("dsh") or {}
+    return {**dsh, "provider": "custom", "base_url": dsh.get("api_base")}
+
+
+def qq_model_status() -> dict:
+    if CFG.get("use_workspace_model"):
+        model = workspace_model_status()
+        return {"model_source": "workspace", "model": model.get("model") or "",
+                "has_key": bool(model.get("has_key")), "model_ready": bool(model.get("enabled"))}
+    current = qq_model_input()
+    try:
+        model_settings(current)
+        ready = True
+    except ModelError:
+        ready = False
+    return {"model_source": "custom", "model": (current.get("model") or "") if ready else "",
+            "has_key": bool(current.get("api_key")), "model_ready": ready}
+
+
+def configure_qq_model(body: dict) -> dict:
+    try:
+        existing = qq_model_input()
+        # QQ only stores the resolved address. A key can be reused on that same address.
+        existing["provider"] = body.get("provider") or "custom"
+        model = model_settings(body, existing)
+        probe_model(model)
+        with CFG_LOCK:
+            dsh = {**(CFG.get("dsh") or {}), "api_base": model["base_url"],
+                   "model": model["model"], "api_key": model["api_key"]}
+            save_cfg({"dsh": dsh, "use_workspace_model": False})
+        return {"ok": True, "model": model["model"]}
+    except ModelError as e:
+        return {"ok": False, "error": str(e)}
+    except OSError:
+        return {"ok": False, "error": "保存失败。请检查程序所在文件夹是否可以写入。"}
+
+
+def use_workspace_model() -> dict:
+    if not workspace_model_status().get("enabled"):
+        return {"ok": False, "error": "先在工作区测试并启用一个聊天模型。"}
+    save_cfg({"use_workspace_model": True})
+    return {"ok": True}
+
+
+def qq_model_reply(messages: list[dict], max_tokens: int, temperature: float,
+                   timeout: float = 40) -> str:
+    if not CFG.get("use_workspace_model"):
+        return complete_message(model_settings(qq_model_input()), messages,
+                                max_tokens=max_tokens, temperature=temperature, timeout=timeout)["content"]
+    req = urllib.request.Request(
+        WORKSPACE_API + "/api/models/respond",
+        data=json.dumps({"messages": messages, "max_tokens": max_tokens,
+                         "temperature": temperature}, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            result = json.load(response)
+    except (OSError, ValueError):
+        raise ModelError("暂时联系不上工作区模型，请重开若后再试。") from None
+    if not result.get("ok"):
+        raise ModelError(result.get("error") or "工作区模型没有返回回答。")
+    return result["text"]
 
 
 def save_wl():
@@ -318,9 +404,6 @@ PERSONA_EPOCH = 0.0
 def dsh_reply(chat: str, sender: str, text: str) -> tuple[str, str]:
     """返回 (回复, 错误)。真模型;连不上如实报错,不编。"""
     dsh = CFG.get("dsh") or {}
-    key = (dsh.get("api_key") or "").strip()
-    if not key:
-        return "", "DSH 模型没配 api_key(services/qq.json → dsh.api_key)"
     hints = memory_hints(text)
     mb = mood_brief()
     note = "\n\n【注意】如果下面的对话历史里有跟你现在设定不一致的口气,以现在设定为准,别沿用旧口气。"
@@ -333,24 +416,12 @@ def dsh_reply(chat: str, sender: str, text: str) -> tuple[str, str]:
     for h in hist[-turns:]:
         msgs.append({"role": h["role"], "content": h["content"]})
     msgs.append({"role": "user", "content": text[:800]})
-    body = json.dumps({
-        "model": dsh.get("model") or "deepseek-chat",
-        "messages": msgs,
-        "max_tokens": int(dsh.get("max_tokens") or 220),
-        "temperature": float(dsh.get("temperature") or 0.8),
-    }, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
-        (dsh.get("api_base") or "https://api.deepseek.com/v1").rstrip("/") + "/chat/completions",
-        data=body,
-        headers={"Content-Type": "application/json", "Authorization": "Bearer " + key},
-    )
     try:
-        with urllib.request.urlopen(req, timeout=float(dsh.get("timeout") or 40)) as r:
-            data = json.loads(r.read().decode("utf-8"))
-        out = ((data.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
-        return out.strip()[:600], ""
-    except Exception as e:
-        return "", f"DSH 调用失败:{str(e)[:160]}"
+        out = qq_model_reply(msgs, int(dsh.get("max_tokens") or 220),
+                             float(dsh.get("temperature") or 0.8), float(dsh.get("timeout") or 40))
+        return out[:600], ""
+    except ModelError as e:
+        return "", str(e)
 
 
 def plain_text(message) -> str:
@@ -685,37 +756,14 @@ def restart_napcat() -> dict:
 
 
 def test_model() -> dict:
-    """测一下模型配置通不通:用当前 base / model / key 发一句 ping。
-    用户配完不知道对不对,这个按钮直接告诉他哪一步错了。"""
-    dsh = CFG.get("dsh") or {}
-    key = (dsh.get("api_key") or "").strip()
-    if not key:
-        return {"ok": False, "error": "还没填模型 Key"}
-    base = (dsh.get("api_base") or "https://api.deepseek.com/v1").rstrip("/")
-    model = dsh.get("model") or "deepseek-chat"
-    body = json.dumps({"model": model,
-                       "messages": [{"role": "user", "content": "ping"}],
-                       "max_tokens": 8}).encode("utf-8")
-    req = urllib.request.Request(base + "/chat/completions", data=body, method="POST",
-                                 headers={"Content-Type": "application/json",
-                                          "Authorization": "Bearer " + key})
+    status = qq_model_status()
+    if not status["model_ready"]:
+        return {"ok": False, "error": "请先为 QQ 选择一个聊天模型。"}
     try:
-        with urllib.request.urlopen(req, timeout=25) as r:
-            d = json.loads(r.read().decode("utf-8", "replace"))
-        txt = ((d.get("choices") or [{}])[0].get("message") or {}).get("content", "")
-        return {"ok": True, "model": model, "base": base, "reply": str(txt)[:60]}
-    except urllib.error.HTTPError as e:
-        raw = ""
-        try:
-            raw = e.read()[:200].decode("utf-8", "replace")
-        except Exception:
-            pass
-        tip = {401: "Key 不对或已失效", 403: "这个 Key 没权限",
-               404: "接口地址或模型名不对(地址要带 /v1)",
-               429: "额度用完了或请求太频繁"}.get(e.code, "")
-        return {"ok": False, "error": "HTTP %d %s %s" % (e.code, tip, raw[:120])}
-    except Exception as e:
-        return {"ok": False, "error": "连不上 %s:%s" % (base, str(e)[:120])}
+        text = qq_model_reply([{"role": "user", "content": "请只回复 OK。"}], 128, 0.7, 18)
+        return {"ok": True, "model": status["model"], "reply": text[:60]}
+    except ModelError as e:
+        return {"ok": False, "error": str(e)}
 
 def stop_napcat() -> dict:
     try:
@@ -805,26 +853,15 @@ def idle_status() -> dict:
 def dsh_generate(instruction: str, max_tokens: int = 160) -> tuple[str, str]:
     """让 DSH 按「此刻的你」说一句话(主动消息 / 说说 / B站评论都用它)。"""
     dsh = CFG.get("dsh") or {}
-    key = (dsh.get("api_key") or "").strip()
-    if not key:
-        return "", "DSH 模型没配 api_key"
     mb = mood_brief()
     msgs = [{"role": "system", "content": persona() + ("\n\n" + mb if mb else "")},
             {"role": "user", "content": instruction}]
-    body = json.dumps({"model": dsh.get("model") or "deepseek-chat", "messages": msgs,
-                       "max_tokens": max_tokens,
-                       "temperature": float(dsh.get("temperature") or 0.9)},
-                      ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
-        (dsh.get("api_base") or "https://api.deepseek.com/v1").rstrip("/") + "/chat/completions",
-        data=body, headers={"Content-Type": "application/json", "Authorization": "Bearer " + key})
     try:
-        with urllib.request.urlopen(req, timeout=float(dsh.get("timeout") or 40)) as r:
-            data = json.loads(r.read().decode("utf-8"))
-        out = ((data.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
-        return out.strip()[:500], ""
-    except Exception as e:
-        return "", "DSH 调用失败:%s" % str(e)[:160]
+        out = qq_model_reply(msgs, max_tokens, float(dsh.get("temperature") or 0.9),
+                             float(dsh.get("timeout") or 40))
+        return out[:500], ""
+    except ModelError as e:
+        return "", str(e)
 
 
 def _owner_chat() -> str:
@@ -991,8 +1028,7 @@ class Handler(BaseHTTPRequestHandler):
                 "last_send_error": OB.last_send_error,
                 "reply_enabled": bool(CFG.get("reply_enabled")),
                 "group_at_only": bool(CFG.get("group_at_only")),
-                "model": (CFG.get("dsh") or {}).get("model"),
-                "has_key": bool(((CFG.get("dsh") or {}).get("api_key") or "").strip()),
+                **qq_model_status(),
             })
         if u.path == "/api/whitelist":
             return self._send(200, {"ok": True, "enabled": bool(WL.get("enabled")),
@@ -1020,6 +1056,7 @@ class Handler(BaseHTTPRequestHandler):
                 "owner": CFG.get("owner"), "reply_enabled": CFG.get("reply_enabled"),
                 "group_at_only": CFG.get("group_at_only"),
                 "model": dsh.get("model"), "api_base": dsh.get("api_base"),
+                "use_workspace_model": bool(CFG.get("use_workspace_model")),
                 "has_key": bool((dsh.get("api_key") or "").strip()),
                 "napcat_launcher": CFG.get("napcat_launcher"),
             }})
@@ -1080,8 +1117,13 @@ class Handler(BaseHTTPRequestHandler):
                 for k in ("model", "api_key", "api_base"):
                     if body.get(k):
                         CFG.setdefault("dsh", {})[k] = str(body[k]).strip()
+                        CFG["use_workspace_model"] = False
                 save_cfg()
                 return self._send(200, {"ok": True})
+            if u.path == "/api/model/configure":
+                return self._send(200, configure_qq_model(body))
+            if u.path == "/api/model/use-workspace":
+                return self._send(200, use_workspace_model())
             if u.path == "/api/napcat/start":
                 return self._send(200, start_napcat())
             if u.path == "/api/napcat/stop":

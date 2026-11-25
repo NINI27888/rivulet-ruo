@@ -75,17 +75,17 @@
       }
     }
     var nameEl = $("homeModelName");
-    if (nameEl) nameEl.textContent = on ? (modelName || "已启用模型") : "未启用模型";
+    if (nameEl) nameEl.textContent = on ? (modelName || "已启用模型") : "尚未配置聊天模型";
     var descEl = $("homeModelDesc");
     if (descEl) descEl.textContent = on ? ("已启用 · " + (provider || "自定义")) : "在工作区启用一个模型";
     var card = nameEl ? closest(nameEl, ".modelCard") : null; // 卡片状态没有 id,按容器定位
     setStLabel(card ? card.querySelector(".scHead .st") : null, on);
     var chipName = $("cModelName");
-    if (chipName) chipName.textContent = on ? (modelName || "已启用模型") : "未启用模型";
+    if (chipName) chipName.textContent = on ? (modelName || "已启用模型") : "配置聊天模型";
     var chip = $("cModel");
     setDot(chip ? chip.querySelector(".mcDot") : null, on);
     if (chip) chip.setAttribute("title", on
-      ? ("当前模型:" + (modelName || provider || "已启用") + (base ? " · " + base : "")) : "点这里切换模型");
+      ? ("当前模型：" + (modelName || provider || "已启用")) : "配置聊天模型");
   }
   function refreshModelCard() {
     if (!app()) return;
@@ -228,7 +228,7 @@
     { kind: "nav", view: "account", icon: "account", title: "账号", hint: "身份 / 安全" },
     { kind: "nav", view: "nodes", icon: "nodes", title: "节点", hint: "Node Agent" },
     { kind: "nav", view: "cmds", icon: "cmds", title: "命令", hint: "下发记录" },
-    { kind: "nav", view: "setup", icon: "setup", title: "一键部署", hint: "扫码 / 模型" }
+    { kind: "nav", view: "setup", icon: "setup", title: "快速开始", hint: "模型 / QQ / B 站" }
   ];
   var ACT_ITEMS = [
     { kind: "act", act: "newchat", icon: "chat", title: "新建对话", hint: "Ctrl + N" },
@@ -392,7 +392,7 @@
     var btn = $("cSend");
     ensureStatus().then(function (st) {
       if (!st || !st.enabled) {
-        showHint("还没有启用模型：去工作区 → 模型，填一个 API Key", false);
+        window.RuoApp.openModelSetup("workspace", "home");
         sending = false;
         return;
       }
@@ -401,8 +401,7 @@
       return svcPost("workspace", "/api/chat", { text: text }).then(function (r) {
         if (r && r.ok === false) { showHint("发送失败：" + (r.error || "没回上"), false); return; }
         ta.value = ""; autosize(); hideHint();
-        switchView("workspace");
-        toast("已发送，去工作区看回复");
+        window.RuoApp.openWorkspaceConversation(r && r.conversation_id);
       }).catch(function (e) {
         showHint("发送失败：" + msgOf(e), false);
       }).then(function () {
@@ -449,9 +448,13 @@
   function openModelDrop() {
     if (dropEl) { closeModelDrop(); return; }
     if (!appReady()) return;
+    if (lastStatus && !lastStatus.enabled) {
+      window.RuoApp.openModelSetup("workspace", "home");
+      return;
+    }
     svcGet("workspace", "/api/models").then(function (r) {
       var items = (r && r.items) || [];
-      if (!items.length) { toast("还没有模型"); return; }
+      if (!items.length) { window.RuoApp.openModelSetup("workspace", "home"); return; }
       lastModels = items;
       buildModelDrop(items);
     }).catch(function (e) { toast("读不到模型列表：" + msgOf(e)); });
@@ -477,6 +480,15 @@
       b.addEventListener("click", function () { chooseModel(m); });
       drop.appendChild(b);
     });
+    var manage = document.createElement("button");
+    manage.type = "button";
+    manage.className = "cmItem";
+    manage.textContent = "配置聊天模型";
+    manage.addEventListener("click", function () {
+      closeModelDrop();
+      window.RuoApp.openModelSetup("workspace", "home");
+    });
+    drop.appendChild(manage);
     document.body.appendChild(drop);
     // 按 chip 位置算 fixed 坐标,放不下就翻到上方/贴边
     var r = anchor.getBoundingClientRect();
@@ -489,25 +501,13 @@
     drop.style.top = Math.round(top) + "px";
     dropEl = drop;
   }
-  // 工作区只认第一个启用的模型:先关掉其它,再启用选中的
+  // The workspace switches the active saved model in one operation.
   function chooseModel(m) {
     closeModelDrop();
     if (!m || !m.id) return;
     var label = m.model || m.name || "这个模型";
-    var chain = Promise.resolve();
-    lastModels.forEach(function (x) {
-      if (x.id && x.id !== m.id && x.enabled) {
-        chain = chain.then(function () {
-          return call("svc_patch", {
-            service: "workspace", path: "/api/models/" + encodeURIComponent(x.id), body: { enabled: false }
-          }).catch(function () { /* 关旧模型失败不阻塞 */ });
-        });
-      }
-    });
-    chain.then(function () {
-      return call("svc_patch", {
-        service: "workspace", path: "/api/models/" + encodeURIComponent(m.id), body: { enabled: true }
-      });
+    call("svc_patch", {
+      service: "workspace", path: "/api/models/" + encodeURIComponent(m.id), body: { enabled: true }
     }).then(function (r) {
       if (r && r.ok === false) { toast("切换失败：" + (r.error || "没切换上")); return; }
       toast("已切换到「" + label + "」");

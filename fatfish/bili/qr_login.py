@@ -1,152 +1,95 @@
 # -*- coding: utf-8 -*-
-"""B站 扫码登录:生成二维码 → 渲染 PNG → 轮询登录结果 → 存 cookie。
-
-分两步跑(因为要把二维码发给泥泥,他扫完再轮询):
-    python qr_login.py gen      # 生成 + 渲染,写 data/qr.png 和 data/qr_login.json
-    python qr_login.py poll     # 轮询到登录成功,把 cookie 写进 data/bili_cookie.json
-"""
-
+"""Generate and check a Bilibili phone login QR code."""
 import io
 import json
 import os
-import subprocess
 import sys
 import time
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
-DATA = os.path.join(ROOT, "data")
-STATE = os.path.join(DATA, "qr_login.json")
-PNG = os.path.join(DATA, "qr.png")
-COOKIE = os.path.join(DATA, "bili_cookie.json")
-NODE = (os.environ.get("NODE_EXE") or "")
-if not NODE:
-    _p = os.path.join(ROOT, "NapCat", "node.exe")            # 包里自带的
-    if os.path.isfile(_p):
-        NODE = _p
-if not NODE:
-    try:
-        import shutil as _sh
-        NODE = _sh.which("node") or ""
-    except Exception:
-        NODE = ""
-if not NODE:
-    NODE = "node"
-QRLIB = os.path.join(HERE, "qrlib")                          # 自带的 qrcode 模块
-MAKE_QR = os.path.join(HERE, "make_qr.js")
-
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0")
-
-LOG = os.path.join(ROOT, "日志", "qr_login.log")
-L = []
-
-
-def w(*a):
-    L.append(" ".join(str(x) for x in a))
-    print(L[-1])
-
-
-def flush():
-    try:
-        os.makedirs(os.path.dirname(LOG), exist_ok=True)
-        io.open(LOG, "w", encoding="utf-8").write(chr(10).join(L) + chr(10))
-    except Exception:
-        pass   # 日志写不了不影响主流程
-
-
-# B站 是境内服务:显式不用系统代理。
-# 用户开着 Clash/VPN 时,urllib 默认走代理,B站 会返回 502,二维码就出不来。
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / "data"
+STATE = DATA / "qr_login.json"
+PNG = DATA / "qr.png"
+COOKIE = DATA / "bili_cookie.json"
+PASSPORT = "https://passport.bilibili.com/x/passport-login/web/qrcode/"
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0.0.0 Safari/537.36"
+COOKIE_NAMES = {"SESSDATA", "bili_jct", "DedeUserID", "DedeUserID__ckMd5", "sid", "buvid3", "buvid4"}
 _OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
-def get_json(url):
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Referer": "https://www.bilibili.com/"})
-    with _OPENER.open(req, timeout=15) as r:
-        return json.loads(r.read().decode("utf-8", "replace"))
+def _call(path):
+    request = urllib.request.Request(PASSPORT + path,
+                                     headers={"User-Agent": UA, "Referer": "https://www.bilibili.com/"})
+    with _OPENER.open(request, timeout=8) as response:
+        return json.load(response), response.headers.get_all("Set-Cookie") or []
+
+
+def create_code():
+    import segno
+
+    result, _ = _call("generate")
+    info = result.get("data") or {}
+    if result.get("code") != 0 or not info.get("url") or not info.get("qrcode_key"):
+        raise RuntimeError("B 站暂时没有生成二维码，请稍后重试。")
+    png = io.BytesIO()
+    segno.make(info["url"], error="m").save(png, kind="png", scale=8, border=4)
+    return info["qrcode_key"], png.getvalue()
+
+
+def check_code(key):
+    result, cookies = _call("poll?" + urllib.parse.urlencode({"qrcode_key": key}))
+    info = result.get("data") or {}
+    code = info.get("code")
+    if result.get("code") != 0 or code not in (0, 86101, 86090, 86038):
+        raise RuntimeError("B 站暂时无法确认登录，请重新扫码。")
+    if code != 0:
+        return {86101: "qrcode", 86090: "scanned", 86038: "expired"}[code], {}
+    values = {}
+    for header in cookies:
+        name, _, value = header.split(";", 1)[0].partition("=")
+        if name.strip() in COOKIE_NAMES:
+            values[name.strip()] = value.strip()
+    query = urllib.parse.parse_qs(urllib.parse.urlsplit(info.get("url") or "").query)
+    for name in COOKIE_NAMES & query.keys():
+        values.setdefault(name, query[name][0])
+    if not values.get("SESSDATA"):
+        raise RuntimeError("手机已确认，但 B 站没有返回登录凭证，请重新扫码。")
+    return "ok", values
+
+
+def save_login(values, path=COOKIE):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pending = path.with_name(path.name + ".tmp")
+    pending.write_text(json.dumps(values, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(pending, path)
 
 
 def gen():
-    os.makedirs(DATA, exist_ok=True)
-    d = get_json("https://passport.bilibili.com/x/passport-login/web/qrcode/generate")
-    if d.get("code") != 0:
-        w("生成失败", d)
-        flush()
-        return
-    data = d["data"]
-    url = data["url"]
-    key = data["qrcode_key"]
-    io.open(STATE, "w", encoding="utf-8").write(json.dumps({"qrcode_key": key, "url": url}, ensure_ascii=False))
-    w("url =", url)
-    w("key =", key)
-    # 生成二维码:优先纯 Python(segno),不再依赖 node + npm 包
-    _ok = False
-    try:
-        import segno
-        segno.make(url, error="m").save(PNG, scale=10, border=2)
-        _ok = os.path.exists(PNG) and os.path.getsize(PNG) > 0
-        w("segno ok =", _ok)
-    except Exception as _e:
-        w("segno 不可用:", _e)
-    if not _ok:
-        env = dict(os.environ)
-        if os.path.isdir(QRLIB):
-            old = env.get("NODE_PATH", "")
-            env["NODE_PATH"] = QRLIB + (os.pathsep + old if old else "")
-        w("node =", NODE)
-        r = subprocess.run([NODE, MAKE_QR, url, PNG], capture_output=True, text=True, env=env)
-        w("node rc =", r.returncode, r.stdout.strip()[:200], r.stderr.strip()[:200])
-        w("png exists =", os.path.exists(PNG), os.path.getsize(PNG) if os.path.exists(PNG) else 0)
-    flush()
+    key, png = create_code()
+    DATA.mkdir(parents=True, exist_ok=True)
+    PNG.write_bytes(png)
+    STATE.write_text(json.dumps({"qrcode_key": key}), encoding="utf-8")
+    print("二维码已生成", flush=True)
 
 
 def poll(seconds=180):
-    st = json.load(io.open(STATE, encoding="utf-8"))
-    key = st["qrcode_key"]
-    url = "https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=" + urllib.parse.quote(key)
-    end = time.time() + seconds
-    last = None
-    while time.time() < end:
-        req = urllib.request.Request(url, headers={"User-Agent": UA, "Referer": "https://www.bilibili.com/"})
-        try:
-            with _OPENER.open(req, timeout=15) as r:
-                raw = r.read().decode("utf-8", "replace")
-                cookies = r.headers.get_all("Set-Cookie") or []
-        except Exception as e:
-            w("轮询出错", repr(e))
-            time.sleep(3)
-            continue
-        d = json.loads(raw)
-        code = (d.get("data") or {}).get("code")
-        if code != last:
-            w("状态码:", code, d.get("data", {}).get("message"))
-            last = code
-        if code == 0:
-            ck = {}
-            for c in cookies:
-                kv = c.split(";")[0]
-                if "=" in kv:
-                    k, v = kv.split("=", 1)
-                    ck[k.strip()] = v.strip()
-            # 有些字段在 data.url 的 query 里
-            u = (d.get("data") or {}).get("url") or ""
-            if u:
-                q = urllib.parse.parse_qs(urllib.parse.urlparse(u).query)
-                for k, v in q.items():
-                    ck.setdefault(k, v[0])
-            io.open(COOKIE, "w", encoding="utf-8").write(json.dumps(ck, ensure_ascii=False, indent=2))
-            w("登录成功,cookie 字段:", sorted(ck.keys()))
-            flush()
+    key = json.loads(STATE.read_text(encoding="utf-8"))["qrcode_key"]
+    until = time.monotonic() + seconds
+    while time.monotonic() < until:
+        state, values = check_code(key)
+        if state == "ok":
+            save_login(values)
+            print("登录成功", flush=True)
             return True
-        if code == 86038:
-            w("二维码过期了")
-            flush()
+        if state == "expired":
+            print("二维码已过期", flush=True)
             return False
         time.sleep(2)
-    w("超时")
-    flush()
+    print("扫码等待超时", flush=True)
     return False
 
 
@@ -155,10 +98,8 @@ if __name__ == "__main__":
     try:
         if cmd == "gen":
             gen()
-        else:
-            poll(int(sys.argv[2]) if len(sys.argv) > 2 else 180)
-    except Exception as e:
-        import traceback
-        w("FATAL", repr(e))
-        w(traceback.format_exc())
-        flush()
+        elif cmd == "poll":
+            sys.exit(0 if poll(int(sys.argv[2]) if len(sys.argv) > 2 else 180) else 1)
+    except (OSError, RuntimeError, ValueError):
+        print("B 站扫码操作失败，请重试。", file=sys.stderr)
+        sys.exit(1)

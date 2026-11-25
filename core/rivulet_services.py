@@ -2,7 +2,7 @@
 """把 Rivulet 若 的本地功能服务挂到「朋友版」core 上。
 
 朋友版的 exe 只拉 core(FastAPI,8088)。我们的功能服务是独立的小 HTTP 服务:
-    18096 QQ / 18097 B站 / 18098 人格 / 18099 心情 / 18100 一键部署
+    18095 工作区 / 18096 QQ / 18097 B站 / 18098 人格 / 18099 心情 / 18100 一键部署
 这里在 core 启动时把它们拉起来(端口已开就跳过),并用无窗口方式跑。
 
 用法:在 core/main.py 里 `import rivulet_services; rivulet_services.ensure()`。
@@ -22,6 +22,7 @@ SERVICES = os.path.join(PKG, "services")
 # 端口 -> 脚本
 SERVICE_LIST = [
     (18091, "memory/api.py"),
+    (int(os.environ.get("RIVULET_WORKSPACE_PORT") or 18095), "workspace/api.py"),
     (18099, "mood_service.py"),
     (18098, "persona_service.py"),
     (18100, "setup_service.py"),
@@ -30,7 +31,7 @@ SERVICE_LIST = [
 ]
 
 # 我们的服务用到的第三方库(websockets / httpx / PIL),放在这个目录里
-LIBS = os.environ.get("RIVULET_LIBS") or r"D:\qqbot\libs"
+LIBS = os.environ.get("RIVULET_LIBS") or os.path.join(PKG, "runtime", "Lib", "site-packages")
 
 
 def port_open(port: int, host: str = "127.0.0.1") -> bool:

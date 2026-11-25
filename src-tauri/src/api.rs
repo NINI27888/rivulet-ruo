@@ -19,6 +19,7 @@ impl ApiError {
 pub struct Client {
     base: String,
     token: Option<String>,
+    timeout: Duration,
 }
 
 impl Client {
@@ -26,13 +27,19 @@ impl Client {
         Self {
             base: base.trim().trim_end_matches('/').to_string(),
             token: token.map(|s| s.to_string()),
+            timeout: Duration::from_secs(20),
         }
+    }
+
+    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
     }
 
     fn build(&self, method: &str, path: &str) -> ureq::Request {
         let url = format!("{}{}", self.base, path);
         let mut req = ureq::request(method, &url)
-            .timeout(Duration::from_secs(20))
+            .timeout(self.timeout)
             .set("Accept", "application/json")
             .set("User-Agent", "RivuletRuo/0.1");
         if let Some(t) = self.token.as_deref() {

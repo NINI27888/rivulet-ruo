@@ -42,10 +42,11 @@ WS = os.path.dirname(_FF)
 FATFISH = os.path.join(WS, "fatfish")
 sys.path.insert(0, os.path.join(FATFISH, "bili"))
 
-CFG_PATH = os.path.join(HERE, "bili.json")
+CFG_PATH = os.path.join(HERE, "data", "bili.json")
+LEGACY_CFG = os.path.join(HERE, "bili.json")
 DEFAULT_CFG = {"allow_write": False, "cookie_file": os.path.join(FATFISH, "data", "bili_cookie.json")}
 try:
-    with open(CFG_PATH, encoding="utf-8") as _f:
+    with open(CFG_PATH if os.path.isfile(CFG_PATH) else LEGACY_CFG, encoding="utf-8") as _f:
         _raw = _f.read()
     CFG = dict(DEFAULT_CFG, **(json.loads(_raw) if _raw.strip() else {}))
 except Exception:
@@ -59,12 +60,15 @@ def now() -> str:
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 
-def _save_cfg():
-    try:
-        with io.open(CFG_PATH, "w", encoding="utf-8") as f:
-            f.write(json.dumps(CFG, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
+def _save_cfg(changes: dict | None = None):
+    with LOCK:
+        os.makedirs(os.path.dirname(CFG_PATH), exist_ok=True)
+        candidate = CFG_PATH + ".tmp"
+        with open(candidate, "w", encoding="utf-8") as f:
+            json.dump({**CFG, **(changes or {})}, f, ensure_ascii=False, indent=2)
+        os.replace(candidate, CFG_PATH)
+        if changes:
+            CFG.update(changes)
 
 
 def bili():
@@ -86,8 +90,10 @@ def cached(key: str, ttl: float, fn):
 
 def api_status() -> dict:
     b = bili()
-    out = {"ok": True, "time": now(), "cookie_file": CFG.get("cookie_file"),
-           "allow_write": bool(CFG.get("allow_write"))}
+    out = {"ok": True, "time": now(), "allow_write": bool(CFG.get("allow_write")),
+           "logged_in": False}
+    if not b.logged_in:
+        return out
     try:
         nav = b.nav() or {}
         if nav.get("isLogin"):
@@ -101,9 +107,9 @@ def api_status() -> dict:
                 "vip": (nav.get("vipStatus") == 1),
             })
         else:
-            out.update({"logged_in": False, "error": "cookie 过期了,要重新扫码"})
-    except Exception as e:
-        out.update({"logged_in": False, "error": str(e)[:200]})
+            out.update(error="登录已过期，请重新扫码。")
+    except Exception:
+        out.update(error="暂时无法验证 B 站账号，请稍后刷新。")
     return out
 
 
@@ -172,7 +178,7 @@ def api_feed(limit: int = 10) -> dict:
 
 def api_reply(bvid: str, text: str) -> dict:
     if not CFG.get("allow_write"):
-        return {"ok": False, "error": "写操作没开(services/bili.json 里 allow_write=false)"}
+        return {"ok": False, "error": "请先在「B 站 Agent → 账号」打开「允许投稿和回复」。"}
     if not bvid or not text.strip():
         return {"ok": False, "error": "bvid / text 都要有"}
     try:
@@ -281,6 +287,8 @@ def _run_publish(video: str, meta: dict, dry: bool):
 
 
 def api_publish(body: dict) -> dict:
+    if not body.get("dry") and not CFG.get("allow_write"):
+        return {"ok": False, "error": "请先在「B 站 Agent → 账号」打开「允许投稿和回复」。"}
     with PUB_LOCK:
         if PUB["running"]:
             return {"ok": False, "error": "上一次投稿还在跑,等它结束"}
@@ -318,7 +326,7 @@ def api_publish_status() -> dict:
 
 def api_edit(body: dict) -> dict:
     if not CFG.get("allow_write"):
-        return {"ok": False, "error": "写操作没开(services/bili.json → allow_write=true)"}
+        return {"ok": False, "error": "请先在「B 站 Agent → 账号」打开「允许投稿和回复」。"}
     bvid = str(body.get("bvid") or "").strip()
     if not bvid:
         return {"ok": False, "error": "要 bvid"}
@@ -363,6 +371,7 @@ DAILY = {"running": False, "log": [], "results": [], "ok": None, "started": "", 
 DAILY_LOCK = threading.Lock()
 DAILY_LOG = os.path.join(HERE, "data", "daily_watch.jsonl")
 QQ_API = os.environ.get("RIVULET_QQ") or "http://127.0.0.1:18096"
+WORKSPACE_API = (os.environ.get("RIVULET_WORKSPACE") or "http://127.0.0.1:18095").rstrip("/")
 MOOD_API = os.environ.get("RIVULET_MOOD") or "http://127.0.0.1:18099"
 PERSONA_API = os.environ.get("RIVULET_PERSONA") or "http://127.0.0.1:18098"
 
@@ -404,7 +413,15 @@ def _gen_comment(title: str, desc: str, owner: str) -> str:
               "不要客套、不要「学习了」「感谢分享」、不要 @ 人、不要提 AI。直接给评论正文。"
               % (title[:80], (desc or "")[:300]))
     try:
-        r = _post(QQ_API.rstrip("/") + "/api/generate", {"prompt": prompt, "max_tokens": 120}, 45)
+        with urllib.request.urlopen(WORKSPACE_API + "/api/models/status", timeout=2) as response:
+            use_workspace = bool(json.load(response).get("enabled"))
+    except (OSError, ValueError):
+        use_workspace = False
+    try:
+        if use_workspace:
+            r = _post(WORKSPACE_API + "/api/generate", {"prompt": prompt}, 55)
+        else:
+            r = _post(QQ_API.rstrip("/") + "/api/generate", {"prompt": prompt, "max_tokens": 120}, 45)
         if r.get("ok") and r.get("text"):
             return r["text"].strip()[:220]
     except Exception as e:
@@ -512,8 +529,8 @@ def api_daily_watch(body: dict) -> dict:
                       "started": now(), "finished": ""})
     count = int(body.get("count") or 5)
     threading.Thread(target=_run_daily, args=(
-        count, bool(body.get("auto_like", True)), bool(body.get("auto_comment", True)),
-        bool(body.get("notify", True)), bool(body.get("dry", False))), daemon=True).start()
+        count, bool(body.get("auto_like")), bool(body.get("auto_comment")),
+        bool(body.get("notify")), bool(body.get("dry", False))), daemon=True).start()
     return {"ok": True}
 
 
@@ -549,9 +566,9 @@ def daily_cfg() -> dict:
             "count": int(c.get("count", 3)),
             "from_hour": int(c.get("from_hour", 10)),
             "to_hour": int(c.get("to_hour", 22)),
-            "auto_like": bool(c.get("auto_like", True)),
-            "auto_comment": bool(c.get("auto_comment", True)),
-            "notify": bool(c.get("notify", True))}
+            "auto_like": bool(c.get("auto_like", False)),
+            "auto_comment": bool(c.get("auto_comment", False)),
+            "notify": bool(c.get("notify", False))}
 
 
 def daily_state() -> dict:
@@ -659,6 +676,15 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)
         body = self._body()
+        if u.path == "/api/config/write":
+            allowed = body.get("allow_write") is True
+            if allowed and not api_status().get("logged_in"):
+                return self._send(200, {"ok": False, "error": "请先扫码登录 B 站。"})
+            try:
+                _save_cfg({"allow_write": allowed})
+            except OSError:
+                return self._send(200, {"ok": False, "error": "保存失败。请检查程序所在文件夹是否可以写入。"})
+            return self._send(200, {"ok": True, "allow_write": allowed})
         if u.path == "/api/daily/config":
             c = CFG.setdefault("daily", {})
             for k in ("enabled", "auto_like", "auto_comment", "notify"):
@@ -688,9 +714,8 @@ def main():
     port = int(os.environ.get("RIVULET_BILI_PORT") or 18097)
     if not os.path.exists(CFG_PATH):
         try:
-            with open(CFG_PATH, "w", encoding="utf-8") as f:
-                json.dump(CFG, f, ensure_ascii=False, indent=2)
-        except Exception:
+            _save_cfg()
+        except OSError:
             pass
     threading.Thread(target=_daily_loop, daemon=True).start()
     srv = ThreadingHTTPServer(("127.0.0.1", port), Handler)

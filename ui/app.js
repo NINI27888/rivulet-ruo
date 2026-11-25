@@ -70,10 +70,7 @@
       // 桌面版连不上,几乎都是本机 core 没起来(缺文件 / 首次解压没完成),
       // 不是网络问题 —— 别再让用户去查网络。
       var tip = tauri
-        ? ("本机账号服务没启动。" +
-           "请确认你下载的是「单文件版」exe(25 MB 左右);" +
-           "如果是第一次打开,等十几秒(它在解压运行环境)再试;" +
-           "还不行就看程序目录下的 core\\core.log。")
+        ? "本机账号服务还没准备好。首次启动请稍等，再重开若试一次。"
         : "连不上账号服务,检查网络后重试";
       throw new Error(tip);
     });
@@ -145,41 +142,13 @@
     document.documentElement.setAttribute("data-auth", "1");
     setTimeout(function () { $("rgUser").focus(); }, 30);
   }
-  // ---------------- 新用户首启引导 → 一键部署 ----------------
-  // 假设你是新用户:登录后不该直接落到首页,而应先引导到「一键部署」。
-  // 判定只依赖本机 localStorage 标记 + 部署服务的 finished,不写任何私人内容。
+  // ---------------- 第一次使用 ----------------
   var SETUP_GUIDE_KEY = "ruo.setup.guideDone";
   function guideDone() {
-    try { return localStorage.getItem(SETUP_GUIDE_KEY) === "1"; } catch (e) { return false; }
+    return localStorage.getItem(SETUP_GUIDE_KEY) === "1";
   }
   function markGuideDone() {
-    try { localStorage.setItem(SETUP_GUIDE_KEY, "1"); } catch (e) { }
-  }
-  function showSetupGuide() {
-    // 注意:绝对不能插进 #appView —— 它是 grid(侧栏 + 内容区),
-    // 多一个子元素会把内容区挤成侧栏宽度,整个布局崩掉。
-    // 只能插到 #p-setup 这个页面内部(flex column),作为页面顶部的一条。
-    var bar = $("setupGuideBar");
-    if (!bar) {
-      var host = $("p-setup");
-      if (!host) return;
-      bar = document.createElement("div");
-      bar.id = "setupGuideBar";
-      bar.className = "setupGuideBar";
-      bar.innerHTML = '<span class="setupGuideIcon">✦</span>' +
-        '<span class="setupGuideText"><b>第一次使用,先做三步</b> —— 扫码 / 填模型 Key,完成后就能正常用若了。</span>' +
-        '<button type="button" id="setupGuideSkip" class="setupGuideSkip">跳过引导</button>';
-      host.insertBefore(bar, host.firstChild);
-      var sk = document.getElementById("setupGuideSkip");
-      if (sk) sk.addEventListener("click", function () { markGuideDone(); bar.remove(); });
-    }
-  }
-  function hideSetupGuide() {
-    var bar = $("setupGuideBar"); if (bar) bar.remove();
-  }
-  // 部署状态变化时调用:三步全完成 → 自动写标记,之后不再强制引导
-  function onSetupProgress(r) {
-    if (r && r.finished) { markGuideDone(); hideSetupGuide(); }
+    localStorage.setItem(SETUP_GUIDE_KEY, "1");
   }
 
   function showApp() {
@@ -190,7 +159,6 @@
     // 新用户(未完成引导)先落到一键部署区,而不是首页
     var startView = guideDone() ? "home" : "setup";
     switchView(startView);
-    if (startView === "setup") showSetupGuide();
     loadAll();
   }
   $("toRegister").addEventListener("click", showRegister);
@@ -277,7 +245,7 @@
   });
   var NAV_TITLES = {
     home: "首页", fish: "鱼的小窝", memory: "记忆树", mood: "心情", persona: "人格",
-    workspace: "工作区", bili: "B站 Agent", qq: "QQ Agent", setup: "一键部署",
+    workspace: "工作区", bili: "B站 Agent", qq: "QQ Agent", setup: "快速开始",
     nodes: "节点", cmds: "命令", account: "账号", settings: "设置"
   };
   var NAV_PRIMARY = { home: 1, workspace: 1, bili: 1, qq: 1, fish: 1, settings: 1 };
@@ -319,6 +287,12 @@
       svcPost: typeof svcPost === "function" ? svcPost : function (s, p, b) { return call("svc_post", { service: s, path: p, body: b || {} }); },
       svcPatch: function (s, p, b) { return call("svc_patch", { service: s, path: p, body: b || {} }); },
       switchView: switchView,
+      openModelSetup: function (target, doneView) { window.RuoConnect.openModel(target, doneView); },
+      openWorkspaceConversation: function (id) {
+        WS.conv = id || "";
+        WS.msgs = [];
+        switchView("workspace");
+      },
       toast: typeof toast === "function" ? toast : function () { }
     };
     window.RuoAppReady = true;
@@ -339,8 +313,7 @@
       call("svc_get", { service: "bili", path: "/api/status" }).catch(function (e) { return { __err: e.message || e }; }),
       call("svc_get", { service: "mood", path: "/api/state" }).catch(function (e) { return { __err: e.message || e }; }),
       call("svc_get", { service: "persona", path: "/api/persona" }).catch(function (e) { return { __err: e.message || e }; }),
-      call("svc_get", { service: "workspace", path: "/api/models/status" }).catch(function (e) { return { __err: e.message || e }; }),
-      call("svc_get", { service: "setup", path: "/api/setup/status" }).catch(function (e) { return { __err: e.message || e }; })
+      call("svc_get", { service: "workspace", path: "/api/models/status" }).catch(function (e) { return { __err: e.message || e }; })
     ]).then(function (r) {
       if (r[0] && r[0].user) state.user = r[0].user;
       state.nodes = (r[1] && r[1].nodes) || [];
@@ -359,10 +332,6 @@
       state.moodErr = (r[9] && r[9].__err) || "";
       state.persona = (r[10] && r[10].data) ? r[10].data : null;
       state.ws = (r[11] && !r[11].__err) ? r[11] : null;
-      if (r[12] && !r[12].__err) {
-        SETUP.steps = r[12].steps || []; SETUP.done = r[12].done || 0; SETUP.total = r[12].total || 3;
-        renderSetupRail();
-      }
       renderSelf(); renderHead(); renderToday(); renderStats(); renderQuick(); renderCmds();
       renderDetail(); renderNodes(); renderCmdsPage(); renderAccount(); renderWeather();
       renderSvcRail(); renderMoodRail();
@@ -1486,6 +1455,7 @@
   // ---------------- QQ 机器人(管理台:DSH 接入 QQ,不在这里聊天) ----------------
   function enterQq() {
     refreshQqStatus();
+    loadQqExtras();
     loadWhitelist();
     loadQqConversation();
     loadQqAudit();
@@ -1494,8 +1464,11 @@
     if (!QQ.timer) {
       QQ.timer = setInterval(function () {
         if (state.view !== "qq") return;
-        refreshQqStatus(); loadQqConversation(); loadQqAudit();
-      }, 6000);
+        refreshQqStatus();
+        var pane = $("qqPanes").querySelector(".qqPane.on");
+        if (pane && pane.dataset.pane === "chat") loadQqConversation();
+        if (pane && pane.dataset.pane === "audit") loadQqAudit();
+      }, 3000);
     }
   }
   // 通用分页:任何 .qqTabs / .pgTabs 里带 data-pane 的按钮,切换同级 .qqPanes / .pgPanes
@@ -1609,14 +1582,6 @@
 
   // 右栏「快捷操作」:转调页头/主区的真实按钮,避免出现两套逻辑
   function bindQqQuick() {
-    function relay(id, target) {
-      var b = $(id); if (!b || b.__bound) return;
-      b.__bound = true;
-      b.addEventListener("click", function () {
-        var t = $(target); if (t) t.click();
-      });
-    }
-    relay("qqSyncConfig", "qqReload");
     // 顶部胶囊页签 = 分页切换
     var tabs = $("qqTabs");
     if (tabs && !tabs.__bound) {
@@ -1669,12 +1634,18 @@
     }
   }
   function refreshQqStatus() {
-    svcGet("qq", "/api/status").then(function (s) {
-      state.qq = s; state.qqErr = ""; renderQqStatus(); renderSvcRail();
-    }).catch(function (e) {
-      state.qq = null; state.qqErr = e.message || String(e); renderQqStatus(); renderSvcRail();
-    });
-    loadQqExtras();
+    if (QQ.statusPending) return QQ.statusPending;
+    QQ.statusPending = svcGet("qq", "/api/status").then(function (status) {
+      state.qq = status;
+      state.qqErr = "";
+    }).catch(function (error) {
+      state.qq = null;
+      state.qqErr = error.message || String(error);
+    }).then(function () {
+      renderQqStatus();
+      renderSvcRail();
+    }).finally(function () { QQ.statusPending = null; });
+    return QQ.statusPending;
   }
   function loadQqExtras() {
     svcGet("qq", "/api/mood").then(function (r) { QQ.mood = r || {}; renderQqStats(); }).catch(function () {});
@@ -1745,30 +1716,46 @@
   }
   function renderQqStatus() {
     var q = state.qq;
-    var dot = $("qqDot"), name = $("qqName"), sub = $("qqSub");
-    if (!q) {
-      if (dot) dot.className = "svcDot big bad";
-      if (name) name.textContent = "QQ 机器人";
-      if (sub) sub.textContent = "本地 QQ 服务没起来" + (state.qqErr ? ":" + state.qqErr : "");
-      renderQqStats();
-      return;
+    var np = q && q.napcat || {};
+    var on = !!(q && q.ws && q.ws.connected);
+    var account = q && q.account || {};
+    $("qqDot").className = "svcDot big " + (on ? "on" : (np.running ? "warn" : "bad"));
+    if ($("qqName")) $("qqName").textContent = on && account.nickname ? account.nickname : "QQ 机器人";
+    var login = $("qqStart"), restart = $("qqRestart");
+    login.hidden = on;
+    login.disabled = !!QQ.loginBusy || (!!np.running && np.state !== "error");
+    login.textContent = QQ.loginBusy ? "正在准备二维码…" : (login.disabled ? "等待手机扫码" : "扫码登录 QQ");
+    restart.hidden = !np.running && !on;
+    restart.disabled = !!QQ.loginBusy;
+    restart.textContent = on ? "重新登录 QQ" : "重新生成二维码";
+
+    if (on) QQ.loginError = "";
+    var loginText = "点「扫码登录 QQ」获取二维码。";
+    if (QQ.loginBusy) loginText = "正在准备，请稍等。";
+    else if (QQ.loginError) loginText = QQ.loginError;
+    else if (!q) loginText = "暂时连不上 QQ 服务，请稍后刷新或重新打开若。";
+    else if (on) loginText = "已登录 " + (account.nickname || "QQ") + "。";
+    else if (np.state === "qrcode") loginText = "在右侧扫码，然后在手机上确认登录。";
+    else if (np.state === "scanned") loginText = "已扫码，请在手机上确认。";
+    else if (np.state === "error") loginText = "QQ 登录失败，请查看右侧提示并重试。";
+    else if (np.running) loginText = "正在等待二维码，请稍等。";
+    var tip = $("qqSub");
+    if (tip.textContent !== loginText) feedbackQq(tip, loginText, QQ.loginError ? "error" : "");
+
+    var modelReady = !!(q && q.model_ready);
+    var shared = !!(q && q.model_source === "workspace");
+    $("qqModelSummary").textContent = modelReady
+      ? (shared ? "正在使用工作区模型 " : "正在使用 QQ 专用模型 ") + q.model
+      : "还没配置回复模型。可以和工作区共用一份。";
+    $("qqUseWorkspace").disabled = !!QQ.modelBusy || (shared && modelReady);
+    $("qqUseWorkspace").textContent = shared && modelReady ? "已使用工作区模型" : "使用工作区模型";
+    $("qqTestModel").hidden = !modelReady;
+    $("qqTestModel").disabled = !!QQ.modelBusy;
+    if (!QQ.replyBusy) {
+      $("qqReplyOn").disabled = !modelReady;
+      $("qqReplyOn").checked = !!(modelReady && q.reply_enabled);
     }
-    var on = q.ws && q.ws.connected;
-    if (dot) dot.className = "svcDot big " + (on ? "on" : (q.napcat && q.napcat.running ? "warn" : "bad"));
-    if (name) name.textContent = on ? ("QQ 机器人 · " + ((q.account && q.account.nickname) || "")) : "QQ 机器人";
-    var rd = $("qqRunDot"), rt = $("qqRunText");
-    if (rd) rd.className = "svcDot " + (on ? "on" : ((q.napcat && q.napcat.running) ? "warn" : "bad"));
-    if (rt) rt.textContent = on ? "运行中" : ((q.napcat && q.napcat.running) ? "协议端已起 · 未连上" : "未启动");
-    var sb = $("qqStart"); if (sb) sb.textContent = (q.napcat && q.napcat.running) ? "重启" : "启动";
-    if (sub) {
-      sub.textContent = on
-        ? (q.last_send_error
-          ? ("已接入 QQ,但发不出去:" + q.last_send_error)
-          : ("DSH 已接入 QQ · " + ((q.account && q.account.uin) || "") + " · 群 " + (q.groups || 0) + " 个"))
-        : (q.napcat && q.napcat.running ? "协议端在跑,连接还没建立(点「重连」)" : "协议端未启动 —— 点「启动 QQ 协议端」");
-    }
-    var rep = $("qqReplyOn"); if (rep) rep.checked = !!q.reply_enabled;
-    var wlOn = $("qqWlOn"); if (wlOn) wlOn.checked = !!(q.whitelist && q.whitelist.enabled);
+    if (q) $("qqWlOn").checked = !!(q.whitelist && q.whitelist.enabled);
     renderQqStats();
   }
   function renderQqStats() {
@@ -1779,9 +1766,9 @@
     var rows = [
       ["机器人", acc.nickname ? (acc.nickname + " · " + acc.uin) : "—"],
       ["QQ 连接", (q.ws && q.ws.connected) ? "在线" : "离线"],
-      ["协议端", (q.napcat && q.napcat.running) ? "在跑" : "未启动"],
+      ["扫码登录", (q.ws && q.ws.connected) ? "已确认" : "未完成"],
       ["群 / 好友", (q.groups || 0) + " / " + (q.friends || 0)],
-      ["DSH 模型", (q.model || "—") + (q.has_key ? "" : " · 没配 key")],
+      ["回复模型", q.model_ready ? (q.model || "已配置") : "未配置"],
       ["放行 / 拦截 / 回复", (st.allowed || 0) + " / " + (st.blocked || 0) + " / " + (st.replied || 0)],
       ["发送状态", q.last_send_error ? ("失败:" + q.last_send_error) : (st.replied ? "正常" : "—")],
       ["白名单", (wl.enabled ? "启用" : "停用") + " · " + (wl.users || 0) + " 人 / " + (wl.groups || 0) + " 群"]
@@ -1794,10 +1781,10 @@
     // 扫码 / 协议端提示
     var np = q.napcat || {};
     var qr = "";
-    if (np.state === "qrcode" && np.qr_b64) {
+    if (!(q.ws && q.ws.connected) && np.state === "qrcode" && np.qr_b64) {
       qr = '<div class="qrBox"><div class="qrT">手机 QQ 扫码登录</div>' +
         '<img alt="QQ 登录二维码" src="data:image/png;base64,' + np.qr_b64 + '">' +
-        '<div class="qrHint">' + esc(np.hint || "") + "</div></div>";
+        '<div class="qrHint">' + "打开手机 QQ 扫一扫，随后在手机上确认。</div></div>";
     } else if (np.state === "scanned") {
       qr = '<div class="qrBox"><div class="qrT">已扫码</div><div class="qrHint">' +
         esc(np.hint || "手机上点「确认登录」") + "</div></div>";
@@ -1805,7 +1792,11 @@
       qr = '<div class="qrBox"><div class="qrT bad">协议端出错</div><div class="qrHint">' +
         esc(np.hint || "") + "</div></div>";
     }
-    var qrBox = $("qqQr"); if (qrBox) qrBox.innerHTML = qr;
+    var qrBox = $("qqQr");
+    if (qrBox && QQ.qrMarkup !== qr) {
+      QQ.qrMarkup = qr;
+      qrBox.innerHTML = qr;
+    }
 
     // 主动消息
     var idle = (QQ.idle || {});
@@ -1916,31 +1907,24 @@
   function loadQqConfig() {
     svcGet("qq", "/api/config").then(function (r) {
       var c = (r && r.config) || {};
-      if ($("cfgWs")) $("cfgWs").value = c.ws_url || "";
-      if ($("cfgAccount")) $("cfgAccount").value = c.account || "";
-      if ($("cfgBase")) $("cfgBase").value = c.api_base || "";
-      if ($("cfgModel")) $("cfgModel").value = c.model || "";
-      if ($("cfgKey")) $("cfgKey").placeholder = c.has_key ? "已配置(留空不改)" : "没配,填一个";
+      $("cfgWs").value = c.ws_url || "";
+      $("cfgAccount").value = c.account || "";
     }).catch(function () {});
   }
+
   function saveQqConfig() {
-    var body = {
-      ws_url: $("cfgWs") ? $("cfgWs").value.trim() : "",
-      account: $("cfgAccount") ? $("cfgAccount").value.trim() : "",
-      // 接口地址必须一起存:用第三方中转 / OpenCode 这类服务时,
-      // base 是自定义的,只填 key 会一直往 deepseek 发,永远 401。
-      api_base: $("cfgBase") ? $("cfgBase").value.trim() : "",
-      model: $("cfgModel") ? $("cfgModel").value.trim() : ""
-    };
-    var k = $("cfgKey") ? $("cfgKey").value.trim() : "";
-    if (k) body.api_key = k;
-    svcPost("qq", "/api/config", body).then(function (r) {
-      if (r && r.ok) {
-        toast("配置已保存");
-        if ($("cfgKey")) $("cfgKey").value = "";
-        loadQqConfig(); refreshQqStatus();
-      } else toast((r && r.error) || "保存失败");
-    }).catch(function (e) { toast("保存失败:" + (e.message || e)); });
+    var button = $("cfgSave");
+    button.disabled = true;
+    svcPost("qq", "/api/config", {
+      ws_url: $("cfgWs").value.trim(),
+      account: $("cfgAccount").value.trim()
+    }).then(function (r) {
+      if (!r || !r.ok) throw new Error("保存 QQ 连接设置失败。");
+      toast("QQ 连接设置已保存。");
+      refreshQqStatus();
+    }).catch(function () {
+      toast("保存 QQ 连接设置失败，请重试。");
+    }).finally(function () { button.disabled = false; });
   }
   function loadQqConversation() {
     svcGet("qq", "/api/conversation?limit=60").then(function (r) {
@@ -1989,50 +1973,104 @@
         '<span class="txt">' + esc(m.text || m.reason || "") + "</span></div>";
     }).join("");
   }
-  function qqStart() {
-    toast("正在请求启动 QQ 协议端(会弹 UAC,请点「是」)…");
-    svcPost("qq", "/api/napcat/start", {}).then(function (res) {
-      if (res && res.ok) {
-        toast(res.already ? "协议端已经在跑了" : (res.hint || "已请求启动"));
-        var n = 0;
-        var t = setInterval(function () { n++; refreshQqStatus(); if (n > 20) clearInterval(t); }, 3000);
-      } else toast((res && res.error) || "启动失败");
-    }).catch(function (e) { toast("启动失败:" + (e.message || e)); });
+  function feedbackQq(node, message, tone) {
+    node.textContent = message;
+    node.dataset.tone = tone || "";
+    node.hidden = !message;
   }
+
+  function qqStart(restart) {
+    if (QQ.loginBusy) return;
+    QQ.loginBusy = true;
+    QQ.loginError = "";
+    renderQqStatus();
+    var path = restart ? "/api/napcat/restart" : "/api/napcat/start";
+    svcPost("qq", path, {}).then(function (result) {
+      if (!result || !result.ok) {
+        QQ.loginError = "QQ 未能启动。请确认使用完整的 Windows 单文件版，并查看右侧状态。";
+      }
+    }).catch(function () {
+      QQ.loginError = "暂时连不上 QQ 服务，请重新打开若再试。";
+    }).finally(function () {
+      QQ.loginBusy = false;
+      return refreshQqStatus();
+    });
+  }
+
+  function qqUseWorkspace() {
+    if (QQ.modelBusy) return;
+    QQ.modelBusy = true;
+    renderQqStatus();
+    var box = $("qqModelFeedback");
+    feedbackQq(box, "正在读取工作区模型…");
+    svcGet("workspace", "/api/models/status").then(function (status) {
+      if (!status || !status.enabled) {
+        feedbackQq(box, "");
+        window.RuoConnect.openModel("workspace-for-qq");
+        return;
+      }
+      return svcPost("qq", "/api/model/use-workspace", {}).then(function (result) {
+        if (!result || !result.ok) throw new Error((result && result.error) || "QQ 没能切换模型。");
+        feedbackQq(box, "QQ 已连接工作区模型。", "ok");
+      });
+    }).catch(function () {
+      feedbackQq(box, "暂时无法使用工作区模型。请稍后重试。", "error");
+    }).finally(function () {
+      QQ.modelBusy = false;
+      return refreshQqStatus();
+    });
+  }
+
+  function qqTestModel() {
+    if (QQ.modelBusy) return;
+    QQ.modelBusy = true;
+    renderQqStatus();
+    var box = $("qqModelFeedback");
+    feedbackQq(box, "正在测试 QQ 回复模型…");
+    svcPost("qq", "/api/test_model", {}).then(function (result) {
+      if (result && result.ok) feedbackQq(box, "测试通过，QQ 可以使用此模型。", "ok");
+      else feedbackQq(box, (result && result.error) || "模型没有返回回复。", "error");
+    }).catch(function () {
+      feedbackQq(box, "暂时无法测试，请稍后重试。", "error");
+    }).finally(function () {
+      QQ.modelBusy = false;
+      renderQqStatus();
+    });
+  }
+
   (function bindQq() {
     if ($("wlAddBtn")) $("wlAddBtn").addEventListener("click", wlAdd);
     if ($("wlId")) $("wlId").addEventListener("keydown", function (e) { if (e.key === "Enter") wlAdd(); });
-    if ($("qqStart")) $("qqStart").addEventListener("click", qqStart);
-    if ($("qqRestart")) $("qqRestart").addEventListener("click", function () {
-      toast("正在重置协议端,等新二维码…");
-      svcPost("qq", "/api/napcat/restart", {}).then(function (res) {
-        if (res && res.ok) toast("已重新启动,二维码马上出来");
-        else toast((res && res.error) || "重启失败");
-        var n = 0;
-        var t = setInterval(function () { n++; refreshQqStatus(); if (n > 20) clearInterval(t); }, 3000);
-      }).catch(function (e) { toast("重启失败:" + (e.message || e)); });
+    $("qqStart").addEventListener("click", function () { qqStart(false); });
+    $("qqRestart").addEventListener("click", function () { qqStart(true); });
+    $("cfgSave").addEventListener("click", saveQqConfig);
+    $("qqUseWorkspace").addEventListener("click", qqUseWorkspace);
+    $("qqOwnModel").addEventListener("click", function () {
+      feedbackQq($("qqModelFeedback"), "");
+      window.RuoConnect.openModel("qq");
     });
-    if ($("cfgSave")) $("cfgSave").addEventListener("click", saveQqConfig);
-    if ($("qqTestModel")) $("qqTestModel").addEventListener("click", function () {
-      // 先存再测,避免「填了没保存」测的是旧配置
-      saveQqConfig();
-      toast("正在测模型…");
-      setTimeout(function () {
-        svcPost("qq", "/api/test_model", {}).then(function (r) {
-          if (r && r.ok) toast("连上了:" + (r.model || "") + (r.reply ? " 回复「" + r.reply + "」" : ""));
-          else toast("没通 —— " + ((r && r.error) || "未知错误"));
-        }).catch(function (e) { toast("测试失败:" + (e.message || e)); });
-      }, 600);
+    $("qqTestModel").addEventListener("click", qqTestModel);
+    $("qqOpenWhitelist").addEventListener("click", function () {
+      $("qqTabs").querySelector('[data-pane="wl"]').click();
+      $("wlId").focus();
     });
     if ($("qqReload")) $("qqReload").addEventListener("click", function () {
       svcPost("qq", "/api/reload", {}).then(function () { refreshQqStatus(); toast("已重连"); })
         .catch(function (e) { toast("重连失败:" + (e.message || e)); });
     });
-    if ($("qqReplyOn")) $("qqReplyOn").addEventListener("change", function () {
-      var on = this.checked;
-      svcPost("qq", "/api/config", { reply_enabled: on }).then(function () {
-        toast(on ? "DSH 自动回复已开" : "DSH 自动回复已关"); refreshQqStatus();
-      }).catch(function (e) { toast("改不了:" + (e.message || e)); });
+    $("qqReplyOn").addEventListener("change", function () {
+      var button = this, on = this.checked;
+      QQ.replyBusy = true;
+      button.disabled = true;
+      svcPost("qq", "/api/config", { reply_enabled: on }).then(function (result) {
+        if (!result || !result.ok) throw new Error("保存失败");
+        toast(on ? "QQ 自动回复已开启。" : "QQ 自动回复已关闭。");
+      }).catch(function () {
+        toast("没能保存自动回复设置，请重试。");
+      }).finally(function () {
+        QQ.replyBusy = false;
+        refreshQqStatus();
+      });
     });
     if ($("qqWlOn")) $("qqWlOn").addEventListener("change", function () {
       var on = this.checked;
@@ -2049,26 +2087,41 @@
                file: "", cover: "", pubTimer: null, editing: "" };
   function enterBili() {
     renderBiliStatus();
+    refreshBiliStatus();
     loadBiliDaily();
-    if (!BILI.partitions.length) loadBiliPartitions();
-    if (!BILI.videos.length) loadBiliVideos(); else renderBiliVideos();
   }
+
+  function useBiliStatus(status) {
+    state.bili = status;
+    renderBiliStatus();
+    if (status && status.logged_in) {
+      if (!BILI.partitions.length) loadBiliPartitions();
+      if (!BILI.videos.length) loadBiliVideos();
+    }
+  }
+
+  function refreshBiliStatus() {
+    if (BILI.refreshing) return BILI.refreshing;
+    BILI.refreshing = svcGet("bili", "/api/status").then(useBiliStatus).catch(function () {
+      state.biliErr = "暂时连不上 B 站服务，请重开若后再试。";
+      useBiliStatus(null);
+    }).finally(function () { BILI.refreshing = null; });
+    return BILI.refreshing;
+  }
+
   function renderBiliStatus() {
     var b = state.bili;
-    var name = $("biliName"), sub = $("biliSub"), face = $("biliFace");
-    if (!b) {
-      if (name) name.textContent = "B 站机器人";
-      if (sub) sub.textContent = "本地 B站 服务没起来" + (state.biliErr ? ":" + state.biliErr : "");
-      renderBiliStats();
-      return;
-    }
-    if (name) name.textContent = b.logged_in ? (b.uname || "B 站机器人") : "B 站机器人";
-    if (sub) sub.textContent = b.logged_in
-      ? ("已登录 · Lv" + (b.level == null ? "-" : b.level) + " · 硬币 " + (b.coins == null ? "—" : b.coins) + (b.allow_write ? " · 可投稿/回复" : " · 只读(写操作没开)"))
-      : ("未登录:" + (b.error || "cookie 过期"));
-    if (face) {
-      if (b.face) { face.src = b.face; face.style.display = ""; } else { face.style.display = "none"; }
-    }
+    var on = !!(b && b.logged_in);
+    $("biliLogin").textContent = on ? "重新扫码登录" : "扫码登录 B 站";
+    $("biliName").textContent = on ? (b.uname || "B 站账号") : "未登录";
+    $("biliSub").textContent = on ? "B 站已登录" : (b && b.error) || state.biliErr || "用哔哩哔哩 App 扫码登录。";
+    var face = $("biliFace");
+    if (on && b.face) { face.src = b.face; face.hidden = false; }
+    else { face.removeAttribute("src"); face.hidden = true; }
+    var toggle = $("biliAllowWrite");
+    toggle.disabled = !on || !!BILI.savingWrite;
+    if (!BILI.savingWrite) toggle.checked = !!(b && b.allow_write);
+    $("biliModel").textContent = state.ws && state.ws.enabled ? "管理聊天模型" : "配置聊天模型";
     renderBiliStats();
   }
   function renderBiliStats() {
@@ -2098,9 +2151,9 @@
       '<label>时段<input id="dailyFrom" type="number" min="0" max="23" value="' + (dc.from_hour == null ? 10 : dc.from_hour) + '">~<input id="dailyTo" type="number" min="0" max="23" value="' + (dc.to_hour == null ? 22 : dc.to_hour) + '">点</label></div>' +
       '<div class="cfgRow">' +
       '<label>刷几条<input id="dailyCount" type="number" min="1" max="10" value="' + (BILI.dailyCount || 3) + '"></label>' +
-      '<label class="svcSwitch"><input type="checkbox" id="dailyLike"' + (BILI.dailyLike === false ? "" : " checked") + '><span>点赞</span></label>' +
-      '<label class="svcSwitch"><input type="checkbox" id="dailyCmt"' + (BILI.dailyCmt === false ? "" : " checked") + '><span>评论</span></label>' +
-      '<label class="svcSwitch"><input type="checkbox" id="dailyNotify"' + (BILI.dailyNotify === false ? "" : " checked") + '><span>通知我</span></label>' +
+      '<label class="svcSwitch"><input type="checkbox" id="dailyLike"' + ((BILI.dailyLike ?? dc.auto_like) ? " checked" : "") + '><span>点赞</span></label>' +
+      '<label class="svcSwitch"><input type="checkbox" id="dailyCmt"' + ((BILI.dailyCmt ?? dc.auto_comment) ? " checked" : "") + '><span>评论</span></label>' +
+      '<label class="svcSwitch"><input type="checkbox" id="dailyNotify"' + ((BILI.dailyNotify ?? dc.notify) ? " checked" : "") + '><span>通知我</span></label>' +
       '</div>' +
       '<div class="svcActs"><button type="button" class="ghost mini" id="dailyGo">开始刷</button></div>' +
       '<pre class="pubLog" id="dailyLog">' + esc(((d.log || []).slice(-8)).join("\n")) + "</pre>";
@@ -2115,7 +2168,10 @@
         per_day: parseInt(($("dailyPerDay") || {}).value, 10) || 1,
         from_hour: parseInt(($("dailyFrom") || {}).value, 10),
         to_hour: parseInt(($("dailyTo") || {}).value, 10),
-        count: BILI.dailyCount || 3
+        count: parseInt($("dailyCount").value, 10) || 3,
+        auto_like: $("dailyLike").checked,
+        auto_comment: $("dailyCmt").checked,
+        notify: $("dailyNotify").checked
       }).then(function () { toast(on ? "每天自动刷推荐已开" : "自动刷推荐已关"); loadBiliDaily(); })
         .catch(function (e) { toast("保存失败:" + (e.message || e)); });
     });
@@ -2332,17 +2388,37 @@
     if ($("pubCover")) $("pubCover").addEventListener("click", pubPickCover);
     if ($("pubDry")) $("pubDry").addEventListener("click", function () { pubStart(true); });
     if ($("pubGo")) $("pubGo").addEventListener("click", function () { pubStart(false); });
-    if ($("biliReload")) $("biliReload").addEventListener("click", function () {
-      BILI.videos = []; BILI.comments = []; BILI.sel = "";
-      svcPost("bili", "/api/reload", {}).then(function (s) {
-        state.bili = s; renderBiliStatus(); renderSvcRail(); loadBiliVideos(); toast("已刷新");
-      }).catch(function (e) { toast("刷新失败:" + (e.message || e)); });
+    $("biliReload").addEventListener("click", refreshBiliStatus);
+    $("biliLogin").addEventListener("click", function () { window.RuoConnect.openBili(); });
+    $("biliModel").addEventListener("click", function () { window.RuoConnect.openModel("workspace", "bili"); });
+    $("biliAllowWrite").addEventListener("change", function () {
+      var allow = this.checked;
+      BILI.savingWrite = true;
+      this.disabled = true;
+      svcPost("bili", "/api/config/write", { allow_write: allow }).then(function (result) {
+        if (!result || !result.ok) throw new Error((result && result.error) || "保存失败。");
+        if (state.bili) state.bili.allow_write = result.allow_write;
+        toast(allow ? "已允许投稿和回复。" : "已关闭投稿和回复。");
+      }).catch(function (error) {
+        toast(error.message || "保存 B 站设置失败。");
+      }).finally(function () {
+        BILI.savingWrite = false;
+        renderBiliStatus();
+      });
+    });
+    window.addEventListener("ruo:bili-connected", function (event) {
+      BILI.videos = [];
+      BILI.sel = "";
+      useBiliStatus(event.detail);
+      renderSvcRail();
+      if (state.view === "setup") loadSetup();
+      else $("biliTabs").querySelector('[data-pane="acc"]').click();
     });
   })();
 
   // ================= 人格 / 工作区(独立模块) =================
   var PERSONA = { data: null, fields: [], channels: [], ch: "", presets: [] };
-  var WS = { conv: "", msgs: [], convs: [], tasks: [], models: [], sending: false };
+  var WS = { conv: "", msgs: [], convs: [], tasks: [], sending: false };
 
   function svcGet(service, path) { return call("svc_get", { service: service, path: path }); }
   function svcPost(service, path, body) {
@@ -2520,25 +2596,13 @@
     if (WS.conv) loadWsMessages(WS.conv);
   }
   function loadWsModel() {
-    svcGet("workspace", "/api/models/status").then(function (st) {
-      WS.modelStatus = st || {};
-      var dot = $("wsDot"), sub = $("wsSub");
-      if (dot) dot.className = "svcDot big " + (st && st.enabled ? "on" : "warn");
-      if (sub) sub.textContent = st && st.enabled
-        ? ("模型 " + (st.model || "") + " · " + (st.provider || ""))
-        : "还没启用模型 —— 在右边填一个";
-      renderWsSide();
-    }).catch(function () {});
-    svcGet("workspace", "/api/models").then(function (r) {
-      WS.models = (r && r.items) || [];
-      var cur = WS.models.filter(function (m) { return m.enabled; })[0];
-      if (cur) {
-        if ($("wsProvider")) $("wsProvider").value = cur.provider || "deepseek";
-        if ($("wsModel")) $("wsModel").value = cur.model || "";
-        if ($("wsBase")) $("wsBase").value = cur.base_url || "";
-      }
-      renderWsSide();
-    }).catch(function () {});
+    return svcGet("workspace", "/api/models/status").then(function (status) {
+      WS.modelStatus = status || {};
+      state.ws = WS.modelStatus;
+    }).catch(function () {
+      WS.modelStatus = { unavailable: true };
+      state.ws = null;
+    }).then(renderWsPanel);
   }
   function renderWsSide() {
     var box = $("wsSide"); if (!box) return;
@@ -2579,12 +2643,22 @@
   }
   function renderWsPanel() {
     var st = WS.modelStatus || {};
-    var name = st.model || "未启用模型";
-    var desc = st.enabled ? ("已启用 · " + (st.provider || "自定义")) : "还没有启用模型，点右侧箭头配置";
-    var mn = $("wsModelName"); if (mn) mn.textContent = name;
-    var md = $("wsModelDesc"); if (md) md.textContent = desc;
-    var chip = $("wsChipModel"); if (chip) chip.textContent = name;
-    var dot = document.querySelector(".wsModelDot"); if (dot) dot.className = "wsModelDot" + (st.enabled ? "" : " off");
+    var ready = !!st.enabled;
+    var name = ready ? (st.model || "已启用") : "未配置模型";
+    var desc = ready ? "已启用，可以开始对话" :
+      st.unavailable ? "暂时连不上工作区，请刷新或重新打开若。" : "配置后可以与若聊天。";
+    $("wsModelName").textContent = name;
+    $("wsModelDesc").textContent = desc;
+    $("wsCfgToggle").textContent = ready ? "管理聊天模型" : "配置聊天模型";
+    $("wsChipModel").textContent = ready ? name : "配置聊天模型";
+    $("wsDot").className = "svcDot big " + (ready ? "on" : "warn");
+    $("wsSub").textContent = ready ? name : (st.unavailable ? "工作区暂不可用" : "未配置聊天模型");
+    $("wsConnectNotice").hidden = ready || !WS.modelStatus;
+    $("wsConnectHint").textContent = st.hint || (st.unavailable
+      ? "工作区暂时连不上。请点刷新，或重开若后再试。"
+      : "选服务商，粘贴它给你的 API 密钥。通过测试后就能开始聊天。");
+    var dot = $("wsModelChip").querySelector(".wsModelDot");
+    if (dot) dot.classList.toggle("off", !ready);
     // 会话数量 tag
     var ct = $("wsConvTag"); if (ct) ct.textContent = WS.convs.length ? (WS.convs.length + " 个") : "—";
     // 会话数量 tag
@@ -2672,12 +2746,16 @@
       return '<div class="convMsg ' + (out ? "out" : "in") + '">' + ava +
         '<div class="convBody">' +
         '<div class="ch"><b>' + who + "</b><span>" + esc(String(m.created_at || "").slice(5, 16)) + "</span></div>" +
-        '<div class="cb">' + esc(out ? wsErrText(m.content || "") : (m.content || "")) + "</div></div></div>";
+        '<div class="cb">' + esc(m.content || "") + "</div></div></div>";
     }).join("");
     if (atBottom) box.scrollTop = box.scrollHeight;
   }
   function wsSend() {
     if (WS.sending) return;
+    if (!WS.modelStatus || !WS.modelStatus.enabled) {
+      window.RuoConnect.openModel("workspace");
+      return;
+    }
     var inp = $("wsInput"), text = inp ? inp.value.trim() : "";
     if (!text) { toast("先说点什么"); return; }
     WS.sending = true;
@@ -2694,43 +2772,20 @@
         loadWsConvs();
         loadWsTasks();
         if (r.tool_calls && r.tool_calls.length) toast("用了工具:" + r.tool_calls.map(function (t) { return t.name; }).join("、"));
-      } else toast((r && r.error) || "没回上");
-    }).catch(function (e) { toast("对话失败:" + wsErrText(e.message || e)); })
-      .then(function () { WS.sending = false; if ($("wsSend")) $("wsSend").disabled = false; });
-  }
-  function wsSaveModel() {
-    var body = {
-      name: "主模型",
-      provider: ($("wsProvider") || {}).value || "deepseek",
-      base_url: ($("wsBase") || {}).value.trim(),
-      model: ($("wsModel") || {}).value.trim(),
-      enabled: true
-    };
-    var key = ($("wsKey") || {}).value.trim();
-    if (key) body.api_key = key;
-    if (!body.model) { toast("模型名要填(比如 deepseek-chat)"); return; }
-    svcPost("workspace", "/api/models", body).then(function (r) {
-      if (r && r.ok) {
-        var old = WS.models.filter(function (m) { return m.enabled; });
-        var done = Promise.resolve();
-        old.forEach(function (m) {
-          done = done.then(function () {
-            return call("svc_patch", { service: "workspace", path: "/api/models/" + encodeURIComponent(m.id),
-              body: { enabled: false } }).catch(function () {});
-          });
-        });
-        return done.then(function () { toast("模型已保存并启用"); if ($("wsKey")) $("wsKey").value = ""; loadWsModel(); });
+      } else {
+        if (r && r.conversation_id) {
+          WS.conv = r.conversation_id;
+          loadWsMessages(WS.conv);
+          loadWsConvs();
+        }
+        if (inp && !inp.value) inp.value = text;
+        toast((r && r.error) || "这次没有收到回复，请再试一次。");
       }
-      toast((r && r.error) || "保存失败");
-    }).catch(function (e) { toast("保存失败:" + (e.message || e)); });
-  }
-  function wsTestModel() {
-    if ($("wsTestModel")) $("wsTestModel").disabled = true;
-    svcPost("workspace", "/api/chat", { text: "用一句话自我介绍,别超过 20 字" }).then(function (r) {
-      toast(r && r.ok ? ("模型回:" + String(r.reply || "").slice(0, 40)) : wsErrText((r && r.error) || "没回上"));
-      if (r && r.ok) { loadWsConvs(); loadWsTasks(); }
-    }).catch(function (e) { toast("测试失败:" + wsErrText(e.message || e)); })
-      .then(function () { if ($("wsTestModel")) $("wsTestModel").disabled = false; });
+    }).catch(function (e) {
+      if (inp && !inp.value) inp.value = text;
+      toast("对话失败：" + wsErrText(e.message || e));
+    })
+      .then(function () { WS.sending = false; if ($("wsSend")) $("wsSend").disabled = false; });
   }
   function loadWsTasks() {
     svcGet("workspace", "/api/tasks").then(function (r) {
@@ -2746,26 +2801,6 @@
         }).join("")
         : '<p class="biliEmpty">还没有任务</p>';
     }).catch(function () {});
-  }
-  var WS_PRESETS = {
-    openai: { provider: "openai", base: "https://api.openai.com/v1", model: "gpt-4o-mini",
-              tip: "ChatGPT:去 platform.openai.com → API keys 建一把,地址一般不用改" },
-    deepseek: { provider: "deepseek", base: "https://api.deepseek.com/v1", model: "deepseek-chat",
-                tip: "DeepSeek:去 platform.deepseek.com → API keys" },
-    relay: { provider: "custom", base: "https://你的中转站地址/v1", model: "按对方模型列表填",
-             tip: "中转站:地址用对方给你的,通常以 /v1 结尾;模型名按对方列表抄" },
-    ollama: { provider: "ollama", base: "http://127.0.0.1:11434/v1", model: "qwen2.5:7b",
-              tip: "本地 Ollama:先在本机跑 ollama serve,Key 随便填或留空" },
-    opencode: { provider: "custom", base: "https://你的opencode地址/v1", model: "按后台模型列表填",
-                tip: "OpenCode Zen:用后台给的 API 地址(带 /v1)+ 模型名;只有订阅没有 API 的话接不了" }
-  };
-  function wsApplyPreset(key) {
-    var p = WS_PRESETS[key];
-    if (!p) return;
-    if ($("wsProvider")) $("wsProvider").value = p.provider;
-    if ($("wsBase")) $("wsBase").value = p.base;
-    if ($("wsModel")) $("wsModel").value = p.model;
-    toast(p.tip);
   }
   function wsErrText(msg) {
     var m = String(msg || "");
@@ -2788,13 +2823,6 @@
       });
     }
     var r = $("wsRefresh"); if (r) r.addEventListener("click", function () { enterWorkspace(); toast("已刷新"); });
-    var sm = $("wsSaveModel"); if (sm) sm.addEventListener("click", wsSaveModel);
-    var tm = $("wsTestModel"); if (tm) tm.addEventListener("click", wsTestModel);
-    var pre = $("wsPresets");
-    if (pre) pre.addEventListener("click", function (e) {
-      var b = e.target.closest ? e.target.closest("button[data-p]") : null;
-      if (b) wsApplyPreset(b.getAttribute("data-p"));
-    });
     // 新工作区控件
     function wsNewChat() {
       WS.conv = null; WS.msgs = [];
@@ -2818,17 +2846,8 @@
         if (p) { var inp = $("wsInput"); if (inp) { inp.value = "文件：" + p; inp.focus(); } }
       }).catch(function () {});
     });
-    var cfg = $("wsCfgToggle"); if (cfg) cfg.addEventListener("click", function () {
-      var panel = $("wsCfgPanel"); if (!panel) return;
-      panel.hidden = !panel.hidden;
-      this.classList.toggle("open", !panel.hidden);
-    });
-    var qmodel = $("wsQModel"); if (qmodel) qmodel.addEventListener("click", function () {
-      var panel = $("wsCfgPanel"); if (panel) { panel.hidden = false; var t = $("wsCfgToggle"); if (t) t.classList.add("open"); }
-      toast("在右侧填写并启用模型");
-    });
-    var chip = $("wsModelChip"); if (chip) chip.addEventListener("click", function () {
-      var panel = $("wsCfgPanel"); if (panel) { panel.hidden = false; var t = $("wsCfgToggle"); if (t) t.classList.add("open"); }
+    ["wsCfgToggle", "wsQModel", "wsModelChip", "wsConnectModel"].forEach(function (id) {
+      $(id).addEventListener("click", function () { window.RuoConnect.openModel("workspace"); });
     });
     var qlogs = $("wsQLogs"); if (qlogs) qlogs.addEventListener("click", function () { switchView("cmds"); });
     var tAttach = $("wsTAttach"); if (tAttach) tAttach.addEventListener("click", function () {
@@ -2851,238 +2870,97 @@
     });
   })();
 
-  // ================= 一键部署 =================
-  var SETUP = { steps: [], timer: null, preset: "deepseek", bili: {}, modelSaved: false };
-
-  var MODEL_PRESETS = [
-    { g: "国内", k: "deepseek", name: "DeepSeek", provider: "deepseek", base: "https://api.deepseek.com/v1", model: "deepseek-chat", how: "platform.deepseek.com → API keys" },
-    { g: "国内", k: "qwen", name: "通义千问(阿里百炼)", provider: "custom", base: "https://dashscope.aliyuncs.com/compatible-mode/v1", model: "qwen-plus", how: "bailian.console.aliyun.com → API-KEY" },
-    { g: "国内", k: "kimi", name: "Kimi(月之暗面)", provider: "custom", base: "https://api.moonshot.cn/v1", model: "moonshot-v1-8k", how: "platform.moonshot.cn → API Keys" },
-    { g: "国内", k: "glm", name: "智谱 GLM", provider: "custom", base: "https://open.bigmodel.cn/api/paas/v4", model: "glm-4-plus", how: "open.bigmodel.cn → API Keys" },
-    { g: "国内", k: "baichuan", name: "百川", provider: "custom", base: "https://api.baichuan-ai.com/v1", model: "Baichuan4", how: "platform.baichuan-ai.com → API Key" },
-    { g: "国内", k: "doubao", name: "豆包(火山方舟)", provider: "custom", base: "https://ark.cn-beijing.volces.com/api/v3", model: "填你的推理接入点ID", how: "console.volcengine.com/ark → API Key + 接入点" },
-    { g: "国内", k: "minimax", name: "MiniMax", provider: "custom", base: "https://api.minimax.chat/v1", model: "abab6.5s-chat", how: "platform.minimaxi.com → 接口密钥" },
-    { g: "国内", k: "yi", name: "零一万物 Yi", provider: "custom", base: "https://api.lingyiwanwu.com/v1", model: "yi-large", how: "platform.lingyiwanwu.com → API Key" },
-    { g: "国内", k: "hunyuan", name: "腾讯混元", provider: "custom", base: "https://api.hunyuan.cloud.tencent.com/v1", model: "hunyuan-turbo", how: "console.cloud.tencent.com/hunyuan" },
-    { g: "国内", k: "spark", name: "讯飞星火", provider: "custom", base: "https://spark-api-open.xf-yun.com/v1", model: "generalv3.5", how: "console.xfyun.cn → 星火 API" },
-    { g: "国内", k: "stepfun", name: "阶跃星辰", provider: "custom", base: "https://api.stepfun.com/v1", model: "step-2-16k", how: "platform.stepfun.com → API Key" },
-    { g: "国内", k: "siliconflow", name: "硅基流动", provider: "custom", base: "https://api.siliconflow.cn/v1", model: "Qwen/Qwen2.5-72B-Instruct", how: "cloud.siliconflow.cn → API 密钥" },
-    { g: "国外", k: "openai", name: "ChatGPT(OpenAI)", provider: "openai", base: "https://api.openai.com/v1", model: "gpt-4o-mini", how: "platform.openai.com → API keys" },
-    { g: "国外", k: "claude", name: "Claude(Anthropic,需中转)", provider: "custom", base: "https://你的中转地址/v1", model: "claude-sonnet-4-5", how: "Anthropic 原生不是 OpenAI 协议,要用中转站" },
-    { g: "国外", k: "gemini", name: "Google Gemini", provider: "custom", base: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-2.0-flash", how: "aistudio.google.com → API key" },
-    { g: "国外", k: "grok", name: "Grok(xAI)", provider: "custom", base: "https://api.x.ai/v1", model: "grok-2-latest", how: "console.x.ai → API Keys" },
-    { g: "国外", k: "mistral", name: "Mistral", provider: "custom", base: "https://api.mistral.ai/v1", model: "mistral-large-latest", how: "console.mistral.ai → API Keys" },
-    { g: "国外", k: "openrouter", name: "OpenRouter", provider: "custom", base: "https://openrouter.ai/api/v1", model: "openai/gpt-4o", how: "openrouter.ai/keys" },
-    { g: "国外", k: "groq", name: "Groq", provider: "custom", base: "https://api.groq.com/openai/v1", model: "llama-3.3-70b-versatile", how: "console.groq.com/keys" },
-    { g: "国外", k: "together", name: "Together", provider: "custom", base: "https://api.together.xyz/v1", model: "meta-llama/Llama-3.3-70B-Instruct-Turbo", how: "api.together.xyz → API Keys" },
-    { g: "本地", k: "ollama", name: "Ollama(本地)", provider: "ollama", base: "http://127.0.0.1:11434/v1", model: "qwen2.5:7b", how: "本机先 ollama serve,再 ollama pull 模型" },
-    { g: "本地", k: "lmstudio", name: "LM Studio(本地)", provider: "custom", base: "http://127.0.0.1:1234/v1", model: "按 LM Studio 里加载的模型", how: "LM Studio 里开启本地服务" },
-    { g: "本地", k: "vllm", name: "vLLM(本地)", provider: "custom", base: "http://127.0.0.1:8000/v1", model: "按你部署的模型", how: "vLLM 起 OpenAI 兼容服务" },
-    { g: "其它", k: "relay", name: "中转站 / 公司网关", provider: "custom", base: "https://你的地址/v1", model: "按对方列表", how: "用对方给的接口地址(带 /v1)和模型名" },
-    { g: "其它", k: "opencode", name: "OpenCode Zen", provider: "custom", base: "https://后台给的地址/v1", model: "后台列表里的模型名", how: "用 OpenCode 后台给的 API 地址;只有订阅没有 API 接不了" }
-  ];
-
-  function presetOf(k) {
-    for (var i = 0; i < MODEL_PRESETS.length; i++) if (MODEL_PRESETS[i].k === k) return MODEL_PRESETS[i];
-    return MODEL_PRESETS[0];
-  }
+  // ---------------- 快速开始 ----------------
+  var SETUP = { timer: null, pending: false, view: "" };
 
   function enterSetup() {
     loadSetup();
     if (!SETUP.timer) {
       SETUP.timer = setInterval(function () {
-        if (state.view !== "setup") return;
-        // 正在部署表单里打字时别重绘,否则 3 秒一次会吞掉输入
-        var a = document.activeElement;
-        if (a && a.closest && a.closest("#setupSteps")) return;
-        loadSetup(true);
-      }, 3000);
+        if (state.view === "setup") loadSetup();
+      }, 4500);
     }
   }
-  function loadSetup(quiet) {
-    svcGet("setup", "/api/setup/status").then(function (r) {
-      SETUP.steps = (r && r.steps) || [];
-      SETUP.done = (r && r.done) || 0;
-      SETUP.total = (r && r.total) || 3;
-      renderSetup();
-      renderSetupRail();
-      onSetupProgress(r);   // 三步完成 → 自动结束引导
-    }).catch(function (e) {
-      if (!quiet) {
-        var box = $("setupSteps");
-        if (box) box.innerHTML = '<p class="biliEmpty">一键部署服务没起来:' + esc(e.message || e) + "</p>";
-      }
-    });
-    // B站 扫码状态单独轮询。以前只赋值不重绘,所以「扫了/确认了」界面毫无变化,
-    // 看起来就是「点了没反应」—— 状态变了必须重画。
-    svcGet("setup", "/api/setup/bili/status").then(function (r) {
-      var next = r || {};
-      var before = (SETUP.bili && SETUP.bili.state) || "";
-      var after = next.state || "";
-      SETUP.bili = next;
-      if (before !== after) {
-        var a = document.activeElement;
-        if (!(a && a.closest && a.closest("#setupSteps"))) renderSetup();
-      }
-    }).catch(function () {});
-  }
-  function renderSetupRail() {
-    var txt = $("lrSetupTxt"), dot = $("lrSetupDot"), chip = $("homeSetup");
-    var done = SETUP.done || 0, total = SETUP.total || 3;
-    if (txt) txt.textContent = done + "/" + total;
-    if (dot) dot.className = "svcDot" + (done >= total ? " on" : (done > 0 ? " warn" : ""));
-    if (chip) chip.textContent = "一键部署 " + done + "/" + total;
-  }
-  function renderSetup() {
-    var box = $("setupSteps"); if (!box) return;
-    var steps = SETUP.steps || [];
-    var done = SETUP.done || 0, total = SETUP.total || 3;
-    var bar = $("setupProgBar"); if (bar) bar.style.width = Math.round(done * 100 / (total || 1)) + "%";
-    var pt = $("setupProgTxt"); if (pt) pt.textContent = done + " / " + total;
-    var dot = $("setupDot");
-    if (dot) dot.className = "svcDot big " + (done >= total ? "on" : (done > 0 ? "warn" : ""));
-    var sub = $("setupSub");
-    if (sub) sub.textContent = done >= total
-      ? "三步都好了 —— 现在可以直接用"
-      : ("还差 " + (total - done) + " 步:跟着下面走就行");
-    if (!steps.length) { box.innerHTML = '<p class="biliEmpty">读取中…</p>'; return; }
 
-    var html = steps.map(function (s, i) {
-      var st = s.state || "todo";
-      var badge = st === "done" ? "已完成" : (st === "waiting" ? "等你操作" : (st === "error" ? "出错了" : "待办"));
-      var cls = st === "done" ? "ok" : (st === "waiting" ? "warn" : (st === "error" ? "bad" : ""));
-      var h = '<div class="setupCard glass ' + (st === "done" ? "done" : "") + '">' +
-        '<div class="scHead"><span class="scNo">' + (i + 1) + '</span>' +
-        '<b>' + esc(s.name) + '</b>' +
-        '<span class="scBadge ' + cls + '">' + badge + '</span></div>' +
-        '<p class="scDetail">' + esc(s.detail || "") + '</p>';
-
-      if (s.key === "qq") {
-        if (s.qr) {
-          h += '<div class="scQr"><img alt="QQ 二维码" src="data:image/png;base64,' + s.qr + '"></div>' +
-            '<p class="scHint">用手机 QQ 扫码登录(扫完自动连上)</p>';
-        }
-        if (st !== "done") {
-          h += '<div class="scActs"><button type="button" data-act="qq">' +
-            (s.qr ? "重新出码" : "开始配置 QQ") + '</button></div>';
-        }
-      } else if (s.key === "bili") {
-        var bq = s.qr || (SETUP.bili && SETUP.bili.qr_b64) || "";
-        if (bq) {
-          h += '<div class="scQr"><img alt="B站 二维码" src="data:image/png;base64,' + bq + '"></div>' +
-            '<p class="scHint">用手机 B站 扫码登录(扫完自动写入登录态)</p>';
-        }
-        if (st !== "done") {
-          h += '<div class="scActs"><button type="button" data-act="bili">' +
-            (bq ? "重新生成二维码" : "开始配置 B站") + '</button></div>';
-        }
-      } else if (s.key === "model") {
-        if (st === "done") {
-          h += '<div class="scActs"><button type="button" class="ghost" data-act="model-toggle">换一个模型</button></div>';
-        }
-        h += '<div class="scForm' + (st === "done" && !SETUP.modelOpen ? " hidden" : "") + '" id="setupModelForm">' +
-          '<label class="pField"><span>选服务商(共 ' + MODEL_PRESETS.length + ' 个)</span>' +
-          '<select id="setupPreset">' + (function () {
-            var out = "", lastG = "";
-            MODEL_PRESETS.forEach(function (p) {
-              if (p.g !== lastG) { if (lastG) out += "</optgroup>"; out += '<optgroup label="' + p.g + '">'; lastG = p.g; }
-              out += '<option value="' + p.k + '">' + esc(p.name) + "</option>";
-            });
-            if (lastG) out += "</optgroup>";
-            return out;
-          })() + '</select></label>' +
-          '<label class="pField"><span>接口地址</span><input id="setupBase" placeholder="选中服务商后自动填"></label>' +
-          '<label class="pField"><span>模型名</span><input id="setupModelName" placeholder="例:gpt-4o-mini"></label>' +
-          '<label class="pField"><span>API Key</span><input id="setupKey" type="password" placeholder="sk-..."></label>' +
-          '<p class="scHint" id="setupHow">—</p>' +
-          '<div class="scActs"><button type="button" data-act="model-save">保存并启用</button>' +
-          '<button type="button" class="ghost" data-act="model-test">测试一句</button></div>' +
-          '</div>';
+  function loadSetup() {
+    if (SETUP.pending) return;
+    SETUP.pending = true;
+    return svcGet("setup", "/api/setup/status").then(function (result) {
+      var steps = result && result.steps;
+      if (!Array.isArray(steps) || !steps.length) throw new Error("状态未就绪");
+      renderSetup(steps);
+    }).catch(function () {
+      if (!SETUP.view) {
+        renderSetup([
+          { key: "model", name: "工作区模型", state: "todo", detail: "打开配置，连接你的聊天模型。" },
+          { key: "qq", name: "QQ 自动回复", state: "todo", detail: "打开 QQ 页面，查看扫码和回复设置。" },
+          { key: "bili", name: "B 站账号", state: "todo", detail: "用哔哩哔哩扫码登录。" }
+        ], true);
       }
-      return h + "</div>";
-    }).join("");
-    box.innerHTML = html;
+      $("setupProgTxt").textContent = "状态暂不可读";
+      $("setupProgBar").style.width = "0";
+    }).finally(function () { SETUP.pending = false; });
+  }
 
-    // 绑定
-    var sel = $("setupPreset");
-    if (sel) {
-      sel.value = SETUP.preset;
-      applySetupPreset(SETUP.preset);
-      sel.addEventListener("change", function () { SETUP.preset = this.value; applySetupPreset(this.value); });
-    }
-    var acts = box.querySelectorAll("[data-act]");
-    for (var i = 0; i < acts.length; i++) {
-      acts[i].addEventListener("click", function () {
-        var a = this.getAttribute("data-act");
-        if (a === "qq") setupQq();
-        else if (a === "bili") setupBili();
-        else if (a === "model-save") setupModelSave(this);
-        else if (a === "model-test") setupModelTest(this);
-        else if (a === "model-toggle") {
-          SETUP.modelOpen = !SETUP.modelOpen;
-          var f = $("setupModelForm");
-          if (f) f.classList.toggle("hidden", !SETUP.modelOpen);
-        }
-      });
-    }
-  }
-  function applySetupPreset(k) {
-    var p = presetOf(k);
-    if ($("setupBase")) $("setupBase").value = p.base;
-    if ($("setupModelName")) $("setupModelName").value = p.model;
-    if ($("setupHow")) $("setupHow").textContent = "去哪拿 Key:" + p.how;
-  }
-  function setupQq() {
-    toast("正在后台启动 QQ 协议端…");
-    svcPost("setup", "/api/setup/qq/start", {}).then(function (r) {
-      if (r && r.ok) { toast(r.already ? "协议端已经在跑了" : (r.hint || "已启动,等二维码")); }
-      else toast((r && r.error) || "启动失败");
-      setTimeout(function () { loadSetup(); }, 2500);
-    }).catch(function (e) { toast("启动失败:" + (e.message || e)); });
-  }
-  function setupBili() {
-    toast("正在生成 B站 登录二维码…");
-    svcPost("setup", "/api/setup/bili/gen", {}).then(function () {
-      setTimeout(function () { loadSetup(); }, 2000);
-    }).catch(function (e) { toast("生成失败:" + (e.message || e)); });
-  }
-  function setupModelSave(btn) {
-    var p = presetOf(SETUP.preset);
-    var body = {
-      provider: p.provider,
-      base_url: ($("setupBase") || {}).value.trim(),
-      model: ($("setupModelName") || {}).value.trim(),
-      api_key: ($("setupKey") || {}).value.trim()
+  function renderSetup(steps, unavailable) {
+    var done = steps.filter(function (step) { return step.state === "done"; }).length;
+    var headers = {
+      model: { action: "配置聊天模型", ready: "管理聊天模型" },
+      qq: { action: "去设置 QQ", ready: "查看 QQ" },
+      bili: { action: "扫码登录 B 站", ready: "查看 B 站" }
     };
-    if (!body.model) { toast("模型名要填"); return; }
-    btn.disabled = true;
-    svcPost("setup", "/api/setup/model", body).then(function (r) {
-      if (r && r.ok) {
-        toast("模型已保存并启用,正在测一句…");
-        if ($("setupKey")) $("setupKey").value = "";
-        SETUP.modelOpen = false;
-        return svcPost("setup", "/api/setup/model/test", {}).then(function (t) {
-          toast(t && t.ok ? ("通了!她说:" + String(t.reply || "").slice(0, 30)) : ("保存了,但测试没通:" + wsErrText((t && t.error) || "")));
-          loadSetup();
-        });
-      }
-      toast((r && r.error) || "保存失败");
-    }).catch(function (e) { toast("保存失败:" + (e.message || e)); })
-      .then(function () { btn.disabled = false; });
+    if (!unavailable) {
+      $("setupProgTxt").textContent = done + " / " + steps.length + " 已完成";
+      $("setupProgBar").style.width = Math.round(done * 100 / steps.length) + "%";
+    }
+    $("setupDot").className = "svcDot big " + (done === steps.length ? "on" : (done ? "warn" : ""));
+    $("setupChat").hidden = !steps.some(function (step) { return step.key === "model" && step.state === "done"; });
+    var markup = steps.filter(function (step) { return headers[step.key]; }).map(function (step) {
+      var ready = step.state === "done";
+      var label = { done: "已完成", waiting: "待确认", error: "需要重试", todo: "未设置" }[step.state] || "";
+      return '<section class="setupCard connectSetupRow"><div class="connectSetupCopy"><h3>' + esc(step.name) +
+        (step.key === "model" ? "" : ' <small>可选</small>') + '</h3><p>' + esc(step.detail) +
+        '</p></div><span class="scBadge ' + (ready ? "ok" : "") + '">' + esc(label) + '</span>' +
+        '<button type="button" class="btn ' + (step.key === "model" && !ready ? "" : "ghost ") +
+        'sm" data-setup="' + step.key + '" data-ready="' + (ready ? "1" : "0") + '">' +
+        esc(headers[step.key][ready ? "ready" : "action"]) + '</button></section>';
+    }).join("");
+    if (markup !== SETUP.view) {
+      SETUP.view = markup;
+      $("setupSteps").innerHTML = markup;
+    }
   }
-  function setupModelTest(btn) {
-    btn.disabled = true;
-    svcPost("setup", "/api/setup/model/test", {}).then(function (t) {
-      toast(t && t.ok ? ("模型回:" + String(t.reply || "").slice(0, 40)) : ("测试没通:" + wsErrText((t && t.error) || "")));
-    }).catch(function (e) { toast("测试失败:" + wsErrText(e.message || e)); })
-      .then(function () { btn.disabled = false; });
-  }
-  (function bindSetup() {
-    var r = $("setupRefresh");
-    if (r) r.addEventListener("click", function () { loadSetup(); toast("已刷新"); });
-    var chip = $("homeSetup");
-    if (chip) chip.addEventListener("click", function () { switchView("setup"); });
-  })();
+
+  $("setupSteps").addEventListener("click", function (event) {
+    var button = event.target.closest("button[data-setup]");
+    if (!button) return;
+    if (button.dataset.setup === "model") window.RuoConnect.openModel("workspace");
+    else if (button.dataset.setup === "qq") {
+      switchView("qq");
+      $("qqTabs").querySelector('[data-pane="config"]').click();
+    } else if (button.dataset.ready === "1") switchView("bili");
+    else window.RuoConnect.openBili();
+  });
+  $("setupRefresh").addEventListener("click", loadSetup);
+  $("setupSkip").addEventListener("click", function () {
+    markGuideDone();
+    switchView("home");
+  });
+  $("setupChat").addEventListener("click", function () {
+    markGuideDone();
+    switchView("workspace");
+    $("wsInput").focus();
+  });
+  $("homeSetup").addEventListener("click", function () { switchView("setup"); });
+
+  window.addEventListener("ruo:model-configured", function (event) {
+    if (event.detail.target !== "qq") markGuideDone();
+    loadWsModel().then(function () {
+      window.dispatchEvent(new CustomEvent("ruo:data"));
+      if (state.view === "qq") refreshQqStatus();
+    });
+    if (state.view === "setup") loadSetup();
+  });
 
   // ---------------- v4 新壳的补丁绑定 ----------------
   (function bindV4() {

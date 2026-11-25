@@ -300,7 +300,15 @@ async fn svc_get(service: String, path: String) -> Result<Value, String> {
 #[tauri::command]
 async fn svc_post(service: String, path: String, body: Value) -> Result<Value, String> {
     let base = svc_base(&service)?;
-    api::Client::new(&base, None)
+    let mut client = api::Client::new(&base, None);
+    if service == "workspace" && matches!(path.as_str(), "/api/chat" | "/api/generate") {
+        client = client.with_timeout(std::time::Duration::from_secs(70));
+    } else if matches!(path.as_str(), "/api/models/configure" | "/api/model/configure"
+        | "/api/test_model" | "/api/models/test")
+    {
+        client = client.with_timeout(std::time::Duration::from_secs(28));
+    }
+    client
         .post(&path, &body)
         .map_err(|e| format!("{service} 服务没起来?{}", e.message))
 }
@@ -327,19 +335,210 @@ fn port_open(port: u16) -> bool {
     TcpStream::connect_timeout(&addr, D::from_millis(300)).is_ok()
 }
 
-fn ensure_services() {
-    let dir = std::env::current_exe()
+// ---------------- 单文件模式:内嵌 runtime/core/services/NapCat ----------------
+// 发布版把运行时压成一个 bundle.zip 编进 exe,用户只下一个 exe。
+#[cfg(rivulet_embedded_bundle)]
+static BUNDLE: &[u8] = include_bytes!("../assets/bundle.zip");
+#[cfg(not(rivulet_embedded_bundle))]
+static BUNDLE: &[u8] = &[];
+
+#[cfg(windows)]
+fn hide_window(cmd: &mut std::process::Command) {
+    use std::os::windows::process::CommandExt;
+    cmd.creation_flags(0x0800_0000);
+}
+
+/// 必须存在的关键文件;缺任何一个都说明解压不完整。
+const MUST_HAVE: &[&str] = &[
+    "runtime/python.exe",
+    "runtime/Lib/site-packages/segno/__init__.py",
+    "core/main.py",
+    "services/qq_service.py",
+    "services/setup_service.py",
+    "services/workspace/api.py",
+    "services/workspace/provider_llm.py",
+    "fatfish/NapCat/node.exe",
+    "fatfish/NapCat/index.js",
+    "fatfish/bili/qr_login.py",
+];
+
+fn missing_files(exe_dir: &std::path::Path) -> Vec<String> {
+    MUST_HAVE
+        .iter()
+        .filter(|m| !exe_dir.join(m).exists())
+        .map(|m| m.to_string())
+        .collect()
+}
+
+/// 解压前清空旧的程序文件,只保留 user data(data 目录)。
+/// 不清的话,升级后旧文件和新包混在一起,缺的永远补不上
+/// (QQ 找不到协议端、B站 出不了码),每发一版都会重犯。
+fn wipe_program_dirs(exe_dir: &std::path::Path, log: &mut Vec<String>) {
+    for name in ["runtime", "core", "services", "fatfish"] {
+        let dir = exe_dir.join(name);
+        if !dir.is_dir() {
+            continue;
+        }
+        let rd = match std::fs::read_dir(&dir) {
+            Ok(r) => r,
+            Err(e) => {
+                log.push(format!("读不到 {}: {}", dir.display(), e));
+                continue;
+            }
+        };
+        for ent in rd.flatten() {
+            let file_name = ent.file_name();
+            if file_name == "data"
+                || (name == "services" && matches!(file_name.to_str(), Some("qq.json" | "bili.json")))
+            {
+                continue; // 包含旧版仍放在 services 根目录的用户配置。
+            }
+            let p = ent.path();
+            let r = if p.is_dir() {
+                std::fs::remove_dir_all(&p)
+            } else {
+                std::fs::remove_file(&p)
+            };
+            if let Err(e) = r {
+                // 常见原因:用户还开着程序,文件被占用
+                log.push(format!("删不掉 {} ({})", p.display(), e));
+            }
+        }
+    }
+}
+
+fn ensure_bundle() {
+    let exe_dir = match std::env::current_exe()
         .ok()
         .and_then(|p| p.parent().map(|d| d.to_path_buf()))
-        .map(|d| d.join("services"));
-    let dir = match dir {
-        Some(d) if d.exists() => d,
-        _ => return,
+    {
+        Some(d) => d,
+        None => return,
     };
-    let py_path = std::env::var("PYTHONPATH").unwrap_or_else(|_| r"D:\qqbot\libs".to_string());
+    if BUNDLE.is_empty() {
+        return;
+    }
+
+    let stamp = exe_dir.join(".bundle-stamp");
+    let want = BUNDLE.len().to_string();
+    let mut log: Vec<String> = Vec::new();
+    log.push(format!(
+        "exe v{} / bundle {} 字节 / 目录 {}",
+        env!("CARGO_PKG_VERSION"),
+        BUNDLE.len(),
+        exe_dir.display()
+    ));
+
+    let missing = missing_files(&exe_dir);
+    let stamp_ok = std::fs::read_to_string(&stamp)
+        .map(|h| h.trim() == want)
+        .unwrap_or(false);
+
+    if stamp_ok && missing.is_empty() {
+        log.push("bundle: 已是最新,跳过解压".to_string());
+        let _ = std::fs::write(exe_dir.join("startup.log"), log.join("\r\n"));
+        return;
+    }
+
+    log.push(format!(
+        "bundle: 需要解压(戳一致={} / 缺文件={})",
+        stamp_ok,
+        if missing.is_empty() { "无".to_string() } else { missing.join(",") }
+    ));
+
+    // 1) 先清旧程序文件(保留 data)
+    wipe_program_dirs(&exe_dir, &mut log);
+    log.push("已清理旧的程序文件(保留 data)".to_string());
+
+    // 2) 落盘并解压
+    let tmp = std::env::temp_dir().join("rivulet_bundle.zip");
+    if let Err(e) = std::fs::write(&tmp, BUNDLE) {
+        log.push(format!("写临时 zip 失败: {}", e));
+        let _ = std::fs::write(exe_dir.join("startup.log"), log.join("\r\n"));
+        return;
+    }
+
+    let mut cmd = std::process::Command::new("tar");
+    cmd.arg("-xf").arg(&tmp).arg("-C").arg(&exe_dir);
+    #[cfg(windows)]
+    hide_window(&mut cmd);
+    let ok = matches!(cmd.status(), Ok(s) if s.success());
+    log.push(format!("tar 解压: {}", if ok { "成功" } else { "失败" }));
+
+    if !ok {
+        let ps = format!(
+            "Expand-Archive -LiteralPath '{}' -DestinationPath '{}' -Force",
+            tmp.display(),
+            exe_dir.display()
+        );
+        let mut p2 = std::process::Command::new("powershell");
+        p2.args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", &ps]);
+        #[cfg(windows)]
+        hide_window(&mut p2);
+        let ok2 = matches!(p2.status(), Ok(s) if s.success());
+        log.push(format!("后备解压: {}", if ok2 { "成功" } else { "失败" }));
+    }
+    let _ = std::fs::remove_file(&tmp);
+
+    // 3) 校验:关键文件齐了才算成功,才写戳
+    let still = missing_files(&exe_dir);
+    if still.is_empty() {
+        let _ = std::fs::write(&stamp, &want);
+        log.push("校验通过,已记录版本戳".to_string());
+    } else {
+        log.push(format!("校验失败,仍缺: {}", still.join(",")));
+    }
+    let _ = std::fs::write(exe_dir.join("startup.log"), log.join("\r\n"));
+}
+
+
+fn ensure_services() {
+    // 便携化:exe 同级放 runtime\python.exe + services\ + core\ 即可换机器直接跑。
+    let exe_dir = match std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|d| d.to_path_buf()))
+    {
+        Some(d) => d,
+        None => return,
+    };
+    let dir = exe_dir.join("services");
+    if !dir.exists() {
+        return;
+    }
+
+    // 优先用自带的 runtime\python.exe;没有才退回 PATH 上的 python。
+    let rt_py = exe_dir.join("runtime").join("python.exe");
+    let py_exe = if rt_py.exists() {
+        rt_py
+    } else {
+        std::path::PathBuf::from("python")
+    };
+    // PYTHONPATH:环境变量优先,否则用自带 runtime 的 site-packages(不再硬编码本机路径)。
+    let rt_site = exe_dir.join("runtime").join("Lib").join("site-packages");
+    let py_path = std::env::var("PYTHONPATH").unwrap_or_else(|_| rt_site.to_string_lossy().to_string());
+
+    // 0) 本机账号服务(Core):端口 8088,exe 同级 core\main.py。
+    //    以前这里没启动它,导致新机器上注册/登录直接失败。
+    let core_dir = exe_dir.join("core");
+    if core_dir.join("main.py").exists() && !port_open(8088) {
+        let mut cmd = std::process::Command::new(&py_exe);
+        cmd.arg("main.py")
+            .current_dir(&core_dir)
+            .env("PYTHONPATH", &py_path)
+            .stdin(std::process::Stdio::null())
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null());
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(0x0800_0000);
+        }
+        let _ = cmd.spawn();
+    }
 
     // 1) services.json 里登记的全部本地服务(Core / 记忆 / 状态 / 工作区 / 心情 / QQ / B站)
     //    格式:[{"port":18096,"script":"qq_service.py","cwd":"...","env":{"K":"V"}}]
+    //    cwd 支持相对路径(相对 exe/services);绝对路径不存在时自动退回本目录。
     let cfg_path = dir.join("services.json");
     let mut started = 0usize;
     if let Ok(raw) = std::fs::read_to_string(&cfg_path) {
@@ -351,9 +550,21 @@ fn ensure_services() {
                 if port == 0 || script.is_empty() || port_open(port) {
                     continue;
                 }
-                let mut cmd = std::process::Command::new("python");
+                let work_dir = if cwd.is_empty() {
+                    dir.clone()
+                } else {
+                    let p = std::path::PathBuf::from(cwd);
+                    if p.is_absolute() && !p.exists() {
+                        dir.clone()
+                    } else if p.is_absolute() {
+                        p
+                    } else {
+                        exe_dir.join(p)
+                    }
+                };
+                let mut cmd = std::process::Command::new(&py_exe);
                 cmd.arg(script)
-                    .current_dir(if cwd.is_empty() { dir.clone() } else { std::path::PathBuf::from(cwd) })
+                    .current_dir(&work_dir)
                     .env("PYTHONPATH", &py_path)
                     .stdin(std::process::Stdio::null())
                     .stdout(std::process::Stdio::null())
@@ -389,7 +600,7 @@ fn ensure_services() {
         if port_open(port) {
             continue;
         }
-        let mut cmd = std::process::Command::new("python");
+        let mut cmd = std::process::Command::new(&py_exe);
         cmd.arg(script)
             .current_dir(&dir)
             .env("PYTHONPATH", &py_path)
@@ -406,6 +617,46 @@ fn ensure_services() {
 }
 
 // ---------------- 起来 ----------------
+
+// ---------------- 窗口控制 ----------------
+// decorations=false(自绘),系统不再提供最小化/最大化/关闭,必须自己实现,
+// 否则窗口根本关不掉 —— 前端顶栏那三个按钮就是调这三个命令。
+#[tauri::command]
+fn win_min(window: tauri::Window) {
+    let _ = window.minimize();
+}
+
+#[tauri::command]
+fn win_max(window: tauri::Window) {
+    if window.is_maximized().unwrap_or(false) {
+        let _ = window.unmaximize();
+    } else {
+        let _ = window.maximize();
+    }
+}
+
+#[tauri::command]
+fn win_close(window: tauri::Window) {
+    let _ = window.close();
+}
+
+#[tauri::command]
+fn open_model_site(provider: String) -> Result<(), String> {
+    let url = match provider.as_str() {
+        "deepseek" => "https://platform.deepseek.com/api_keys",
+        "qwen" => "https://help.aliyun.com/zh/model-studio/get-api-key",
+        "openai" => "https://platform.openai.com/api-keys",
+        _ => return Err("这个服务商没有预置的密钥页面".to_string()),
+    };
+    #[cfg(windows)]
+    return std::process::Command::new("explorer.exe")
+        .arg(url)
+        .spawn()
+        .map(|_| ())
+        .map_err(|_| "打开浏览器失败".to_string());
+    #[cfg(not(windows))]
+    Err(format!("请在浏览器打开 {url}"))
+}
 
 /// 打开系统文件选择框,返回绝对路径(取消返回空串)。kind: video / image / any
 #[tauri::command]
@@ -439,6 +690,7 @@ pub fn run() {
     let base = store.api_base();
     let remembered = store.load_token();
 
+    ensure_bundle();
     ensure_services();
 
     // 鱼的小窝:纯本地引擎,状态在 exe 同级 data/home.json。
@@ -476,6 +728,10 @@ pub fn run() {
             svc_post,
             svc_patch,
             pick_file,
+            win_min,
+            win_max,
+            win_close,
+            open_model_site,
             home::home_snapshot,
             home::home_action,
             home::home_status,

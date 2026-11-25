@@ -246,7 +246,7 @@
           <button class="setEntry" data-goto="account"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M4.8 20c.8-3.6 3.7-5.6 7.2-5.6s6.4 2 7.2 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>账号</b><small>当前身份与安全</small></button>
           <button class="setEntry" data-goto="nodes"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.6" y="4.6" width="16.8" height="11.6" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8.8 20h6.4M12 16.4V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>节点</b><small>Node Agent 设备</small></button>
           <button class="setEntry" data-goto="cmds"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6.4h16M4 12h16M4 17.6h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>命令</b><small>最近下发的命令</small></button>
-          <button class="setEntry" data-goto="setup"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M14.2 3.6 5.4 13.4h5l-.6 7 8.8-9.8h-5l.6-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>一键部署</b><small>扫码、选模型的引导</small></button>
+          <button class="setEntry" data-goto="setup"><span class="seIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M14.2 3.6 5.4 13.4h5l-.6 7 8.8-9.8h-5l.6-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><b>快速开始</b><small>设置聊天模型，连接 QQ 和 B 站</small></button>
         </div>
         <p class="assetCredit">素材: 像素家具 <a href="https://opengameart.org/content/warm-eclectic-bedroom-furniture-set" target="_blank">Warm Eclectic Bedroom Set</a> by Pixelandbeans (CC BY 4.0) · QQ / Bilibili 品牌图标 via Simple Icons (CC0, 商标归各自公司) · AI 机器人 Microsoft Fluent Emoji (MIT)</p>
         <p class="hint settingsHint">这些页面沿用同一套浅蓝紫设计语言;点开后可以用左上角的「← 设置」回来。</p>
@@ -285,6 +285,13 @@
     <section class="wsChat" id="wsChatBox">
       <div class="wsChatSky" aria-hidden="true"></div>
       <div class="wsGirlWrap" aria-hidden="true"><img class="wsGirl" src="assets/whale-girl.png" alt=""></div>
+      <div class="connectNotice wsConnectNotice" id="wsConnectNotice" hidden>
+        <div>
+          <strong>连上聊天模型，就能和若对话</strong>
+          <p id="wsConnectHint">选服务商，粘贴它给你的 API 密钥。</p>
+        </div>
+        <button type="button" class="btn" id="wsConnectModel">配置聊天模型</button>
+      </div>
       <div class="wsScroller" id="wsScroller">
         <div class="wsMsgs" id="wsMsgs"></div>
       </div>
@@ -304,34 +311,19 @@
             </div>
           </div>
         </div>
-        <div class="wsComposeHint">Enter 发送 · Shift + Enter 换行 · 内容来自真实工作区接口</div>
+        <div class="wsComposeHint">Enter 发送 · Shift + Enter 换行</div>
       </div>
     </section>
 
     <!-- 右侧信息栏 -->
     <aside class="wsAside">
       <div class="glass card wsSideCard wsModelStateCard">
-        <div class="wsCardHead"><span class="wsCardIco"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 20 7v5c0 4.6-3.2 8-8 8.5-4.8-.5-8-3.9-8-8.5V7l8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><b>模型状态</b><span class="st"><i></i>在线</span></div>
+        <div class="wsCardHead"><span class="wsCardIco"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 20 7v5c0 4.6-3.2 8-8 8.5-4.8-.5-8-3.9-8-8.5V7l8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><b>聊天模型</b></div>
         <div class="wsModelHero">
           <span class="wsModelAva"><img src="assets/whale-avatar.png" alt=""></span>
           <div class="wsModelTxt"><b id="wsModelName">—</b><small id="wsModelDesc">等待模型信息</small></div>
-          <button type="button" class="wsChevBtn" id="wsCfgToggle" title="模型设置"><svg viewBox="0 0 24 24" fill="none"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
-        <div class="wsCfgPanel" id="wsCfgPanel" hidden>
-          <div class="provChips" id="wsPresets">
-            <button type="button" data-p="openai">ChatGPT</button>
-            <button type="button" data-p="deepseek">DeepSeek</button>
-            <button type="button" data-p="relay">中转站</button>
-            <button type="button" data-p="ollama">本地</button>
-          </div>
-          <div class="cfgGrid wsCfg">
-            <label>服务商<select id="wsProvider"><option value="deepseek">DeepSeek</option><option value="openai">OpenAI / ChatGPT</option><option value="ollama">本地 Ollama</option><option value="custom">其它（OpenAI 兼容）</option></select></label>
-            <label>模型名<input id="wsModel" placeholder="例：deepseek-chat"></label>
-            <label>接口地址<input id="wsBase" placeholder="例：https://api.openai.com/v1"></label>
-            <label>API Key<input id="wsKey" type="password" placeholder="sk-..."></label>
-          </div>
-          <div class="wsActions"><button type="button" class="btn sm" id="wsSaveModel">保存并启用</button><button type="button" class="btn ghost sm" id="wsTestModel">测试一句</button></div>
-        </div>
+        <button type="button" class="btn ghost sm wsConnectManage" id="wsCfgToggle">配置聊天模型</button>
       </div>
 
       <div class="glass card wsSideCard wsRunCard">
@@ -349,7 +341,7 @@
         <div class="wsCardHead"><b>快捷操作</b></div>
         <button type="button" class="wsQuickRow" id="wsQNew"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>新建对话<kbd>Ctrl + N</kbd></button>
         <button type="button" class="wsQuickRow" id="wsQFile"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H10l2 2h5.5A2.5 2.5 0 0 1 20 9.5v7A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>打开文件<kbd>Ctrl + O</kbd></button>
-        <button type="button" class="wsQuickRow" id="wsQModel"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 20 7v5c0 4.6-3.2 8-8 8.5-4.8-.5-8-3.9-8-8.5V7l8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>切换模型</button>
+        <button type="button" class="wsQuickRow" id="wsQModel"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 20 7v5c0 4.6-3.2 8-8 8.5-4.8-.5-8-3.9-8-8.5V7l8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>管理聊天模型</button>
         <button type="button" class="wsQuickRow" id="wsQLogs"><span class="qi"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>查看日志<kbd>Ctrl + L</kbd></button>
       </div>
 
@@ -406,34 +398,50 @@
     <!-- 页1 运行配置 -->
     <div class="qqPane qqPane-2 on" data-pane="config">
       <div class="glass card qqCard">
-        <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.7"/><path d="M19.4 13.4a7.8 7.8 0 0 0 0-2.8l2-1.6-2-3.4-2.4.9a7.6 7.6 0 0 0-2.4-1.4L14.2 2.4h-4l-.4 2.7c-.9.3-1.7.8-2.4 1.4l-2.4-.9-2 3.4 2 1.6a7.8 7.8 0 0 0 0 2.8l-2 1.6 2 3.4 2.4-.9c.7.6 1.5 1.1 2.4 1.4l.4 2.7h4l.4-2.7c.9-.3 1.7-.8 2.4-1.4l2.4.9 2-3.4-2-1.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span><b>运行配置</b>
-          <label class="svcSwitch qqHeadSwitch"><input type="checkbox" id="qqReplyOn"><span>DSH 自动回复</span></label>
+        <div class="qqCardHead"><b>设置 QQ 自动回复</b></div>
+        <div class="connectSteps">
+          <section class="connectStep" aria-labelledby="qqLoginTitle">
+            <h3 id="qqLoginTitle">1. 手机 QQ 扫码</h3>
+            <p>用你要作为机器人的 QQ 账号扫码，按手机提示确认。</p>
+            <div class="connectActions">
+              <button type="button" class="btn sm" id="qqStart">扫码登录 QQ</button>
+              <button type="button" class="btn ghost sm" id="qqRestart" hidden>重新生成二维码</button>
+            </div>
+            <p class="connectFeedback" id="qqSub" role="status">正在读取 QQ 状态…</p>
+          </section>
+          <section class="connectStep" aria-labelledby="qqModelTitle">
+            <h3 id="qqModelTitle">2. 选择回复用的模型</h3>
+            <p id="qqModelSummary">可以和工作区共用一次配置。</p>
+            <div class="connectActions">
+              <button type="button" class="btn sm" id="qqUseWorkspace">使用工作区模型</button>
+              <button type="button" class="btn ghost sm" id="qqOwnModel">给 QQ 单独配置</button>
+              <button type="button" class="btn ghost sm" id="qqTestModel" hidden>测试回复模型</button>
+            </div>
+            <p class="connectFeedback" id="qqModelFeedback" role="status" hidden></p>
+          </section>
+          <section class="connectStep" aria-labelledby="qqReplyTitle">
+            <h3 id="qqReplyTitle">3. 用另一个 QQ 号发条消息</h3>
+            <p>先把发消息的 QQ 号加入白名单，再用那个账号私聊机器人。</p>
+            <div class="connectActions">
+              <label class="svcSwitch"><input type="checkbox" id="qqReplyOn" disabled><span>自动回复</span></label>
+              <button type="button" class="btn ghost sm" id="qqOpenWhitelist">管理白名单</button>
+            </div>
+          </section>
         </div>
-
-        <div class="qqRow">
-          <span class="qqLabel">运行状态</span>
-          <div class="qqVal"><i class="svcDot" id="qqRunDot"></i><b id="qqRunText">读取中…</b></div>
-          <button type="button" class="btn ghost xs" id="qqStart">启动</button>
-          <button type="button" class="btn ghost xs" id="qqRestart" title="登录失败或二维码过期后点这个">重新扫码</button>
-        </div>
-        <label class="qqRow"><span class="qqLabel">协议端地址</span><input id="cfgWs" placeholder="ws://127.0.0.1:3001"></label>
-        <label class="qqRow"><span class="qqLabel">机器人 QQ</span><input id="cfgAccount" placeholder="填你的机器人 QQ"></label>
-        <label class="qqRow"><span class="qqLabel">接口地址</span><input id="cfgBase" placeholder="https://api.deepseek.com/v1"></label>
-        <label class="qqRow"><span class="qqLabel">模型</span><input id="cfgModel" placeholder="deepseek-chat"></label>
-        <label class="qqRow"><span class="qqLabel">模型 Key</span><input id="cfgKey" type="password" placeholder="留空 = 不修改"></label>
-
-        <div class="qqCardActs">
-          <button type="button" class="btn ghost sm" id="qqSyncConfig">同步配置</button>
-          <button type="button" class="btn ghost sm" id="qqTestModel">测试连接</button>
-          <button type="button" class="btn sm" id="cfgSave">保存配置</button>
-        </div>
-        <p class="qqCardNote" id="qqSub">正在读取状态…</p>
+        <details class="connectDetails">
+          <summary>高级连接设置</summary>
+          <div class="connectFields">
+            <label>QQ 连接地址<input id="cfgWs" placeholder="ws://127.0.0.1:3001"></label>
+            <label>指定机器人 QQ 号<input id="cfgAccount" inputmode="numeric" placeholder="默认从扫码账号读取"></label>
+            <button type="button" class="btn ghost sm" id="cfgSave">保存连接设置</button>
+          </div>
+        </details>
       </div>
 
       <div class="glass card qqCard">
         <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><b>运行状态</b><span class="tag">实时</span></div>
-        <div id="qqStatRows"></div>
         <div id="qqQr"></div>
+        <div id="qqStatRows"></div>
       </div>
     </div>
 
@@ -520,6 +528,7 @@
             <p class="qqHeroDesc"><i></i>投稿、看稿、回评论 —— 一个页面全搞定</p>
             <div class="qqHeroActs">
               <span class="tag" id="biliName">B 站机器人</span>
+              <button type="button" class="btn sm" id="biliLogin">扫码登录 B 站</button>
               <button type="button" class="btn ghost sm" id="biliReload">刷新</button>
             </div>
           </div>
@@ -605,6 +614,10 @@
           <div class="qqPane qqPane-2b" data-pane="acc">
             <div class="glass card qqCard">
               <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.4" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>账号状态</b><img class="biliFace" id="biliFace" alt=""></div>
+              <div class="connectStep">
+                <label class="svcSwitch"><input type="checkbox" id="biliAllowWrite" disabled><span>允许投稿和回复</span></label>
+                <p>用于在若里提交视频、修改稿件和回复评论。</p>
+              </div>
               <div id="biliStats"></div>
             </div>
             <div class="glass card qqCard">
@@ -613,8 +626,13 @@
                 <li>投稿走原版两步：先传文件，再提交</li>
                 <li>「只上传」不占投稿位</li>
                 <li>评论区回复会以账号身份发出</li>
-                <li>登录态过期时用「刷新」重新读一次</li>
+                <li>登录过期时，点上方「扫码登录 B 站」。</li>
               </ul>
+              <div class="connectStep">
+                <h3>AI 生成评论</h3>
+                <p>在「刷推荐」里选择评论时，若可以用工作区的聊天模型起草内容。</p>
+                <button type="button" class="btn ghost sm" id="biliModel">配置聊天模型</button>
+              </div>
             </div>
           </div>
         </div>
@@ -859,18 +877,20 @@
         <div class="pgHero">
           <span class="pgHeroIcon"><svg viewBox="0 0 24 24" fill="none"><path d="M14.2 3.6 5.4 13.4h5l-.6 7 8.8-9.8h-5l.6-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
           <div class="pgHeroTxt">
-            <h1>一键部署<i class="pgDot" id="setupDot"></i></h1>
-            <p id="setupSub">第一次用？QQ 扫码 → B站扫码 → 选个模型</p>
+            <h1>快速开始<i class="pgDot" id="setupDot"></i></h1>
+            <p>先设置聊天。需要时再连接 QQ 或 B 站。</p>
           </div>
           <div class="pgHeroActs">
-            <button type="button" class="btn ghost sm" id="setupRefresh">刷新</button>
+            <button type="button" class="btn ghost sm" id="setupRefresh">刷新状态</button>
+            <button type="button" class="btn ghost sm" id="setupSkip">先去首页</button>
           </div>
         </div>
 
         <div class="glass card qqCard">
-          <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6.6h14M5 12h14M5 17.4h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>部署进度</b><span class="tag" id="setupProgTxt">0 / 3</span></div>
+          <div class="qqCardHead"><span class="chi"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6.6h14M5 12h14M5 17.4h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><b>准备进度</b><span class="tag" id="setupProgTxt">读取中…</span></div>
           <div class="setupProg"><i id="setupProgBar"></i></div>
-          <div class="setupSteps" id="setupSteps"></div>
+          <div class="setupSteps" id="setupSteps"><p class="biliEmpty">正在读取状态…</p></div>
+          <div class="connectActions setupNext"><button type="button" class="btn" id="setupChat" hidden>开始对话</button></div>
         </div>
       </section>
 
@@ -1032,12 +1052,59 @@
   <span id="ver"></span><span id="loginClock"></span>
 </div>
 
+<dialog class="connectDialog" id="modelDialog" aria-labelledby="modelDialogTitle">
+  <div class="connectDialogBody">
+    <header class="connectDialogHead">
+      <div><h2 id="modelDialogTitle">配置聊天模型</h2><p id="modelDialogIntro"></p></div>
+      <button type="button" class="btn ghost sm" id="modelDialogClose">关闭</button>
+    </header>
+    <form id="modelForm" novalidate>
+      <fieldset id="modelFields" class="connectFields">
+        <label>1. 选服务商<select id="modelProvider"></select></label>
+        <p class="connectFieldHint" id="modelProviderHint"></p>
+        <button type="button" class="btn ghost sm connectKeyPage" id="modelKeyPage" hidden>打开获取密钥页面</button>
+        <label><span id="modelKeyLabel">2. 粘贴 API 密钥</span>
+          <input id="modelSecret" type="password" autocomplete="off" spellcheck="false" aria-describedby="modelKeyHelp">
+        </label>
+        <small class="connectFieldHint" id="modelKeyHelp"></small>
+        <details class="connectDetails" id="modelAdvanced">
+          <summary>接口地址和模型名</summary>
+          <div class="connectFields connectAdvancedFields">
+            <label>接口地址<input id="modelAddress" inputmode="url" autocomplete="off" spellcheck="false"></label>
+            <label>模型名<input id="modelId" autocomplete="off" spellcheck="false"></label>
+          </div>
+        </details>
+      </fieldset>
+      <p class="connectFeedback" id="modelResult" role="status" hidden></p>
+      <footer class="connectActions connectDialogFoot"><button type="submit" class="btn" id="modelApply">测试并启用</button></footer>
+    </form>
+  </div>
+</dialog>
+
+<dialog class="connectDialog connectScanDialog" id="biliScanDialog" aria-labelledby="biliScanTitle">
+  <div class="connectDialogBody">
+    <header class="connectDialogHead">
+      <div><h2 id="biliScanTitle">扫码登录 B 站</h2><p>打开手机哔哩哔哩 App，扫一扫并确认登录。</p></div>
+      <button type="button" class="btn ghost sm" id="biliScanClose">关闭</button>
+    </header>
+    <div class="connectQr">
+      <img id="biliScanImage" alt="B 站登录二维码" hidden>
+      <p class="connectFeedback" id="biliScanStatus" role="status">正在生成二维码…</p>
+    </div>
+    <footer class="connectActions connectDialogFoot">
+      <button type="button" class="btn" id="biliScanRetry" hidden>重新生成二维码</button>
+      <button type="button" class="btn" id="biliScanDone" hidden>完成</button>
+    </footer>
+  </div>
+</dialog>
+
 <script src="fish.js"></script>
 <script src="fish_workshop.js"></script>
 <script src="music.js"></script>
 <script src="characters.js"></script>
 <script src="CharacterAvatar.js"></script>
 <script src="app.js"></script>
+<script src="connect.js"></script>
 <script src="home.js"></script>
 <script src="boot.js"></script>
 </body>
