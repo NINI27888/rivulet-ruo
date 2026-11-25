@@ -2785,6 +2785,7 @@ html[data-theme="dark"] .moodBrief{background:rgba(255,255,255,.05); border-colo
 #p-fish .fishMain{height:auto; min-height:0; display:flex; flex-direction:column; overflow:hidden}
 #p-fish .fishStage{flex:1; min-height:0}
 #p-fish .fishSide{height:auto; min-height:0; overflow-y:auto}
+#p-fish #fishSide{grid-template-columns:minmax(0,1fr); min-height:0; overflow-y:auto}
 /* 整页视图(雇佣/工坊/账本/日记):同样吃满剩余高度,卡内滚动 */
 #p-fish > .fishSide:not(#fishSide){flex:1; min-height:0; height:auto; overflow-y:auto}
 
@@ -2831,61 +2832,6 @@ html[data-theme="dark"] .moodBrief{background:rgba(255,255,255,.05); border-colo
 #p-bili .biliVids{padding-bottom:0}
 #p-bili .biliVid:last-child{border-bottom:0}
 #p-bili .biliVid{margin-bottom:0}
-
-/* ==========================================================================
-   v12.1 鱼窝拆页(修正):拆页场景下强制单容器、画布完整可见
-   录制/镜头层的 transform scale 会让 100% 高度基准失效,这里用视口像素锁定
-   ========================================================================== */
-#p-fish{height:calc(var(--vhpx,100vh) - 0px)}
-#p-fish .fishHero{flex:none}
-/* 视口 860 时:Hero 约 150 + 页签 40 + 内边距 26 => 画布容器约 640 */
-#p-fish .fishBody{height:calc(var(--vhpx,100vh) - 250px); min-height:340px; flex:none}
-
-/* 画布页:强制隐藏侧栏,画布卡吃满整行 */
-#p-fish[data-view="house"] .fishSideCol,
-#p-fish[data-view="farm"] .fishSideCol,
-#p-fish[data-view="workshop"] .fishSideCol,
-#p-fish[data-view="hire"] .fishSideCol,
-#p-fish[data-view="ledger"] .fishSideCol,
-#p-fish[data-view="diary"] .fishSideCol,
-/* 侧栏页:显示 fishSideCol,里面只有一张卡 */
-#p-fish[data-view="bag"] .fishSideCol,
-#p-fish[data-view="shop"] .fishSideCol,
-#p-fish[data-view="hlog"] .fishSideCol,
-#p-fish[data-view="farmWork"] .fishSideCol,
-#p-fish[data-view="warehouse"] .fishSideCol,
-#p-fish[data-view="farmLog"] .fishSideCol{display:grid !important; grid-template-columns:minmax(0,1fr); height:100%}
-/* 画布页:fishBody 单列 */
-#p-fish[data-view="house"] .fishBody,
-#p-fish[data-view="farm"] .fishBody{grid-template-columns:minmax(0,1fr)}
-/* 画布按容器完整显示,不再被裁掉下半部分 */
-#p-fish[data-view="house"] .fishStage,
-#p-fish[data-view="farm"] .fishStage{overflow:auto; min-height:0}
-#p-fish[data-view="house"] .fishMain,
-#p-fish[data-view="farm"] .fishMain{overflow:hidden}
-
-/* 非画布页:隐藏画布,单卡全宽 */
-#p-fish[data-view="bag"] .fishMain,
-#p-fish[data-view="shop"] .fishMain,
-#p-fish[data-view="hlog"] .fishMain,
-#p-fish[data-view="farmWork"] .fishMain,
-#p-fish[data-view="warehouse"] .fishMain,
-#p-fish[data-view="farmLog"] .fishMain,
-#p-fish[data-view="workshop"] .fishMain,
-#p-fish[data-view="hire"] .fishMain,
-#p-fish[data-view="ledger"] .fishMain,
-#p-fish[data-view="diary"] .fishMain{display:none !important}
-
-/* 侧栏页只显示第一张卡(拆页后 renderSide 本就只产一张,这里兜底) */
-#p-fish .fishSideCol > .card:not(:first-child){display:none !important}
-
-/* 最终裁决:画布/整页视图一律隐藏侧栏(放在最后,优先级压过上面的 grid !important) */
-#p-fish[data-view="house"] .fishSideCol,
-#p-fish[data-view="farm"] .fishSideCol,
-#p-fish[data-view="workshop"] .fishSideCol,
-#p-fish[data-view="hire"] .fishSideCol,
-#p-fish[data-view="ledger"] .fishSideCol,
-#p-fish[data-view="diary"] .fishSideCol{display:none !important}
 
 /* ---------------------------------------------------------------- 新用户首启引导条 */
 .setupGuideBar{

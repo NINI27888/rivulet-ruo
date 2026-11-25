@@ -865,6 +865,23 @@
     if (title) title.textContent = view === 'farm' ? '两层田地' : '两层小楼';
   }
 
+  var currentSideMarkup = '';
+
+  function updateSideContent(box, markup) {
+    if (markup === currentSideMarkup) return false;
+    var scrollTop = box.scrollTop;
+    box.innerHTML = markup;
+    box.scrollTop = scrollTop;
+    currentSideMarkup = markup;
+    return true;
+  }
+
+  function recentEvents(source) {
+    return (snap.events || []).filter(function (event) {
+      return event.source === source && event.text;
+    }).slice(0, 6);
+  }
+
   function renderSide() {
     var box = $('fishSide'); if (!box || !snap) return;
     if (view === 'farm') {
@@ -873,8 +890,8 @@
       var dry = plots.filter(function (p) { return p.dry || !p.watered_at; }).length;
       var wh = snap.warehouse || {};
       var keys = Object.keys(wh).filter(function (k) { return wh[k] > 0; });
-      var hist = (snap.work_history || []).slice(-6).reverse();
-      box.innerHTML =
+      var hist = recentEvents('farm');
+      var farmMarkup =
         '<div class="glass card"><h2>农活</h2><div class="fishShop" style="grid-template-columns:repeat(2,1fr)">' +
         '<div class="fishShopItem"><b>' + ripe + '</b><span>熟了</span></div>' +
         '<div class="fishShopItem"><b>' + dry + '</b><span>干了</span></div>' +
@@ -890,8 +907,9 @@
         }).join('') + '</div>' : '<p class="hint" style="margin:0">空着,收下来的东西放这里。</p>') + '</div>' +
         '<div class="glass card"><h2>地里的动静</h2><div class="fishLog">' +
         (hist.length ? hist.map(function (w) {
-          return '<div class="fishLogRow"><span>' + esc(String(w.at || '').slice(5, 16)) + '</span><div>' + esc((w.name || '') + ' ' + (w.result || '')) + '</div></div>';
+          return '<div class="fishLogRow"><span>' + esc(String(w.at || '').slice(5, 16)) + '</span><div>' + esc(w.text || '') + '</div></div>';
         }).join('') : '<p class="hint" style="margin:0">还没有动静。</p>') + '</div></div>';
+      if (!updateSideContent(box, farmMarkup)) return;
       var bulks = box.querySelectorAll('[data-bulk]');
       for (var bi = 0; bi < bulks.length; bi++) {
         bulks[bi].addEventListener('click', function () { bulkFarm(this.getAttribute('data-bulk')); });
@@ -901,14 +919,20 @@
     var cat = catalogOf(), kinds = Object.keys(cat);
     var wh2 = snap.warehouse || {};
     var keys2 = Object.keys(wh2).filter(function (k) { return wh2[k] > 0; });
-    var hist2 = (snap.work_history || []).slice(-6).reverse();
+    var hist2 = recentEvents('home');
     var it2 = snap.items || {};
     var keys3 = Object.keys(it2).filter(function (k) { return it2[k] > 0; });
-    box.innerHTML =
+    var seeds = snap.seeds || {};
+    var seedKeys = Object.keys(seeds).filter(function (k) { return seeds[k] > 0; });
+    var houseMarkup =
       '<div class="glass card"><h2>背包</h2>' +
-      ((keys3.length || keys2.length) ? '<div class="fishShop">' +
+      ((keys3.length || keys2.length || seedKeys.length) ? '<div class="fishShop">' +
         keys3.map(function (k) {
           return '<div class="fishShopItem"><b>' + esc(k) + '</b><span>×' + it2[k] + '</span></div>';
+        }).join('') +
+        seedKeys.map(function (k) {
+          var name = (CROPS[k] || [k])[0] + '种子';
+          return '<div class="fishShopItem"><b>' + esc(name) + '</b><span>×' + seeds[k] + '</span></div>';
         }).join('') +
         keys2.map(function (k) {
           return '<div class="fishShopItem"><b>' + esc(k) + '</b><span>×' + wh2[k] + '</span></div>';
@@ -922,8 +946,9 @@
       }).join('') + '</div><p class="hint" style="margin:6px 0 0">点一件,再点地上的空地放下。</p></div>' +
       '<div class="glass card"><h2>家里的动静</h2><div class="fishLog">' +
       (hist2.length ? hist2.map(function (w) {
-        return '<div class="fishLogRow"><span>' + esc(String(w.at || '').slice(5, 16)) + '</span><div>' + esc((w.name || '') + ' ' + (w.result || '')) + '</div></div>';
+        return '<div class="fishLogRow"><span>' + esc(String(w.at || '').slice(5, 16)) + '</span><div>' + esc(w.text || '') + '</div></div>';
       }).join('') : '<p class="hint" style="margin:0">还没有动静。</p>') + '</div></div>';
+    if (!updateSideContent(box, houseMarkup)) return;
     var buys = box.querySelectorAll('[data-buy]');
     for (var i = 0; i < buys.length; i++) {
       buys[i].addEventListener('click', function () {
@@ -1127,6 +1152,7 @@
 
   // ---------------- 视图切换 ----------------
   function setView(v) {
+    var changed = view !== v;
     view = v;
     var tabs = $('fishTabs');
     if (tabs) {
@@ -1150,6 +1176,7 @@
     renderExtraPage();
     updateHud();
     renderSide();
+    if (changed && side) side.scrollTop = 0;
     render();
   }
 

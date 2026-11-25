@@ -1,6 +1,6 @@
 [package]
 name = "rivulet-ruo"
-version = "0.10.2-preview.4"
+version = "0.10.2-preview.5"
 description = "Rivulet 若 · 桌面客户端"
 authors = ["泥泥"]
 # 核心贡献者:啵啵小C(见 CONTRIBUTORS.md)
