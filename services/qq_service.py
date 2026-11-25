@@ -570,6 +570,18 @@ def _nc():
     """无头 NapCat 管理器:node.exe index.js,不弹窗、不要管理员。"""
     global NC
     d = (CFG.get("napcat_headless_dir") or "").strip()
+    # 相对路径按「包根」(services 的上一级)解析,不依赖进程当前目录。
+    # 否则以 services\ 为 cwd 启动时,"fatfish/NapCat" 会被判成不存在。
+    if d and not os.path.isabs(d):
+        _root = os.path.dirname(HERE)
+        _cand = os.path.join(_root, d)
+        if os.path.isdir(_cand):
+            d = _cand
+    # 同理兜底:配置为空时直接找包内的 fatfish\NapCat
+    if not d:
+        _cand = os.path.join(os.path.dirname(HERE), "fatfish", "NapCat")
+        if os.path.isdir(_cand):
+            d = _cand
     if NC is None:
         NC = nc_mod.NapCat(d)
     else:
@@ -749,7 +761,7 @@ def idle_fire(manual: bool = False) -> dict:
             return {"ok": False, "error": "现在是安静时段"}
         if int(st.get("today_count") or 0) >= cfg["daily_max"]:
             return {"ok": False, "error": "今天已经说够 %d 次了" % cfg["daily_max"]}
-    instruction = ("现在是你自己待着的时候,泥泥没在跟你说话。你突然想起他了,主动发一条消息过去。"
+    instruction = ("现在是你自己待着的时候,对方没在跟你说话。你突然想起他了,主动发一条消息过去。"
                    "一到两句,用你平常的口气,别提这条要求、别说「系统」「提示」这类字。"
                    "可以问他在干嘛、提醒他喝水、说说你刚在发呆看到的东西。")
     text, err = dsh_generate(instruction, max_tokens=120)
