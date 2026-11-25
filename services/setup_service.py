@@ -236,6 +236,40 @@ def model_presets() -> dict:
     return {"ok": True, "items": PRESETS}
 
 
+def _sync_model_to_qq(base: str, model: str, key: str) -> None:
+    """把一键部署里选定的模型同步给 QQ。
+    QQ 服务读的是 services/qq.json 的 dsh 段,和这里完全分开 ——
+    不同步的话,用户在一键部署配好了模型,QQ 那边还是默认的 deepseek + 空 key,
+    扫码登录之后一条消息都回不了。"""
+    try:
+        p = os.path.join(HERE, "qq.json")
+        d = {}
+        if os.path.exists(p):
+            try:
+                d = json.load(io.open(p, encoding="utf-8")) or {}
+            except Exception:
+                d = {}
+        dsh = d.setdefault("dsh", {})
+        if base:
+            dsh["api_base"] = base
+        if model:
+            dsh["model"] = model
+        if key:
+            dsh["api_key"] = key
+        io.open(p, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=2))
+        # 通知 QQ 服务重读配置(它已经在跑的话)
+        try:
+            req = urllib.request.Request(
+                "http://127.0.0.1:%s/api/reload" % os.environ.get("RIVULET_QQ_PORT", "18096"),
+                data=b"{}", method="POST",
+                headers={"Content-Type": "application/json"})
+            urllib.request.urlopen(req, timeout=3).read()
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+
 def model_save(body: dict) -> dict:
     provider = str(body.get("provider") or "custom").strip()
     base = str(body.get("base_url") or "").strip()
@@ -256,6 +290,7 @@ def model_save(body: dict) -> dict:
         item = _post(WS_API + "/api/models", {
             "name": "主模型", "provider": provider, "base_url": base,
             "model": model, "api_key": key, "enabled": True}, timeout=20)
+        _sync_model_to_qq(base, model, key)
         return {"ok": True, "item": item.get("item")}
     except Exception as e:
         return {"ok": False, "error": str(e)[:200]}

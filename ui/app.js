@@ -1918,6 +1918,7 @@
       var c = (r && r.config) || {};
       if ($("cfgWs")) $("cfgWs").value = c.ws_url || "";
       if ($("cfgAccount")) $("cfgAccount").value = c.account || "";
+      if ($("cfgBase")) $("cfgBase").value = c.api_base || "";
       if ($("cfgModel")) $("cfgModel").value = c.model || "";
       if ($("cfgKey")) $("cfgKey").placeholder = c.has_key ? "已配置(留空不改)" : "没配,填一个";
     }).catch(function () {});
@@ -1926,6 +1927,9 @@
     var body = {
       ws_url: $("cfgWs") ? $("cfgWs").value.trim() : "",
       account: $("cfgAccount") ? $("cfgAccount").value.trim() : "",
+      // 接口地址必须一起存:用第三方中转 / OpenCode 这类服务时,
+      // base 是自定义的,只填 key 会一直往 deepseek 发,永远 401。
+      api_base: $("cfgBase") ? $("cfgBase").value.trim() : "",
       model: $("cfgModel") ? $("cfgModel").value.trim() : ""
     };
     var k = $("cfgKey") ? $("cfgKey").value.trim() : "";
@@ -2009,6 +2013,17 @@
       }).catch(function (e) { toast("重启失败:" + (e.message || e)); });
     });
     if ($("cfgSave")) $("cfgSave").addEventListener("click", saveQqConfig);
+    if ($("qqTestModel")) $("qqTestModel").addEventListener("click", function () {
+      // 先存再测,避免「填了没保存」测的是旧配置
+      saveQqConfig();
+      toast("正在测模型…");
+      setTimeout(function () {
+        svcPost("qq", "/api/test_model", {}).then(function (r) {
+          if (r && r.ok) toast("连上了:" + (r.model || "") + (r.reply ? " 回复「" + r.reply + "」" : ""));
+          else toast("没通 —— " + ((r && r.error) || "未知错误"));
+        }).catch(function (e) { toast("测试失败:" + (e.message || e)); });
+      }, 600);
+    });
     if ($("qqReload")) $("qqReload").addEventListener("click", function () {
       svcPost("qq", "/api/reload", {}).then(function () { refreshQqStatus(); toast("已重连"); })
         .catch(function (e) { toast("重连失败:" + (e.message || e)); });
@@ -2898,7 +2913,18 @@
         if (box) box.innerHTML = '<p class="biliEmpty">一键部署服务没起来:' + esc(e.message || e) + "</p>";
       }
     });
-    svcGet("setup", "/api/setup/bili/status").then(function (r) { SETUP.bili = r || {}; }).catch(function () {});
+    // B站 扫码状态单独轮询。以前只赋值不重绘,所以「扫了/确认了」界面毫无变化,
+    // 看起来就是「点了没反应」—— 状态变了必须重画。
+    svcGet("setup", "/api/setup/bili/status").then(function (r) {
+      var next = r || {};
+      var before = (SETUP.bili && SETUP.bili.state) || "";
+      var after = next.state || "";
+      SETUP.bili = next;
+      if (before !== after) {
+        var a = document.activeElement;
+        if (!(a && a.closest && a.closest("#setupSteps"))) renderSetup();
+      }
+    }).catch(function () {});
   }
   function renderSetupRail() {
     var txt = $("lrSetupTxt"), dot = $("lrSetupDot"), chip = $("homeSetup");

@@ -38,6 +38,7 @@ import subprocess
 import threading
 import time
 import urllib.parse
+import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -589,10 +590,45 @@ def _nc():
     return NC
 
 
+def _auto_claim_owner(nc) -> None:
+    """扫码登录成功后,把登录的这个号自动设成主人并写进白名单。
+    不然白名单一直是空的(enabled=True),任何人发消息都会被拦掉,
+    表现就是「扫上码了、机器人一条都不回」。"""
+    try:
+        uin = ""
+        try:
+            uin = (nc_mod.uin_from_config(nc.d) or "").strip()
+        except Exception:
+            uin = ""
+        if not uin:
+            uin = str(CFG.get("account") or "").strip()
+        if not uin:
+            return
+        changed = False
+        if str(CFG.get("owner") or "").strip() != uin:
+            CFG["owner"] = uin
+            changed = True
+        users = WL.get("users") or []
+        if not any(str(x.get("id")) == uin for x in users):
+            users.append({"id": uin, "note": "主人", "added_at": now()})
+            WL["users"] = users
+            changed = True
+        if not WL.get("enabled"):
+            WL["enabled"] = True
+            changed = True
+        if changed:
+            save_cfg()
+            save_wl()
+    except Exception:
+        pass
+
+
 def napcat_state() -> dict:
     try:
         nc = _nc()
         st, hint = nc.state()
+        if st == "ok":
+            _auto_claim_owner(nc)
         qr = nc.qr()
         b64 = ""
         if os.path.exists(qr):
@@ -646,6 +682,40 @@ def restart_napcat() -> dict:
         pass
     time.sleep(1)
     return start_napcat()
+
+
+def test_model() -> dict:
+    """测一下模型配置通不通:用当前 base / model / key 发一句 ping。
+    用户配完不知道对不对,这个按钮直接告诉他哪一步错了。"""
+    dsh = CFG.get("dsh") or {}
+    key = (dsh.get("api_key") or "").strip()
+    if not key:
+        return {"ok": False, "error": "还没填模型 Key"}
+    base = (dsh.get("api_base") or "https://api.deepseek.com/v1").rstrip("/")
+    model = dsh.get("model") or "deepseek-chat"
+    body = json.dumps({"model": model,
+                       "messages": [{"role": "user", "content": "ping"}],
+                       "max_tokens": 8}).encode("utf-8")
+    req = urllib.request.Request(base + "/chat/completions", data=body, method="POST",
+                                 headers={"Content-Type": "application/json",
+                                          "Authorization": "Bearer " + key})
+    try:
+        with urllib.request.urlopen(req, timeout=25) as r:
+            d = json.loads(r.read().decode("utf-8", "replace"))
+        txt = ((d.get("choices") or [{}])[0].get("message") or {}).get("content", "")
+        return {"ok": True, "model": model, "base": base, "reply": str(txt)[:60]}
+    except urllib.error.HTTPError as e:
+        raw = ""
+        try:
+            raw = e.read()[:200].decode("utf-8", "replace")
+        except Exception:
+            pass
+        tip = {401: "Key 不对或已失效", 403: "这个 Key 没权限",
+               404: "接口地址或模型名不对(地址要带 /v1)",
+               429: "额度用完了或请求太频繁"}.get(e.code, "")
+        return {"ok": False, "error": "HTTP %d %s %s" % (e.code, tip, raw[:120])}
+    except Exception as e:
+        return {"ok": False, "error": "连不上 %s:%s" % (base, str(e)[:120])}
 
 def stop_napcat() -> dict:
     try:
@@ -781,7 +851,7 @@ def idle_fire(manual: bool = False) -> dict:
             return {"ok": False, "error": "现在是安静时段"}
         if int(st.get("today_count") or 0) >= cfg["daily_max"]:
             return {"ok": False, "error": "今天已经说够 %d 次了" % cfg["daily_max"]}
-    instruction = ("现在是你自己待着的时候,对方没在跟你说话。你突然想起他了,主动发一条消息过去。"
+    instruction = ("现在是你自己待着的时候,泥泥没在跟你说话。你突然想起他了,主动发一条消息过去。"
                    "一到两句,用你平常的口气,别提这条要求、别说「系统」「提示」这类字。"
                    "可以问他在干嘛、提醒他喝水、说说你刚在发呆看到的东西。")
     text, err = dsh_generate(instruction, max_tokens=120)
@@ -1018,6 +1088,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, stop_napcat())
             if u.path == "/api/napcat/restart":
                 return self._send(200, restart_napcat())
+            if u.path == "/api/test_model":
+                return self._send(200, test_model())
             if u.path == "/api/idle/trigger":
                 return self._send(200, idle_fire(manual=True))
             if u.path == "/api/idle/config":
