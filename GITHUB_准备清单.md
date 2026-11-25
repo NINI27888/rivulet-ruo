@@ -77,3 +77,34 @@ github-release/
   说明如何用管理接口初始化首个 admin
 - 日常更新流程：改完代码后 `python check_privacy.py` → `git add -A` → `git commit`
   → `git push`
+
+---
+
+## 八、发布 Windows 便携包（v0.10.1）
+
+**产物**：`Rivulet若-v0.10.1-win64.zip`（22.8 MB，解压 72 MB，含自带 Python runtime）
+
+**做了什么**
+- 用最新代码重新构建 exe（`cargo build --release`，版本 0.10.1）
+- 便携化改造 `lib.rs`：Python 优先用 `runtime\python.exe`；`PYTHONPATH` 指向
+  自带 `site-packages`（不再硬编码本机路径）；`services.json` 的 cwd 支持相对路径；
+  **补上 core 服务自启**（8088，以前没启动，导致新机器登录失败）
+- `qzone.py` 改软依赖：缺 `httpx`/`websockets` 时只有「发说说」不可用，
+  整个 QQ 服务不会崩
+- **清空全部运行时数据**：`data/`、`core/data/`、`services/data/`、`*.db`、
+  `*.jsonl`、`session.bin`、`persona.json`、`qq.json`、`bili.json`、`*.log`
+- 默认人格模板去私人化：「泥泥」「宝宝」等称呼改为中性的「使用者」
+- 实测：包内 runtime 启动 core（9 张表 / 0 用户）+ 5 个功能服务，**5/5 通过**
+
+**管理员仅本机登录（已实现并验证）**
+- `login`：admin 角色 + 非本机来源 → 403「管理员账号只能在本机登录」
+- `current_user`：admin token 在远端使用 → 403，并记 `admin.remote_blocked` 告警
+- 实测：本机 admin 200；远程 admin 403；远程普通用户 200；admin token 外带 403
+
+**发 Release 的步骤（在网页操作，连接器无 Release 写权限）**
+1. 打开 https://github.com/NINI27888/rivulet-ruo/releases/new
+2. Choose a tag → 选 `v0.10.1`（已推送）
+3. Release title：`v0.10.1`
+4. 描述里写明：Windows 64 位、解压双击即用、首次运行会被 SmartScreen 拦
+5. 附件：把 `Rivulet若-v0.10.1-win64.zip` 拖进 "Attach binaries"
+6. 点 **Publish release**

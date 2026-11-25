@@ -6,6 +6,14 @@
 > 目前仍在开发状态，核心功能已跑通，剩下主要是改 UI 和验收。
 > **计划开源，不用于任何商业目的。**
 
+## 下载
+
+不需要装 Python / Rust，解压双击即用（Windows 64 位）：
+
+- 去 [Releases](../../releases) 下载 `Rivulet若-v0.10.1-win64.zip`
+- 解压到桌面或 D 盘（**不要放 C://Program Files**，不要在压缩包里直接运行）
+- 双击 `Rivulet 若.exe`；首次启动会先落到「一键部署」引导
+
 ## 这是什么
 
 | 板块 | 说明 |
@@ -60,4 +68,4 @@ services/      本地功能服务(Python 标准库 http.server):QQ / B站 / 人�
 
 ## 状态
 
-开发中 · v0.2.0-local
+开发中 · v0.10.1

@@ -119,6 +119,12 @@ def current_user(
         raise HTTPException(status_code=401, detail="token expired")
     if row["disabled"]:
         raise HTTPException(status_code=403, detail="user disabled")
+    # 管理员只允许本机:防止 token 被复制到别的机器后仍以 admin 身份调用接口。
+    if row["role"] == "admin":
+        ip = request.client.host if request.client else ""
+        if ip not in ("127.0.0.1", "::1", "localhost", ""):
+            obs.log("admin.remote_blocked", lvl="warn", user=row["username"], ip=ip)
+            raise HTTPException(status_code=403, detail="admin local only")
     c.execute("UPDATE sessions SET last_used = ? WHERE token = ?", (now_iso(), token))
     c.commit()
     # 回填给 obs 中间件:访问日志/异常行都能带上是哪个用户

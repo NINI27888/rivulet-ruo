@@ -4,13 +4,22 @@ from __future__ import annotations
 
 import sqlite3
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
 import auth
 from auth import current_user, db_conn
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+# 管理员账号只允许本机登录:即使将来 core 被改成对外监听、或 token 被复制到
+# 别的机器,admin 身份也不会在远端生效。
+LOCAL_HOSTS = {"127.0.0.1", "::1", "localhost", ""}
+
+
+def _is_local(request: Request) -> bool:
+    ip = request.client.host if request.client else ""
+    return ip in LOCAL_HOSTS
 
 
 class LoginIn(BaseModel):
@@ -30,7 +39,7 @@ class UserIn(BaseModel):
 
 
 @router.post("/login")
-def login(body: LoginIn, c: sqlite3.Connection = Depends(db_conn)) -> dict:
+def login(body: LoginIn, request: Request, c: sqlite3.Connection = Depends(db_conn)) -> dict:
     row = c.execute(
         "SELECT id, username, pass_hash, role, disabled FROM users WHERE username = ?",
         (body.username.strip(),),
@@ -40,6 +49,10 @@ def login(body: LoginIn, c: sqlite3.Connection = Depends(db_conn)) -> dict:
         raise HTTPException(status_code=401, detail="用户名或密码不对")
     if row["disabled"]:
         raise HTTPException(status_code=403, detail="账号已停用")
+    # 管理员账号只允许本机登录
+    if row["role"] == "admin" and not _is_local(request):
+        auth.audit(c, row["username"], "login_blocked", note="admin 仅限本机")
+        raise HTTPException(status_code=403, detail="管理员账号只能在本机登录")
     session = auth.issue_session(c, row["id"])
     c.execute("UPDATE users SET last_login = ? WHERE id = ?", (auth.now_iso(), row["id"]))
     c.commit()
