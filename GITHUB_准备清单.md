@@ -60,30 +60,20 @@ github-release/
   含免责声明与"开发中"状态说明
 - 产品内置默认人格模板文案为代码常量，属产品默认设定，保留
 
-## 五、已执行 / 待授权
+## 五、已执行
 
-已执行：`git init`、脱敏自检（退出码 0）、`git add`（逐项审查）、`git commit`、
-4 份 `routes_auth.py` 同源缺陷同步修复。
+- `git init` → 脱敏自检（退出码 0）→ `git add`（逐项审查）→ `git commit`
+- 4 份 `routes_auth.py` 同源缺陷同步修复
+- **已推送到 GitHub**：https://github.com/NINI27888/rivulet-ruo
+  - 分支 `main`，提交 `f6e50d6`，72 文件 / 29225 行
+  - 已核对远程：根目录 11 项 + `ui/` 13 项齐全，**无 `data/`、`*.db`、`session.bin`**
 
-**唯一剩余**：推送到 GitHub 需要账号认证。当前环境无 `gh` CLI、无 git 身份配置、
-无 token / 凭证助手、无已绑定连接器。网络可达 api.github.com，但 GitHub 不允许匿名
-建仓库或 push。已找到官方 **GitHub 连接器**（可在 GitHub 上创建仓库、推送代码、
-管理 PR），需在界面完成一次 OAuth 授权；授权后由我建仓并 push。
+> 说明：GitHub 连接器未授予建仓权限（403），仓库由账号本人在网页创建为空仓库后，
+> 通过本地 git（Git Credential Manager）完成推送。
 
-## 六、授权后的推送步骤（由我执行）
-
-```bash
-cd .../rivulet-app/github-release
-python check_privacy.py          # 退出码必须为 0
-# 通过连接器创建远程仓库 → git remote add origin <地址>
-git branch -M main
-git push -u origin main
-```
-
-**Public 前最后确认**：再跑一次 `check_privacy.py`，并核对 `git status` 中
-没有 `data/`、`*.db`、`session.bin` 等。
-
-## 七、后续可选
+## 六、后续可选
 
 - admin 初始账号：生产 Core 不含 `/api/auth/register`，如需可补一份部署运维文档
   说明如何用管理接口初始化首个 admin
+- 日常更新流程：改完代码后 `python check_privacy.py` → `git add -A` → `git commit`
+  → `git push`
