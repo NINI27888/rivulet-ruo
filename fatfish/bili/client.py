@@ -43,7 +43,9 @@ MIXIN_KEY_ENC_TAB = [
 
 
 class BiliError(Exception):
-    pass
+    def __init__(self, message, code=None):
+        super().__init__(message)
+        self.code = code
 
 
 def _mixin_key(orig):
@@ -62,9 +64,9 @@ def _enc_wbi(params, img_key, sub_key):
 
 
 class Bili:
-    def __init__(self, cookie_file=COOKIE_FILE):
+    def __init__(self, cookie_file=COOKIE_FILE, *, cookie=None):
         self.cookie_file = cookie_file
-        self.cookie = self._load_cookie()
+        self.cookie = self._load_cookie() if cookie is None else dict(cookie)
         self._img_key = None
         self._sub_key = None
         self.last_error = None
@@ -123,9 +125,11 @@ class Bili:
             d = json.loads(body.decode("utf-8", "replace"))
         except Exception:
             raise BiliError("返回不是 JSON: %s" % url)
+        if not isinstance(d, dict):
+            raise BiliError("返回格式无效: %s" % url)
         if d.get("code") not in (0, None):
             self.last_error = "%s %s" % (d.get("code"), d.get("message"))
-            raise BiliError("接口返回 %s: %s" % (d.get("code"), d.get("message")))
+            raise BiliError("接口返回 %s: %s" % (d.get("code"), d.get("message")), d.get("code"))
         return d.get("data") or d.get("result")
 
     # ---------- wbi ----------
@@ -148,9 +152,9 @@ class Bili:
 
     # ---------- 读接口 ----------
 
-    def nav(self):
+    def nav(self, timeout=15):
         """登录状态。返回 dict,里面 isLogin / uname / mid / money。"""
-        return self.get("https://api.bilibili.com/x/web-interface/nav") or {}
+        return self.get("https://api.bilibili.com/x/web-interface/nav", timeout=timeout) or {}
 
     def rcmd(self, ps=12, fresh_idx=1):
         """首页推荐流。

@@ -1719,15 +1719,17 @@
     var np = q && q.napcat || {};
     var on = !!(q && q.ws && q.ws.connected);
     var account = q && q.account || {};
+    var connecting = !!(np.running && np.state === "ok" && !on);
     $("qqDot").className = "svcDot big " + (on ? "on" : (np.running ? "warn" : "bad"));
     if ($("qqName")) $("qqName").textContent = on && account.nickname ? account.nickname : "QQ 机器人";
     var login = $("qqStart"), restart = $("qqRestart");
     login.hidden = on;
-    login.disabled = !!QQ.loginBusy || (!!np.running && np.state !== "error");
-    login.textContent = QQ.loginBusy ? "正在准备二维码…" : (login.disabled ? "等待手机扫码" : "扫码登录 QQ");
+    login.disabled = !!QQ.loginBusy || (!!np.running && !connecting && np.state !== "error");
+    login.textContent = QQ.loginBusy ? "正在准备 QQ 登录…" :
+      (connecting ? "重新扫码登录" : (login.disabled ? "等待手机扫码" : "扫码登录 QQ"));
     restart.hidden = !np.running && !on;
     restart.disabled = !!QQ.loginBusy;
-    restart.textContent = on ? "重新登录 QQ" : "重新生成二维码";
+    restart.textContent = on ? "重新扫码登录" : (connecting ? "重连 QQ" : "重新生成二维码");
 
     if (on) QQ.loginError = "";
     var loginText = "点「扫码登录 QQ」获取二维码。";
@@ -1735,7 +1737,8 @@
     else if (QQ.loginError) loginText = QQ.loginError;
     else if (!q) loginText = "暂时连不上 QQ 服务，请稍后刷新或重新打开若。";
     else if (on) loginText = "已登录 " + (account.nickname || "QQ") + "。";
-    else if (np.state === "qrcode") loginText = "在右侧扫码，然后在手机上确认登录。";
+    else if (connecting) loginText = np.hint || "QQ 已登录，正在连接若。";
+    else if (np.state === "qrcode" && np.qr_b64) loginText = "在右侧扫码，然后在手机上确认登录。";
     else if (np.state === "scanned") loginText = "已扫码，请在手机上确认。";
     else if (np.state === "error") loginText = "QQ 登录失败，请查看右侧提示并重试。";
     else if (np.running) loginText = "正在等待二维码，请稍等。";
@@ -1781,14 +1784,15 @@
     // 扫码 / 协议端提示
     var np = q.napcat || {};
     var qr = "";
-    if (!(q.ws && q.ws.connected) && np.state === "qrcode" && np.qr_b64) {
+    var connected = !!(q.ws && q.ws.connected);
+    if (!connected && np.state === "qrcode" && np.qr_b64) {
       qr = '<div class="qrBox"><div class="qrT">手机 QQ 扫码登录</div>' +
         '<img alt="QQ 登录二维码" src="data:image/png;base64,' + np.qr_b64 + '">' +
         '<div class="qrHint">' + "打开手机 QQ 扫一扫，随后在手机上确认。</div></div>";
-    } else if (np.state === "scanned") {
+    } else if (!connected && np.state === "scanned") {
       qr = '<div class="qrBox"><div class="qrT">已扫码</div><div class="qrHint">' +
         esc(np.hint || "手机上点「确认登录」") + "</div></div>";
-    } else if (np.state === "error") {
+    } else if (!connected && np.state === "error") {
       qr = '<div class="qrBox"><div class="qrT bad">协议端出错</div><div class="qrHint">' +
         esc(np.hint || "") + "</div></div>";
     }
@@ -1984,10 +1988,13 @@
     QQ.loginBusy = true;
     QQ.loginError = "";
     renderQqStatus();
-    var path = restart ? "/api/napcat/restart" : "/api/napcat/start";
-    svcPost("qq", path, {}).then(function (result) {
+    var q = state.qq || {}, np = q.napcat || {};
+    var reconnect = restart && np.state === "ok" && !(q.ws && q.ws.connected);
+    var retry = restart || (np.running && (np.state === "error" || np.state === "ok"));
+    var path = retry ? "/api/napcat/restart" : "/api/napcat/start";
+    svcPost("qq", path, retry ? { rescan: !reconnect } : {}).then(function (result) {
       if (!result || !result.ok) {
-        QQ.loginError = "QQ 未能启动。请确认使用完整的 Windows 单文件版，并查看右侧状态。";
+        QQ.loginError = result && result.error || "QQ 未能启动。请查看右侧状态后重试。";
       }
     }).catch(function () {
       QQ.loginError = "暂时连不上 QQ 服务，请重新打开若再试。";

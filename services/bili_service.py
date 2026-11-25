@@ -17,6 +17,7 @@ HTTP:
 """
 from __future__ import annotations
 
+import base64
 import io
 import json
 import os
@@ -34,7 +35,7 @@ def _find_fatfish():
     """fatfish 目录自适应:包内是 services 的同级,开发环境在上一级。"""
     for rel in (("..", "fatfish"), ("..", "..", "fatfish")):
         c = os.path.abspath(os.path.join(HERE, *rel))
-        if os.path.isdir(c):
+        if os.path.isfile(os.path.join(c, "bili", "client.py")):
             return c
     return os.path.abspath(os.path.join(HERE, "..", "fatfish"))
 _FF = _find_fatfish()
@@ -72,9 +73,13 @@ def _save_cfg(changes: dict | None = None):
 
 
 def bili():
-    """每次拿一个新的客户端(便宜),cookie 变了也能立刻生效。"""
+    """优先使用当前安装的扫码登录，兼容旧配置中的凭据路径。"""
     from client import Bili  # noqa: E402
-    return Bili(CFG.get("cookie_file"))
+    current = Bili()
+    legacy = CFG.get("cookie_file")
+    if not current.logged_in and isinstance(legacy, str) and legacy and legacy != current.cookie_file:
+        return Bili(legacy)
+    return current
 
 
 def cached(key: str, ttl: float, fn):
@@ -88,29 +93,140 @@ def cached(key: str, ttl: float, fn):
     return val
 
 
-def api_status() -> dict:
-    b = bili()
+def _account_status(b) -> dict:
+    from client import BiliError
+
     out = {"ok": True, "time": now(), "allow_write": bool(CFG.get("allow_write")),
-           "logged_in": False}
+           "logged_in": False, "login_state": "signed_out"}
     if not b.logged_in:
         return out
     try:
-        nav = b.nav() or {}
-        if nav.get("isLogin"):
-            out.update({
-                "logged_in": True,
-                "uname": nav.get("uname"),
-                "mid": nav.get("mid"),
-                "face": nav.get("face"),
-                "level": nav.get("level_info", {}).get("current_level"),
-                "coins": nav.get("money"),
-                "vip": (nav.get("vipStatus") == 1),
-            })
-        else:
-            out.update(error="登录已过期，请重新扫码。")
-    except Exception:
-        out.update(error="暂时无法验证 B 站账号，请稍后刷新。")
+        nav = b.nav(timeout=5)
+    except BiliError as exc:
+        nav = {"isLogin": False} if exc.code == -101 else {}
+
+    login = nav.get("isLogin") if isinstance(nav, dict) else None
+    if login is True:
+        level = nav.get("level_info")
+        out.update({
+            "logged_in": True,
+            "login_state": "verified",
+            "uname": nav.get("uname"),
+            "mid": nav.get("mid"),
+            "face": nav.get("face"),
+            "level": level.get("current_level") if isinstance(level, dict) else None,
+            "coins": nav.get("money"),
+            "vip": (nav.get("vipStatus") == 1),
+        })
+    elif login is False:
+        out.update(login_state="expired", error="登录已过期，请重新扫码。")
+    else:
+        out.update(login_state="unavailable", error="暂时无法验证 B 站账号，请稍后刷新。")
     return out
+
+
+def api_status() -> dict:
+    return _account_status(bili())
+
+
+SCAN_LOCK = threading.Lock()
+SCAN = {"state": "idle", "hint": "", "qr_b64": "", "account": None}
+SCAN_THREAD = None
+SCAN_PENDING = None
+
+
+def _scan_state(state, hint, qr="", account=None, pending=None):
+    global SCAN_PENDING
+    with SCAN_LOCK:
+        SCAN.update(state=state, hint=hint, qr_b64=qr, account=account)
+        SCAN_PENDING = pending
+
+
+def _verify_scan(cookies):
+    from client import Bili
+    from qr_login import save_login
+
+    _scan_state("verifying", "手机已确认，正在验证 B 站账号…")
+    candidate = Bili(cookie=cookies)
+    for attempt in range(3):
+        account = _account_status(candidate)
+        if account["logged_in"]:
+            try:
+                save_login(cookies)
+            except OSError:
+                _scan_state("error", "登录已确认，但保存失败。请检查文件夹写入权限后重试。",
+                            pending=cookies)
+                return
+            with LOCK:
+                _CACHE.clear()
+            _scan_state("ok", "B 站账号已登录。", account=account)
+            return
+        if account["login_state"] == "expired":
+            _scan_state("error", "B 站未接受此次登录，请重新生成二维码。")
+            return
+        if attempt < 2:
+            time.sleep(2)
+    _scan_state("error", "手机已确认，暂时无法验证 B 站账号。请重新验证。",
+                pending=cookies)
+
+
+def _scan_worker():
+    try:
+        from qr_login import check_code, create_code
+
+        key, png = create_code()
+        qr = base64.b64encode(png).decode("ascii")
+        _scan_state("qrcode", "打开手机哔哩哔哩 App，扫一扫。", qr)
+        until = time.monotonic() + 180
+        failed = 0
+        while time.monotonic() < until:
+            try:
+                current, cookies = check_code(key)
+                failed = 0
+            except OSError:
+                failed += 1
+                if failed >= 3:
+                    raise
+                time.sleep(2)
+                continue
+            if current == "ok":
+                _verify_scan(cookies)
+                return
+            if current == "expired":
+                _scan_state("error", "二维码已过期，请重新生成。")
+                return
+            if current == "scanned":
+                _scan_state("scanned", "已扫码，请在手机上点「确认登录」。", qr)
+            time.sleep(2)
+        _scan_state("error", "等待超时，请重新生成二维码。")
+    except RuntimeError as exc:
+        _scan_state("error", str(exc))
+    except (ImportError, OSError, ValueError, TypeError, AttributeError):
+        _scan_state("error", "暂时无法完成 B 站扫码，请检查网络并重试。")
+
+
+def api_scan_status() -> dict:
+    with SCAN_LOCK:
+        return {"ok": True, **SCAN, "retry_verify": SCAN_PENDING is not None}
+
+
+def api_start_scan(retry_verify=False) -> dict:
+    global SCAN_THREAD, SCAN_PENDING
+    with SCAN_LOCK:
+        if SCAN_THREAD and SCAN_THREAD.is_alive():
+            return {"ok": True, "already": True}
+        if retry_verify:
+            if SCAN_PENDING is None:
+                return {"ok": False, "error": "请重新生成二维码，再用手机确认登录。"}
+            state, hint = "verifying", "正在重新验证 B 站账号…"
+            SCAN_THREAD = threading.Thread(target=_verify_scan, args=(SCAN_PENDING,), daemon=True)
+        else:
+            state, hint = "gen", "正在生成二维码…"
+            SCAN_THREAD = threading.Thread(target=_scan_worker, daemon=True)
+        SCAN.update(state=state, hint=hint, qr_b64="", account=None)
+        SCAN_PENDING = None
+        SCAN_THREAD.start()
+    return {"ok": True}
 
 
 def api_videos(limit: int = 10) -> dict:
@@ -627,12 +743,15 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
-    def _send(self, code: int, obj):
+    def _send(self, code: int, obj, *, cors=True):
         raw = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(raw)))
-        self.send_header("Access-Control-Allow-Origin", "*")
+        if cors:
+            self.send_header("Access-Control-Allow-Origin", "*")
+        else:
+            self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(raw)
 
@@ -650,6 +769,8 @@ class Handler(BaseHTTPRequestHandler):
         q = urllib.parse.parse_qs(u.query)
         if u.path == "/api/status":
             return self._send(200, api_status())
+        if u.path == "/api/login/status":
+            return self._send(200, api_scan_status(), cors=False)
         if u.path == "/api/videos":
             return self._send(200, api_videos(int((q.get("limit") or ["10"])[0])))
         if u.path == "/api/comments":
@@ -676,6 +797,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)
         body = self._body()
+        if u.path == "/api/login/gen":
+            return self._send(200, api_start_scan(), cors=False)
+        if u.path == "/api/login/verify":
+            return self._send(200, api_start_scan(retry_verify=True), cors=False)
         if u.path == "/api/config/write":
             allowed = body.get("allow_write") is True
             if allowed and not api_status().get("logged_in"):

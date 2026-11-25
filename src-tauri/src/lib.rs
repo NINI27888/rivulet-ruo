@@ -352,7 +352,10 @@ fn hide_window(cmd: &mut std::process::Command) {
 const MUST_HAVE: &[&str] = &[
     "runtime/python.exe",
     "runtime/Lib/site-packages/segno/__init__.py",
+    "runtime/Lib/site-packages/websockets/__init__.py",
     "core/main.py",
+    "services/bili_service.py",
+    "services/napcat.py",
     "services/qq_service.py",
     "services/setup_service.py",
     "services/workspace/api.py",

@@ -4,6 +4,7 @@ import io
 import json
 import os
 import sys
+import tempfile
 import time
 import urllib.parse
 import urllib.request
@@ -63,9 +64,14 @@ def check_code(key):
 def save_login(values, path=COOKIE):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    pending = path.with_name(path.name + ".tmp")
-    pending.write_text(json.dumps(values, ensure_ascii=False, indent=2), encoding="utf-8")
-    os.replace(pending, path)
+    fd, filename = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".tmp")
+    pending = Path(filename)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(values, stream, ensure_ascii=False, indent=2)
+        os.replace(pending, path)
+    finally:
+        pending.unlink(missing_ok=True)
 
 
 def gen():

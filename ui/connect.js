@@ -221,10 +221,11 @@
   var scanDialog = $("biliScanDialog");
   var scanTimer;
   var scanTicket = 0;
-  var verifyUntil;
+  var scanCanVerify = false;
   var scanImage = $("biliScanImage");
+  var scanRetry = $("biliScanRetry");
 
-  function renderScan(status, tone, qr, canRetry, done) {
+  function renderScan(status, tone, qr, done) {
     feedback($("biliScanStatus"), status, tone);
     if (qr) {
       var src = "data:image/png;base64," + qr;
@@ -233,7 +234,8 @@
       scanImage.removeAttribute("src");
     }
     scanImage.hidden = !qr;
-    $("biliScanRetry").hidden = !canRetry;
+    scanRetry.hidden = tone !== "error";
+    scanRetry.textContent = scanCanVerify ? "重新验证账号" : "重新生成二维码";
     $("biliScanDone").hidden = !done;
   }
 
@@ -246,44 +248,41 @@
     app.svcGet("setup", "/api/setup/bili/status").then(function (result) {
       if (!scanActive(ticket)) return;
       if (result.state === "error") {
-        renderScan(result.hint || "二维码生成失败，请重试。", "error", "", true);
+        scanCanVerify = !!result.retry_verify;
+        renderScan(result.hint || "无法完成登录，请重试。", "error");
       } else if (result.state === "ok") {
-        if (!verifyUntil) verifyUntil = Date.now() + 20000;
-        renderScan("手机已确认，正在读取你的 B 站账号…");
-        app.svcGet("bili", "/api/status").then(function (account) {
-          if (!scanActive(ticket)) return;
-          if (account.logged_in) {
-            renderScan("已登录 " + (account.uname || "B 站账号") + "。", "ok", "", false, true);
-            window.dispatchEvent(new CustomEvent("ruo:bili-connected", { detail: account }));
-            $("biliScanDone").focus();
-          } else if (Date.now() < verifyUntil) {
-            scanTimer = setTimeout(function () { pollScan(ticket); }, 1700);
-          } else {
-            renderScan("手机已确认，但账号状态还没更新。请重试或回到 B 站页刷新。", "error", "", true);
-          }
-        }).catch(function () {
-          if (scanActive(ticket)) renderScan("暂时读不到 B 站账号，请重试。", "error", "", true);
-        });
+        var account = result.account;
+        if (!account || !account.logged_in) {
+          renderScan("扫码服务没有返回已登录的账号，请完全退出若后再试。", "error");
+          return;
+        }
+        renderScan("已登录 " + (account.uname || "B 站账号") + "。", "ok", "", true);
+        window.dispatchEvent(new CustomEvent("ruo:bili-connected", { detail: account }));
+        $("biliScanDone").focus();
       } else {
+        scanCanVerify = result.state === "verifying";
         renderScan(result.hint || "正在生成二维码…", "info", result.qr_b64);
         scanTimer = setTimeout(function () { pollScan(ticket); }, 1700);
       }
     }).catch(function () {
-      if (scanActive(ticket)) renderScan("暂时连不上扫码服务，请重试。", "error", "", true);
+      if (scanActive(ticket)) renderScan("暂时连不上扫码服务，请重试。", "error");
     });
   }
 
-  function startScan() {
+  function startScan(verify) {
     clearTimeout(scanTimer);
-    verifyUntil = 0;
+    scanCanVerify = !!verify;
     var ticket = ++scanTicket;
-    renderScan("正在生成二维码…");
-    app.svcPost("setup", "/api/setup/bili/gen", {}).then(function (result) {
+    renderScan(verify ? "正在验证 B 站账号…" : "正在生成二维码…");
+    app.svcPost("setup", verify ? "/api/setup/bili/verify" : "/api/setup/bili/gen", {}).then(function (result) {
       if (!scanActive(ticket)) return;
       if (result && result.ok) pollScan(ticket);
-      else renderScan((result && result.error) || "二维码生成失败，请重试。", "error", "", true);
+      else {
+        scanCanVerify = !!(result && result.retry_verify);
+        renderScan((result && result.error) || "暂时无法完成扫码登录，请重试。", "error");
+      }
     }).catch(function () {
-      if (scanActive(ticket)) renderScan("暂时连不上扫码服务，请重试。", "error", "", true);
+      if (scanActive(ticket)) renderScan("暂时连不上扫码服务，请重试。", "error");
     });
   }
 
@@ -295,7 +294,7 @@
 
   $("biliScanClose").addEventListener("click", function () { scanDialog.close(); });
   $("biliScanDone").addEventListener("click", function () { scanDialog.close(); });
-  $("biliScanRetry").addEventListener("click", startScan);
+  scanRetry.addEventListener("click", function () { startScan(scanCanVerify); });
   scanDialog.addEventListener("close", function () {
     scanTicket++;
     clearTimeout(scanTimer);

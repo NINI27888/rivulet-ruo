@@ -28,6 +28,7 @@ HTTP:
 from __future__ import annotations
 
 import asyncio
+import base64
 import io
 import json
 import os
@@ -81,6 +82,8 @@ def mood_after(text: str):
     mood_call("/api/after_reply", {"text": text})
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+BUNDLED_NAPCAT = os.path.join(os.path.dirname(HERE), "fatfish", "NapCat")
+LOOPBACK_HOSTS = ("127.0.0.1", "localhost", "::1")
 DATA = os.path.join(HERE, "data")
 os.makedirs(DATA, exist_ok=True)
 CFG_PATH = os.path.join(DATA, "qq.json")
@@ -482,27 +485,40 @@ class OneBot:
         return asyncio.run_coroutine_threadsafe(self.action(name, params, timeout), self.loop).result(timeout + 2)
 
     async def run(self):
-        import websockets
+        try:
+            import websockets
+        except ImportError:
+            self.error = "QQ 连接组件缺失，请使用完整的安装包。"
+            print("[qq] 缺少 websockets 运行库", flush=True)
+            return
         while True:
             try:
                 headers = {}
                 if CFG.get("ws_token"):
                     headers["Authorization"] = "Bearer " + CFG["ws_token"]
-                async with websockets.connect(CFG["ws_url"], additional_headers=headers,
+                ws_url = CFG["ws_url"]
+                proxy_options = {}
+                if urllib.parse.urlsplit(ws_url).hostname in LOOPBACK_HOSTS:
+                    proxy_options["proxy"] = None
+                async with websockets.connect(ws_url, additional_headers=headers, **proxy_options,
                                               ping_interval=20, max_size=8 * 1024 * 1024) as ws:
                     self.ws = ws
                     self.connected = True
                     self.error = ""
-                    print(f"[qq] 连上协议端 {CFG['ws_url']}", flush=True)
+                    print("[qq] 已连接协议端", flush=True)
                     reader = asyncio.create_task(self._reader(ws))
                     await self._hello()
                     await reader
             except Exception as e:
+                self.error = "暂未连接到 QQ 协议端。"
+                print(f"[qq] 协议端未连接（{type(e).__name__}），3 秒后重试", flush=True)
+            finally:
                 self.connected = False
                 self.ws = None
-                self.error = str(e)[:200]
-                print(f"[qq] 断开:{e};3 秒后重连", flush=True)
-                await asyncio.sleep(3)
+                self.account = {}
+                self.groups = []
+                self.friends = []
+            await asyncio.sleep(3)
 
     async def _reader(self, ws):
         async for raw in ws:
@@ -636,24 +652,16 @@ def napcat_running() -> bool:
 
 
 NC = None
+NC_LOCK = threading.RLock()
 
 
 def _nc():
-    """无头 NapCat 管理器:node.exe index.js,不弹窗、不要管理员。"""
+    """从安装目录解析 NapCat，旧路径已失效时使用内置版本。"""
     global NC
-    d = (CFG.get("napcat_headless_dir") or "").strip()
-    # 相对路径按「包根」(services 的上一级)解析,不依赖进程当前目录。
-    # 否则以 services\ 为 cwd 启动时,"fatfish/NapCat" 会被判成不存在。
-    if d and not os.path.isabs(d):
-        _root = os.path.dirname(HERE)
-        _cand = os.path.join(_root, d)
-        if os.path.isdir(_cand):
-            d = _cand
-    # 同理兜底:配置为空时直接找包内的 fatfish\NapCat
-    if not d:
-        _cand = os.path.join(os.path.dirname(HERE), "fatfish", "NapCat")
-        if os.path.isdir(_cand):
-            d = _cand
+    setting = str(CFG.get("napcat_headless_dir") or "").strip().strip('"')
+    d = os.path.abspath(os.path.join(os.path.dirname(HERE), setting)) if setting else BUNDLED_NAPCAT
+    if not nc_mod.is_headless(d) and nc_mod.is_headless(BUNDLED_NAPCAT):
+        d = BUNDLED_NAPCAT
     if NC is None:
         NC = nc_mod.NapCat(d)
     else:
@@ -661,19 +669,12 @@ def _nc():
     return NC
 
 
-def _auto_claim_owner(nc) -> None:
+def _auto_claim_owner(uin: str) -> None:
     """扫码登录成功后,把登录的这个号自动设成主人并写进白名单。
     不然白名单一直是空的(enabled=True),任何人发消息都会被拦掉,
     表现就是「扫上码了、机器人一条都不回」。"""
     try:
-        uin = ""
-        try:
-            uin = (nc_mod.uin_from_config(nc.d) or "").strip()
-        except Exception:
-            uin = ""
-        if not uin:
-            uin = str(CFG.get("account") or "").strip()
-        if not uin:
+        if not uin.isdecimal():
             return
         changed = False
         if str(CFG.get("owner") or "").strip() != uin:
@@ -695,64 +696,62 @@ def _auto_claim_owner(nc) -> None:
 
 
 def napcat_state() -> dict:
-    try:
+    with NC_LOCK:
         nc = _nc()
+        running = nc.running()
         st, hint = nc.state()
-        if st == "ok":
-            _auto_claim_owner(nc)
-        qr = nc.qr()
-        b64 = ""
-        if os.path.exists(qr):
-            try:
-                import base64
-                data = open(qr, "rb").read()
-                if 0 < len(data) < 500_000:
-                    b64 = base64.b64encode(data).decode()
-            except Exception:
-                b64 = ""
-        return {"running": nc.running(), "state": st, "hint": hint,
+        image = b""
+        if not running and st not in ("none", "error"):
+            st, hint = "error", "QQ 登录组件已退出，请重新扫码。"
+        elif running and st in ("none", "qrcode"):
+            image = nc.qr_bytes()
+            if image:
+                st, hint = "qrcode", nc_mod.QR_HINT
+            elif nc.qr_timed_out():
+                st, hint = "error", "等待二维码超时，请点「重新生成二维码」。"
+            else:
+                st, hint = "starting", "正在准备 QQ 登录二维码。"
+        elif running and st == "ok":
+            if OB.connected:
+                _auto_claim_owner(str(OB.account.get("uin") or ""))
+            else:
+                hint = "QQ 已登录，正在连接若。如未连接成功，可点「重连 QQ」。"
+        b64 = base64.b64encode(image).decode("ascii")
+        return {"running": running, "state": st, "hint": hint,
                 "qr": bool(b64), "qr_b64": b64, "dir": nc.d}
-    except Exception as e:
-        return {"running": False, "state": "error", "hint": str(e)[:160],
-                "qr": False, "qr_b64": "", "dir": ""}
 
 
-def start_napcat() -> dict:
-    nc = _nc()
-    if not nc_mod.is_headless(nc.d):
-        return {"ok": False,
-                "error": ("QQ 需要 NapCat 协议端(第三方组件,体积大、需单独下载,") 
-                         + ("不在本安装包内)。下载 NapCat 后解压到程序目录的 "
-                            "fatfish\\NapCat\\ 下(该目录内应有 node.exe 和 index.js)," 
-                            "再点一次「启动协议端」。当前查找位置:" + (nc.d or "(未配置)"))}
-    if nc.running():
-        return {"ok": True, "already": True, "hint": "协议端已经在跑"}
-    try:
-        nc.start(uin=str(CFG.get("account") or ""))
-        return {"ok": True, "hint": "协议端已在后台启动(无窗口、无 UAC);等二维码出来扫一下就行"}
-    except Exception as e:
-        return {"ok": False, "error": str(e)}
+def start_napcat(force_qr=False) -> dict:
+    with NC_LOCK:
+        nc = _nc()
+        if not nc_mod.is_headless(nc.d):
+            return {"ok": False, "error": "没有找到内置 QQ 登录组件。请使用完整的 Windows 单文件版。"}
+        if nc.running():
+            return {"ok": True, "already": True}
+        try:
+            if os.path.normcase(os.path.realpath(nc.d)) == os.path.normcase(os.path.realpath(BUNDLED_NAPCAT)):
+                nc_mod.loopback_webui(nc.d, force_qr)
+                ws = urllib.parse.urlsplit(CFG["ws_url"])
+                if ws.scheme == "ws" and ws.hostname in LOOPBACK_HOSTS:
+                    listen_host = "::1" if ws.hostname == "::1" else "127.0.0.1"
+                    nc_mod.ensure_onebot(nc.d, listen_host, ws.port or 80, str(CFG.get("ws_token") or ""))
+            nc.start(uin=str(CFG.get("account") or ""), force_qr=force_qr)
+        except (ValueError, TypeError, AttributeError) as e:
+            print(f"[qq] NapCat 配置格式无效（{type(e).__name__}）", flush=True)
+            return {"ok": False, "error": "QQ 登录组件的配置格式有误，请查看本地日志。"}
+        except (OSError, RuntimeError) as e:
+            print(f"[qq] QQ 登录组件启动失败（{type(e).__name__}）", flush=True)
+            return {"ok": False, "error": "QQ 登录组件启动失败。请确认安装目录可写，然后重试。"}
+        return {"ok": True}
 
 
 
-def restart_napcat() -> dict:
-    """重新扫码:停掉协议端、删掉旧二维码、再起一次。
-    用于「登录失败 / 账号存在安全风险 / 二维码过期」之后重新来一遍。
-    注意:QQ 判定安全风险时,需要在手机 QQ 上完成验证,这里只能让它重新出码。"""
-    nc = _nc()
-    try:
-        nc.stop()
-    except Exception:
-        pass
-    # 删旧二维码,否则前端还是显示上一张
-    try:
-        qr = os.path.join(nc.d, "napcat", "cache", "qrcode.png")
-        if os.path.exists(qr):
-            os.remove(qr)
-    except Exception:
-        pass
-    time.sleep(1)
-    return start_napcat()
+def restart_napcat(rescan=True) -> dict:
+    with NC_LOCK:
+        stopped = stop_napcat()
+        if not stopped["ok"]:
+            return stopped
+        return start_napcat(force_qr=rescan)
 
 
 def test_model() -> dict:
@@ -766,11 +765,12 @@ def test_model() -> dict:
         return {"ok": False, "error": str(e)}
 
 def stop_napcat() -> dict:
-    try:
-        _nc().stop()
-        return {"ok": True}
-    except Exception as e:
-        return {"ok": False, "error": str(e)}
+    with NC_LOCK:
+        try:
+            _nc().stop()
+            return {"ok": True}
+        except (OSError, RuntimeError, subprocess.TimeoutExpired):
+            return {"ok": False, "error": "未能关闭旧的 QQ 登录组件，请稍后再试。"}
 
 
 
@@ -1061,12 +1061,9 @@ class Handler(BaseHTTPRequestHandler):
                 "napcat_launcher": CFG.get("napcat_launcher"),
             }})
         if u.path == "/api/qr":
-            try:
-                qp = _nc().qr()
-            except Exception:
-                qp = ""
-            if qp and os.path.exists(qp):
-                data = open(qp, "rb").read()
+            state = napcat_state()
+            if state["qr"]:
+                data = base64.b64decode(state["qr_b64"])
                 self.send_response(200)
                 self.send_header("Content-Type", "image/png")
                 self.send_header("Content-Length", str(len(data)))
@@ -1129,7 +1126,7 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/napcat/stop":
                 return self._send(200, stop_napcat())
             if u.path == "/api/napcat/restart":
-                return self._send(200, restart_napcat())
+                return self._send(200, restart_napcat(rescan=body.get("rescan") is not False))
             if u.path == "/api/test_model":
                 return self._send(200, test_model())
             if u.path == "/api/idle/trigger":
