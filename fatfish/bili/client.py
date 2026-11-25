@@ -22,6 +22,9 @@ import time
 import urllib.parse
 import urllib.request
 
+# B站 是境内服务,显式绕过系统代理(开着代理时 B站 会回 502)
+_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 DATA = os.path.join(ROOT, "data")
@@ -109,7 +112,7 @@ class Bili:
             url = url + ("&" if "?" in url else "?") + urllib.parse.urlencode(params)
         req = urllib.request.Request(url, headers=self._headers())
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
+            with _OPENER.open(req, timeout=timeout) as r:
                 body = r.read()
         except Exception as e:
             self.last_error = repr(e)
@@ -232,7 +235,7 @@ class Bili:
         h["Content-Type"] = "application/x-www-form-urlencoded"
         req = urllib.request.Request(url, data=body, headers=h)
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
+            with _OPENER.open(req, timeout=timeout) as r:
                 raw = r.read()
         except Exception as e:
             self.last_error = repr(e)

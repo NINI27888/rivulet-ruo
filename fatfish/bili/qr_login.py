@@ -57,9 +57,14 @@ def flush():
         pass   # 日志写不了不影响主流程
 
 
+# B站 是境内服务:显式不用系统代理。
+# 用户开着 Clash/VPN 时,urllib 默认走代理,B站 会返回 502,二维码就出不来。
+_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+
 def get_json(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Referer": "https://www.bilibili.com/"})
-    with urllib.request.urlopen(req, timeout=15) as r:
+    with _OPENER.open(req, timeout=15) as r:
         return json.loads(r.read().decode("utf-8", "replace"))
 
 
@@ -106,7 +111,7 @@ def poll(seconds=180):
     while time.time() < end:
         req = urllib.request.Request(url, headers={"User-Agent": UA, "Referer": "https://www.bilibili.com/"})
         try:
-            with urllib.request.urlopen(req, timeout=15) as r:
+            with _OPENER.open(req, timeout=15) as r:
                 raw = r.read().decode("utf-8", "replace")
                 cookies = r.headers.get_all("Set-Cookie") or []
         except Exception as e:
